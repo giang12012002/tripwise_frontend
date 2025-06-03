@@ -15,7 +15,32 @@ const googleLogin = async (idToken, deviceId) => {
     })
 }
 
+const signup = async (
+    email,
+    username,
+    password,
+    confirmPassword,
+    signupRequestId
+) => {
+    return await authorizedAxios.post('/authentication/signup', {
+        email,
+        username,
+        password,
+        confirmPassword,
+        signupRequestId
+    })
+}
+
+const verifyOtp = async (enteredOtp, userSignupData) => {
+    return await authorizedAxios.post(
+        `/authentication/verifyOtp/${enteredOtp}`,
+        userSignupData
+    )
+}
+
 export default {
     login,
-    googleLogin
+    googleLogin,
+    signup,
+    verifyOtp
 }
