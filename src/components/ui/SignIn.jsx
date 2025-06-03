@@ -7,7 +7,6 @@ import beachSunset from '@/assets/images/background.png'
 
 // APIs
 import { authAPI } from '@/apis'
-import authorizedAxios from '@/apis/authorizedAxios.js'
 
 // Components
 import { toast } from 'react-toastify'
@@ -40,13 +39,7 @@ function SignIn() {
         try {
             const idToken = credentialResponse.credential // Lấy id_token từ Google
             const deviceId = '1'
-            const response = await authorizedAxios.post(
-                '/authentication/google-login',
-                {
-                    idToken,
-                    deviceId
-                }
-            )
+            const response = await authAPI.googleLogin(idToken, deviceId)
             if (response.status === 200) {
                 toast.success('Đăng nhập bằng Google thành công!')
                 navigate('/')
