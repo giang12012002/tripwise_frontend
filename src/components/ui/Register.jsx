@@ -28,24 +28,11 @@ function Register() {
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
                             />
                         </div>
-                        <div className="mb-4">
-                            <input
-                                type="tel"
-                                placeholder="Phone"
-                                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-                            />
-                        </div>
+
                         <div className="mb-4">
                             <input
                                 type="text"
-                                placeholder="FirstName"
-                                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <input
-                                type="text"
-                                placeholder="LastName"
+                                placeholder="username"
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
                             />
                         </div>
