@@ -1,8 +1,8 @@
 import authorizedAxios from './authorizedAxios'
 
-const login = async (username, password, deviceId) => {
-    return await authorizedAxios.post('/api/Authentication/login', {
-        username,
+const login = async (email, password, deviceId) => {
+    return await authorizedAxios.post('/authentication/login', {
+        email,
         password,
         deviceId
     })

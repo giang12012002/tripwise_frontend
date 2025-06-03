@@ -1,6 +1,6 @@
 // Core
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 // Assets
 import beachSunset from '@/assets/images/background.png'
@@ -12,19 +12,21 @@ import { authAPI } from '@/apis'
 import { toast } from 'react-toastify'
 
 function SignIn() {
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
+    const navigate = useNavigate()
 
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword)
 
     const handleLogin = async () => {
         try {
-            const deviceId = '123456789'
-            const response = await authAPI.login(username, password, deviceId)
+            const deviceId = '1'
+            const response = await authAPI.login(email, password, deviceId)
             if (response.status === 200) {
                 toast.success('Đăng nhập thành công!')
+                navigate('/')
             } else {
                 toast.error(response.data)
             }
@@ -48,9 +50,9 @@ function SignIn() {
                         <div className="mb-4">
                             <input
                                 type="text"
-                                placeholder="Username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base"
                             />
                         </div>
