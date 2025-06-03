@@ -3,6 +3,8 @@ import { useState } from 'react'
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    // Mock authentication state (replace with actual auth logic)
+    const [isLoggedIn, setIsLoggedIn] = useState(false) // Set to true for testing logged-in state
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
@@ -87,35 +89,37 @@ function Header() {
                     </li>
                     <li>
                         <Link
-                            to="/authen"
+                            to="/signin"
                             className="block hover:bg-blue-800 px-3 py-2 rounded transition-colors duration-200"
                             onClick={() => setIsMenuOpen(false)}
                         >
                             Đăng nhập/Đăng ký
                         </Link>
                     </li>
-                    <li>
-                        <Link
-                            to="/profile"
-                            className="flex items-center hover:bg-blue-800 px-3 py-2 rounded transition-colors duration-200"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            <svg
-                                className="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
+                    {isLoggedIn && (
+                        <li>
+                            <Link
+                                to="/profile"
+                                className="flex items-center hover:bg-blue-800 px-3 py-2 rounded transition-colors duration-200"
+                                onClick={() => setIsMenuOpen(false)}
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                />
-                            </svg>
-                        </Link>
-                    </li>
+                                <svg
+                                    className="w-6 h-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                    />
+                                </svg>
+                            </Link>
+                        </li>
+                    )}
                 </ul>
             </nav>
         </header>
