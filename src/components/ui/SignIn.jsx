@@ -1,5 +1,5 @@
 // Core
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 // Assets
@@ -7,13 +7,13 @@ import beachSunset from '@/assets/images/background.png'
 
 // APIs
 import { authAPI } from '@/apis'
+import authorizedAxios from '@/apis/authorizedAxios.js'
 
 // Components
 import { toast } from 'react-toastify'
 
 function SignIn() {
     const navigate = useNavigate()
-
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -34,6 +34,60 @@ function SignIn() {
             toast.error('Đăng nhập thất bại. Vui lòng thử lại.')
         }
     }
+
+    /// Xử lý đăng nhập bằng Google
+    const handleGoogleLogin = async (credentialResponse) => {
+        try {
+            const idToken = credentialResponse.credential // Lấy id_token từ Google
+            const deviceId = '1'
+            const response = await authorizedAxios.post(
+                '/authentication/google-login',
+                {
+                    idToken,
+                    deviceId
+                }
+            )
+            if (response.status === 200) {
+                toast.success('Đăng nhập bằng Google thành công!')
+                navigate('/')
+            } else {
+                toast.error(response.data)
+            }
+        } catch (error) {
+            toast.error('Đăng nhập bằng Google thất bại. Vui lòng thử lại.')
+        }
+    }
+
+    // Tích hợp Google Sign-In
+    useEffect(() => {
+        // Load Google Identity Services script
+        const script = document.createElement('script')
+        script.src = 'https://accounts.google.com/gsi/client'
+        script.async = true
+        document.body.appendChild(script)
+
+        script.onload = () => {
+            window.google.accounts.id.initialize({
+                client_id:
+                    '792733748370-7t8rn2o35daj38von5v1ri0g1fcgpa3m.apps.googleusercontent.com', // Lấy từ appsettings.json
+                callback: handleGoogleLogin
+            })
+
+            window.google.accounts.id.renderButton(
+                document.getElementById('googleSignInButton'),
+                {
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'signin_with',
+                    shape: 'rectangular'
+                }
+            )
+        }
+
+        return () => {
+            document.body.removeChild(script)
+        }
+    }, [])
 
     return (
         <div className="min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-gray-50">
@@ -116,14 +170,7 @@ function SignIn() {
                             Sign In
                         </button>
                     </div>
-                    <button className="w-full mt-4 border p-3 rounded flex items-center justify-center space-x-2 hover:bg-gray-100 text-sm md:text-base">
-                        <img
-                            src="https://www.google.com/favicon.ico"
-                            alt="Google"
-                            className="w-5 h-5"
-                        />
-                        <span>Sign in with Google</span>
-                    </button>
+                    <div id="googleSignInButton" className="w-full mt-4"></div>
                     <p className="text-center text-gray-600 mt-4 text-sm md:text-base">
                         Bạn Chưa Có Tài Khoản? Đăng Kí{' '}
                         <Link
