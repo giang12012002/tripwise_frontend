@@ -1,11 +1,37 @@
+// Core
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+
+// Assets
 import beachSunset from '@/assets/images/background.png'
 
+// APIs
+import { authAPI } from '@/apis'
+
+// Components
+import { toast } from 'react-toastify'
+
 function SignIn() {
+    const [username, setUsername] = useState('')
+    const [password, setPassword] = useState('')
+
     const [showPassword, setShowPassword] = useState(false)
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword)
+
+    const handleLogin = async () => {
+        try {
+            const deviceId = '123456789'
+            const response = await authAPI.login(username, password, deviceId)
+            if (response.status === 200) {
+                toast.success('Đăng nhập thành công!')
+            } else {
+                toast.error(response.data)
+            }
+        } catch (error) {
+            toast.error('Đăng nhập thất bại. Vui lòng thử lại.')
+        }
+    }
 
     return (
         <div className="min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-gray-50">
@@ -21,15 +47,19 @@ function SignIn() {
                     <div>
                         <div className="mb-4">
                             <input
-                                type="email"
-                                placeholder="Email"
+                                type="text"
+                                placeholder="Username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base"
                             />
                         </div>
                         <div className="mb-4 relative">
                             <input
                                 type={showPassword ? 'text' : 'password'}
-                                placeholder="PassWord"
+                                placeholder="Mật Khẩu"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
                             />
                             <button
@@ -78,7 +108,8 @@ function SignIn() {
                         </div>
                         <button
                             type="submit"
-                            className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition-colors duration-200 text-sm md:text-base"
+                            onClick={handleLogin}
+                            className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition-colors duration-200 text-sm md:text-base hover:shadow-lg cursor-pointer"
                         >
                             Sign In
                         </button>
