@@ -38,6 +38,7 @@ function Register() {
         }
         return true
     }
+
     // Signup
     const handleSignup = async () => {
         if (!validateForm()) return
@@ -105,6 +106,7 @@ function Register() {
             setIsLoading(false)
         }
     }
+
     return (
         <div className="min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-white-50">
             <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-4 md:p-6 bg-white">
@@ -123,7 +125,7 @@ function Register() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-                                disabled={isLoading}
+                                disabled={isLoading || showOtpField}
                             />
                         </div>
                         <div className="mb-4">
@@ -133,7 +135,7 @@ function Register() {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-                                disabled={isLoading}
+                                disabled={isLoading || showOtpField}
                             />
                         </div>
                         <div className="mb-4 relative">
@@ -143,13 +145,13 @@ function Register() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-                                disabled={isLoading}
+                                disabled={isLoading || showOtpField}
                             />
                             <button
                                 type="button"
                                 onClick={togglePasswordVisibility}
                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                                disabled={isLoading}
+                                disabled={isLoading || showOtpField}
                             >
                                 {showPassword ? (
                                     <svg
@@ -197,13 +199,13 @@ function Register() {
                                     setConfirmPassword(e.target.value)
                                 }
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-                                disabled={isLoading}
+                                disabled={isLoading || showOtpField}
                             />
                             <button
                                 type="button"
                                 onClick={toggleRePasswordVisibility}
                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                                disabled={isLoading}
+                                disabled={isLoading || showOtpField}
                             >
                                 {showRePassword ? (
                                     <svg
