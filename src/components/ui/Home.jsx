@@ -18,7 +18,7 @@ function Home() {
                         Tạo tour cá nhân hóa bằng AI!
                     </h1>
                     <p className="text-gray-700 mb-6">
-                        Khám phá đi săn việt theo cách của bạn.
+                        Khám phá di sản việt theo cách của bạn.
                     </p>
                     <div className="flex space-x-4">
                         <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
