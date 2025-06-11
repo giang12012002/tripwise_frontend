@@ -34,10 +34,9 @@ function SignIn() {
         }
     }
 
-    /// Xử lý đăng nhập bằng Google
     const handleGoogleLogin = async (credentialResponse) => {
         try {
-            const idToken = credentialResponse.credential // Lấy id_token từ Google
+            const idToken = credentialResponse.credential
             const deviceId = '1'
             const response = await authAPI.googleLogin(idToken, deviceId)
             if (response.status === 200) {
@@ -51,9 +50,7 @@ function SignIn() {
         }
     }
 
-    // Tích hợp Google Sign-In
     useEffect(() => {
-        // Load Google Identity Services script
         const script = document.createElement('script')
         script.src = 'https://accounts.google.com/gsi/client'
         script.async = true
@@ -62,7 +59,7 @@ function SignIn() {
         script.onload = () => {
             window.google.accounts.id.initialize({
                 client_id:
-                    '792733748370-7t8rn2o35daj38von5v1ri0g1fcgpa3m.apps.googleusercontent.com', // Lấy từ appsettings.json
+                    '792733748370-7t8rn2o35daj38von5v1ri0g1fcgpa3m.apps.googleusercontent.com',
                 callback: handleGoogleLogin
             })
 
@@ -83,33 +80,35 @@ function SignIn() {
     }, [])
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-gray-50">
+        <div className="min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-white-50">
             {/* Left Section: Form */}
-            <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-4 md:p-6 bg-white">
-                <div className="w-full max-w-md md:max-w-lg">
-                    <h1 className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
-                        TRIPWISE
-                    </h1>
-                    <p className="text-lg md:text-xl mb-6">
-                        ĐI KHẮP VIỆT NAM – MỖI CHUYẾN ĐI, MỘT PHẦN CỦA BẠN.
-                    </p>
-                    <div>
-                        <div className="mb-4">
+            <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-6 md:p-8 bg-white">
+                <div className="w-full max-w-md space-y-6">
+                    <div className="text-center">
+                        <h1 className="text-4xl font-bold text-blue-600 mb-2">
+                            TRIPWISE
+                        </h1>
+                        <p className="text-lg mb-4">
+                            ĐI KHẮP VIỆT NAM – MỖI CHUYẾN ĐI, MỘT PHẦN CỦA BẠN.
+                        </p>
+                    </div>
+                    <div className="space-y-4">
+                        <div>
                             <input
                                 type="text"
                                 placeholder="Email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base"
+                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-base"
                             />
                         </div>
-                        <div className="mb-4 relative">
+                        <div className="relative">
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="Mật Khẩu"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                             />
                             <button
                                 type="button"
@@ -158,14 +157,19 @@ function SignIn() {
                         <button
                             type="submit"
                             onClick={handleLogin}
-                            className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition-colors duration-200 text-sm md:text-base hover:shadow-lg cursor-pointer"
+                            className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-base hover:shadow-md cursor-pointer"
                         >
-                            Sign In
+                            Đăng Nhập
                         </button>
                     </div>
-                    <div id="googleSignInButton" className="w-full mt-4"></div>
-                    <p className="text-center text-gray-600 mt-4 text-sm md:text-base">
-                        Bạn Chưa Có Tài Khoản? Đăng Kí{' '}
+                    <div id="googleSignInButton" className="w-full text-center">
+                        <div
+                            className="inline-block"
+                            style={{ minWidth: '200px' }}
+                        />
+                    </div>
+                    <p className="text-center text-gray-600 mt-4 text-sm">
+                        Bạn Chưa Có Tài Khoản? Đăng Ký{' '}
                         <Link
                             to="/register"
                             className="text-blue-600 hover:underline"
@@ -177,12 +181,10 @@ function SignIn() {
             </div>
 
             {/* Right Section: Image with Logo */}
-            <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-6 bg-gray-50">
+            <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-8 bg-white-50">
                 <div
                     className="relative w-full max-w-md md:max-w-2xl h-64 md:h-[500px] rounded-lg overflow-hidden shadow-lg bg-cover bg-center bg-no-repeat"
-                    style={{
-                        backgroundImage: `url(${beachSunset})`
-                    }}
+                    style={{ backgroundImage: `url(${beachSunset})` }}
                 />
             </div>
         </div>
