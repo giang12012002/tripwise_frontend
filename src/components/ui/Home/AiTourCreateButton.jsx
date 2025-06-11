@@ -1,23 +1,31 @@
 import React, { useState } from 'react'
-import TravelForm from '.././TravelForm/TravelForm'
-import ItineraryDisplay from '.././TravelForm/ItineraryDisplay'
+import { useAuth } from '@/AuthContext' // Adjust path if needed
+import TravelForm from '../TravelForm/TravelForm' // Adjust path if needed
+import ItineraryDisplay from '../TravelForm/ItineraryDisplay' // Adjust path if needed
+import { toast } from 'react-toastify'
 
 function AiTourCreateButton() {
+    const { isLoggedIn } = useAuth()
     const [showForm, setShowForm] = useState(false)
     const [itineraryData, setItineraryData] = useState(null)
-    const [error, setError] = useState(null)
+    const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
 
+    // Handle create tour button click
     const handleCreateTour = () => {
+        if (!isLoggedIn) {
+            toast.error('Vui lòng đăng nhập để tạo tour!')
+            return
+        }
         setShowForm(true)
         setItineraryData(null)
-        setError(null)
+        setError('')
     }
 
-    // Nếu showForm là true, chỉ hiển thị TravelForm
-    if (showForm) {
+    // Nếu showForm là true và đã đăng nhập, hiển thị TravelForm
+    if (showForm && isLoggedIn) {
         return (
-            <div className="min-h-screen flex flex-col items-center bg-gray-100">
+            <div className="min-h-screen flex flex-col items-center bg-gray-50">
                 <TravelForm
                     setItineraryData={setItineraryData}
                     setError={setError}
@@ -39,17 +47,17 @@ function AiTourCreateButton() {
             >
                 <div className="absolute inset-0 bg-black opacity-50"></div>
             </section>
-            <div className="p-6 md:p-10 bg-white bg-opacity-90 rounded-lg m-6 md:m-10 max-w-6xl text-center w-full">
+            <div className="p-7xl md:px-10 w-full py-10 bg-white bg-opacity-90 rounded-lg mx-6 my-10 md:max-w-3xl text-center">
                 <h1 className="text-2xl md:text-3xl font-bold text-blue-800 mb-4">
                     Tạo tour cá nhân hóa bằng AI!
                 </h1>
                 <p className="text-gray-700 mb-6">
                     Khám phá di sản Việt theo cách của bạn.
                 </p>
-                <div className="flex justify-center space-x-4">
+                <div className="flex justify-center">
                     <button
                         onClick={handleCreateTour}
-                        className="bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-red-900 transition-colors"
+                        className="bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-900 transition-colors"
                     >
                         Tạo tour ngay
                     </button>
@@ -63,7 +71,7 @@ function AiTourCreateButton() {
             )}
 
             {error && (
-                <div className="max-w-6xl w-full p-4 mt-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <div className="max-w-7xl w-full p-4 mt-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg">
                     <p>Lỗi: {error}</p>
                 </div>
             )}

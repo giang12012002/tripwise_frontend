@@ -11,11 +11,15 @@ import { authAPI } from '@/apis'
 // Components
 import { toast } from 'react-toastify'
 
+// Auth Context
+import { useAuth } from '@/AuthContext'
+
 function SignIn() {
     const navigate = useNavigate()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+    const { login } = useAuth() // Use auth context
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword)
 
@@ -25,6 +29,9 @@ function SignIn() {
             const response = await authAPI.login(email, password, deviceId)
             if (response.status === 200) {
                 toast.success('Đăng nhập thành công!')
+                // Assuming the API returns username in response.data.username
+                const username = response.data.username || email.split('@')[0] // Fallback to email prefix
+                login(username) // Update auth context
                 navigate('/')
             } else {
                 toast.error(response.data)
@@ -41,6 +48,9 @@ function SignIn() {
             const response = await authAPI.googleLogin(idToken, deviceId)
             if (response.status === 200) {
                 toast.success('Đăng nhập bằng Google thành công!')
+                // Assuming the API returns username in response.data.username
+                const username = response.data.username || 'GoogleUser' // Fallback username
+                login(username) // Update auth context
                 navigate('/')
             } else {
                 toast.error(response.data)

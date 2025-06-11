@@ -1,5 +1,5 @@
 import authorizedAxios from './authorizedAxios'
-
+// createItinerary
 const createItinerary = async (formData) => {
     return await authorizedAxios.post('api/AIGeneratePlan/CreateItinerary', {
         destination: formData.destination,

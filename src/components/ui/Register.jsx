@@ -9,6 +9,8 @@ import { v4 as uuidv4 } from 'uuid'
 import beachSunset from '@/assets/images/background.png'
 // APIs
 import { authAPI } from '@/apis'
+// Auth Context
+import { useAuth } from '@/AuthContext'
 
 function Register() {
     const navigate = useNavigate()
@@ -22,6 +24,7 @@ function Register() {
     const [signupRequestId, setSignupRequestId] = useState(null)
     const [showOtpField, setShowOtpField] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const { login } = useAuth() // Use auth context
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword)
     const toggleRePasswordVisibility = () => setShowRePassword(!showRePassword)
@@ -94,7 +97,8 @@ function Register() {
             const response = await authAPI.verifyOtp(otp, userSignupData)
             if (response.status === 200 || response.status === 201) {
                 toast.success('Đăng ký thành công!')
-                navigate('/signin')
+                login(username) // Update auth context
+                navigate('/')
             } else {
                 toast.error(response.data.message || 'Xác minh OTP thất bại.')
             }

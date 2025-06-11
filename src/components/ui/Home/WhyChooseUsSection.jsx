@@ -3,7 +3,7 @@ function WhyChooseUsSection() {
         <section className="bg-white py-12 max-w-7xl w-full mx-auto">
             <div className="container mx-auto px-4">
                 <h2 className="text-2xl font-bold text-center mb-8">
-                    TẠI SAO BẠN NÊN CHỌN VIỆT DU KÝ?
+                    TẠI SAO BẠN NÊN CHỌN TRIPEWISE?
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="text-center">

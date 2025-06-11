@@ -1,3 +1,11 @@
+// About
+// import {
+//     Button,
+//     Card,
+//     CardBody,
+//     CardImg,
+//     CardTitle,
+//     CardSubtitle,
 function AboutUsSection() {
     return (
         <section className="py-12 max-w-7xl w-full mx-auto">
@@ -6,7 +14,7 @@ function AboutUsSection() {
                     VỀ CHÚNG TÔI
                 </h2>
                 <p className="text-center max-w-xl mx-auto mb-6">
-                    Việt Du Ký là nền tảng trực tuyến tiên phong trong việc sử
+                    TripeWise là nền tảng trực tuyến tiên phong trong việc sử
                     dụng trí tuệ nhân tạo (AI) để tạo ra lịch trình du lịch cá
                     nhân hóa.
                 </p>

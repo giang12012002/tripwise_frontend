@@ -1,5 +1,6 @@
 import TestimonialCard from './TestimonialCard'
 
+// Components/
 function FeedbackSection() {
     return (
         <section className="bg-white py-12 max-w-7xl w-full mx-auto">

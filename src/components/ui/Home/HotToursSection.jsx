@@ -1,5 +1,5 @@
 import TourCard from './TourCard'
-
+// Tours
 const tours = [
     {
         id: 1,

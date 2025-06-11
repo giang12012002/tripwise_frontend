@@ -1,7 +1,11 @@
+// Dependencies
 import React, { useState } from 'react'
-import { travelFormAPI } from '@/apis' // Adjust the import path as needed
+// APIs
+import { authAPI, travelFormAPI } from '@/apis'
+// Components
 import { toast } from 'react-toastify'
 
+// Styles
 function TravelForm({ setItineraryData, setError, setLoading, setShowForm }) {
     const today = new Date().toISOString().split('T')[0]
     const [formData, setFormData] = useState({
@@ -15,12 +19,12 @@ function TravelForm({ setItineraryData, setError, setLoading, setShowForm }) {
         groupType: '',
         accommodation: ''
     })
-
+    // Handle form changes
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
     }
-
+    // Handle form submission
     const handleSubmit = async () => {
         setError(null)
         setLoading(true)
@@ -56,7 +60,7 @@ function TravelForm({ setItineraryData, setError, setLoading, setShowForm }) {
             setLoading(false)
             return
         }
-
+        // Create itinerary
         try {
             const response = await travelFormAPI.createItinerary(formData)
 
@@ -76,7 +80,7 @@ function TravelForm({ setItineraryData, setError, setLoading, setShowForm }) {
             setLoading(false)
         }
     }
-
+    // Render form
     return (
         <div className="max-w-6xl w-full p-6 bg-white rounded-lg shadow-lg mt-6">
             <h2 className="text-2xl font-bold text-blue-800 mb-4">

@@ -1,19 +1,19 @@
 import React, { useState } from 'react'
 
+// Styles
 function ItineraryDisplay({ itineraryData }) {
     const [openDays, setOpenDays] = useState({})
 
     const toggleDay = (dayNumber) => {
         setOpenDays((prev) => ({ ...prev, [dayNumber]: !prev[dayNumber] }))
     }
-
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
         }).format(value)
     }
-
+    //Display ItineraryDisplay
     return (
         <div className="max-w-6xl w-full p-6 bg-white rounded-lg shadow-lg mt-6">
             <h2 className="text-2xl font-bold text-blue-800 mb-4">
@@ -76,7 +76,6 @@ function ItineraryDisplay({ itineraryData }) {
                     </a>
                 </p>
             </div>
-
             <h3 className="text-xl font-semibold text-blue-800 mb-4">
                 Chi tiết lịch trình
             </h3>

@@ -1,11 +1,21 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import { useAuth } from '@/AuthContext' // Import AuthContext
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
-    const [isLoggedIn, setIsLoggedIn] = useState(false) // Mock auth state
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+    const { isLoggedIn, username, logout } = useAuth() // Use auth context
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+    const toggleProfileDropdown = () =>
+        setIsProfileDropdownOpen(!isProfileDropdownOpen)
+
+    const handleLogout = () => {
+        logout()
+        setIsMenuOpen(false)
+        setIsProfileDropdownOpen(false)
+    }
 
     return (
         <header className="bg-blue-700 text-white shadow-md">
@@ -86,40 +96,102 @@ function Header() {
                             Hỗ trợ
                         </Link>
                     </li>
-                    <li>
-                        <Link
-                            to="/signin"
-                            className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Đăng nhập/Đăng ký
-                        </Link>
-                    </li>
-                    {isLoggedIn && (
-                        <li>
-                            <Link
-                                to="/profile"
-                                className="flex items-center hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                <svg
-                                    className="w-5 h-5 mr-2"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
+                    {/* Profile Icon */}
+                    <li className="relative">
+                        {isLoggedIn ? (
+                            <>
+                                <button
+                                    className="flex items-center hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
+                                    onClick={toggleProfileDropdown}
+                                    aria-label="Toggle profile menu"
                                 >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                    />
-                                </svg>
-                                Hồ sơ
-                            </Link>
-                        </li>
-                    )}
+                                    <svg
+                                        className="w-5 h-5 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                        />
+                                    </svg>
+                                    {username}
+                                </button>
+                                {isProfileDropdownOpen && (
+                                    <ul className="absolute top-full right-0 bg-blue-700 text-white rounded shadow-md mt-2 w-48 z-20">
+                                        <li>
+                                            <Link
+                                                to="/profile"
+                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                onClick={() => {
+                                                    setIsMenuOpen(false)
+                                                    setIsProfileDropdownOpen(
+                                                        false
+                                                    )
+                                                }}
+                                            >
+                                                Thông tin tài khoản
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <button
+                                                className="block w-full text-left hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                onClick={handleLogout}
+                                            >
+                                                Đăng xuất
+                                            </button>
+                                        </li>
+                                    </ul>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    className="flex items-center hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
+                                    onClick={toggleProfileDropdown}
+                                    aria-label="Toggle profile menu"
+                                >
+                                    <svg
+                                        className="w-5 h-5 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                        />
+                                    </svg>
+                                    Tài khoản
+                                </button>
+                                {isProfileDropdownOpen && (
+                                    <ul className="absolute top-full right-0 bg-blue-700 text-white rounded shadow-md mt-2 w-48 z-20">
+                                        <li>
+                                            <Link
+                                                to="/signin"
+                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                onClick={() => {
+                                                    setIsMenuOpen(false)
+                                                    setIsProfileDropdownOpen(
+                                                        false
+                                                    )
+                                                }}
+                                            >
+                                                Đăng nhập
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                )}
+                            </>
+                        )}
+                    </li>
                 </ul>
             </nav>
         </header>
