@@ -1,17 +1,118 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+// Core
 import React, { useState } from 'react'
+// Components
+import { toast } from 'react-toastify'
+// Uuid
+import { v4 as uuidv4 } from 'uuid'
+// Assets
 import beachSunset from '@/assets/images/background.png'
+// APIs
+import { authAPI } from '@/apis'
+// Auth Context
+import { useAuth } from '@/AuthContext'
 
 function Register() {
+    const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false)
     const [showRePassword, setShowRePassword] = useState(false)
+    const [email, setEmail] = useState('')
+    const [username, setUsername] = useState('')
+    const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+    const [otp, setOtp] = useState('')
+    const [signupRequestId, setSignupRequestId] = useState(null)
+    const [showOtpField, setShowOtpField] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const { login } = useAuth() // Use auth context
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword)
     const toggleRePasswordVisibility = () => setShowRePassword(!showRePassword)
 
+    // Validate form
+    const validateForm = () => {
+        if (!email || !username || !password || !confirmPassword) {
+            toast.error('Vui lòng điền đầy đủ tất cả các trường!')
+            return false
+        }
+        if (password !== confirmPassword) {
+            toast.error('Mật khẩu không khớp!')
+            return false
+        }
+        return true
+    }
+
+    // Signup
+    const handleSignup = async () => {
+        if (!validateForm()) return
+
+        setIsLoading(true)
+        try {
+            const newSignupRequestId = uuidv4()
+            const response = await authAPI.signup(
+                email,
+                username,
+                password,
+                confirmPassword,
+                newSignupRequestId
+            )
+            if (response.status === 200) {
+                if (response.data.invalidFields?.length > 0) {
+                    const fields = response.data.invalidFields.join(', ')
+                    toast.error(`Lỗi: ${fields} đã tồn tại!`)
+                } else {
+                    setSignupRequestId(newSignupRequestId)
+                    setShowOtpField(true)
+                    toast.success('Vui lòng kiểm tra email để lấy mã OTP!')
+                }
+            } else {
+                toast.error('Đăng ký thất bại. Vui lòng thử lại.')
+            }
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message ||
+                    'Đăng ký thất bại. Vui lòng thử lại.'
+            )
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    // Verify OTP
+    const handleVerifyOtp = async () => {
+        if (!otp) {
+            toast.error('Vui lòng nhập mã OTP!')
+            return
+        }
+
+        setIsLoading(true)
+        try {
+            const userSignupData = {
+                email,
+                username,
+                password,
+                confirmPassword,
+                signupRequestId
+            }
+            const response = await authAPI.verifyOtp(otp, userSignupData)
+            if (response.status === 200 || response.status === 201) {
+                toast.success('Đăng ký thành công!')
+                login(username) // Update auth context
+                navigate('/')
+            } else {
+                toast.error(response.data.message || 'Xác minh OTP thất bại.')
+            }
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || 'Xác minh OTP thất bại.'
+            )
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
         <div className="min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-white-50">
-            {/* Left Section: Form */}
             <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-4 md:p-6 bg-white">
                 <div className="w-full max-w-md md:max-w-lg">
                     <h1 className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
@@ -25,40 +126,36 @@ function Register() {
                             <input
                                 type="email"
                                 placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <input
-                                type="tel"
-                                placeholder="Phone"
-                                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <input
-                                type="text"
-                                placeholder="FirstName"
-                                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                                disabled={isLoading || showOtpField}
                             />
                         </div>
                         <div className="mb-4">
                             <input
                                 type="text"
-                                placeholder="LastName"
+                                placeholder="Username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                                disabled={isLoading || showOtpField}
                             />
                         </div>
                         <div className="mb-4 relative">
                             <input
                                 type={showPassword ? 'text' : 'password'}
-                                placeholder="PassWord"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                                disabled={isLoading || showOtpField}
                             />
                             <button
                                 type="button"
                                 onClick={togglePasswordVisibility}
                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                disabled={isLoading || showOtpField}
                             >
                                 {showPassword ? (
                                     <svg
@@ -66,7 +163,6 @@ function Register() {
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -81,7 +177,6 @@ function Register() {
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -102,13 +197,19 @@ function Register() {
                         <div className="mb-4 relative">
                             <input
                                 type={showRePassword ? 'text' : 'password'}
-                                placeholder="Re-PassWord"
+                                placeholder="Confirm Password"
+                                value={confirmPassword}
+                                onChange={(e) =>
+                                    setConfirmPassword(e.target.value)
+                                }
                                 className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                                disabled={isLoading || showOtpField}
                             />
                             <button
                                 type="button"
                                 onClick={toggleRePasswordVisibility}
                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                disabled={isLoading || showOtpField}
                             >
                                 {showRePassword ? (
                                     <svg
@@ -116,7 +217,6 @@ function Register() {
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -131,7 +231,6 @@ function Register() {
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -149,11 +248,31 @@ function Register() {
                                 )}
                             </button>
                         </div>
+                        {showOtpField && (
+                            <div className="mb-4">
+                                <input
+                                    type="text"
+                                    placeholder="Nhập mã OTP"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        )}
                         <button
                             type="submit"
+                            onClick={
+                                showOtpField ? handleVerifyOtp : handleSignup
+                            }
                             className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm md:text-base"
+                            disabled={isLoading}
                         >
-                            Register
+                            {isLoading
+                                ? 'Đang xử lý...'
+                                : showOtpField
+                                  ? 'Xác Minh OTP'
+                                  : 'Register'}
                         </button>
                     </div>
                     <p className="text-center text-gray-600 mt-4 text-sm md:text-base">
@@ -167,14 +286,10 @@ function Register() {
                     </p>
                 </div>
             </div>
-
-            {/* Right Section - Background Image */}
             <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-6 bg-white-50">
                 <div
                     className="relative w-full max-w-md md:max-w-2xl h-64 md:h-[500px] rounded-lg overflow-hidden shadow-lg bg-cover bg-center bg-no-repeat"
-                    style={{
-                        backgroundImage: `url(${beachSunset})`
-                    }}
+                    style={{ backgroundImage: `url(${beachSunset})` }}
                 />
             </div>
         </div>
