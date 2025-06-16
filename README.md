@@ -1,3 +1,8 @@
+
+# Tripwise_fe-0.2
+1. Landing page
+2. Create tour using AI
+3. Authentication
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
