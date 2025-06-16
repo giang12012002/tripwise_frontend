@@ -129,11 +129,20 @@ function TravelForm({ setItineraryData, setError, setLoading, setShowForm }) {
             return
         }
 
-        // Prepare data for submission (convert arrays to strings)
+        //Chuẩn bị dữ liệu để submission
         const submissionData = {
             ...formData,
-            preferences: formData.preferences.join(', '),
-            diningStyle: formData.diningStyle.join(', ')
+            preferences:
+                formData.preferences.length > 0
+                    ? formData.preferences.join(', ')
+                    : null,
+            diningStyle:
+                formData.diningStyle.length > 0
+                    ? formData.diningStyle.join(', ')
+                    : null,
+            transportation: formData.transportation || null,
+            groupType: formData.groupType || null,
+            accommodation: formData.accommodation || null
         }
 
         // Create itinerary

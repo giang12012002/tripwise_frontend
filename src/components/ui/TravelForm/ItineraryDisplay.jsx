@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 
-// Styles
 function ItineraryDisplay({ itineraryData }) {
     const [openDays, setOpenDays] = useState({})
 
@@ -13,7 +12,7 @@ function ItineraryDisplay({ itineraryData }) {
             currency: 'VND'
         }).format(value)
     }
-    //Display ItineraryDisplay
+
     return (
         <div className="max-w-6xl w-full p-6 bg-white rounded-lg shadow-lg mt-6">
             <h2 className="text-2xl font-bold text-blue-800 mb-4">
@@ -37,33 +36,26 @@ function ItineraryDisplay({ itineraryData }) {
                         'vi-VN'
                     )}
                 </p>
-                {itineraryData.preferences && (
-                    <p>
-                        <strong>Sở thích:</strong> {itineraryData.preferences}
-                    </p>
-                )}
-                {itineraryData.transportation && (
-                    <p>
-                        <strong>Phương tiện:</strong>{' '}
-                        {itineraryData.transportation}
-                    </p>
-                )}
-                {itineraryData.diningStyle && (
-                    <p>
-                        <strong>Phong cách ăn uống:</strong>{' '}
-                        {itineraryData.diningStyle}
-                    </p>
-                )}
-                {itineraryData.groupType && (
-                    <p>
-                        <strong>Nhóm:</strong> {itineraryData.groupType}
-                    </p>
-                )}
-                {itineraryData.accommodation && (
-                    <p>
-                        <strong>Chỗ ở:</strong> {itineraryData.accommodation}
-                    </p>
-                )}
+                <p>
+                    <strong>Sở thích:</strong>{' '}
+                    {itineraryData.preferences || 'Không xác định'}
+                </p>
+                <p>
+                    <strong>Phương tiện:</strong>{' '}
+                    {itineraryData.transportation || 'Không xác định'}
+                </p>
+                <p>
+                    <strong>Phong cách ăn uống:</strong>{' '}
+                    {itineraryData.diningStyle || 'Không xác định'}
+                </p>
+                <p>
+                    <strong>Nhóm:</strong>{' '}
+                    {itineraryData.groupType || 'Không xác định'}
+                </p>
+                <p>
+                    <strong>Chỗ ở:</strong>{' '}
+                    {itineraryData.accommodation || 'Không xác định'}
+                </p>
                 <p>
                     <strong>Đề xuất chỗ ở:</strong>{' '}
                     <a
@@ -116,12 +108,11 @@ function ItineraryDisplay({ itineraryData }) {
                                                 activity.estimatedCost
                                             )}
                                         </p>
-                                        {activity.transportation && (
-                                            <p>
-                                                <strong>Phương tiện:</strong>{' '}
-                                                {activity.transportation}
-                                            </p>
-                                        )}
+                                        <p>
+                                            <strong>Phương tiện:</strong>{' '}
+                                            {activity.transportation ||
+                                                'Không xác định'}
+                                        </p>
                                         {activity.address && (
                                             <p>
                                                 <strong>Địa chỉ:</strong>{' '}
