@@ -279,8 +279,8 @@ function TravelForm({ setItineraryData, setError, setLoading, setShowForm }) {
             options: [
                 { label: 'Món ăn vỉa hè', value: 'Món ăn vỉa hè', emoji: '🌯' },
                 {
-                    label: 'Uống thử rượu nho',
-                    value: 'Uống thử rượu nho',
+                    label: 'Uống rượu nho',
+                    value: 'Uống rượu nho',
                     emoji: '🍷'
                 },
                 {
