@@ -22,21 +22,6 @@ function AiTourCreateButton() {
         setError('')
     }
 
-    // Nếu showForm là true và đã đăng nhập, hiển thị TravelForm
-    if (showForm && isLoggedIn) {
-        return (
-            <div className="min-h-screen flex flex-col items-center bg-gray-50">
-                <TravelForm
-                    setItineraryData={setItineraryData}
-                    setError={setError}
-                    setLoading={setLoading}
-                    setShowForm={setShowForm}
-                />
-            </div>
-        )
-    }
-
-    // Màn hình chính khi showForm là false
     return (
         <div className="min-h-screen flex flex-col items-center">
             <section
@@ -78,6 +63,19 @@ function AiTourCreateButton() {
 
             {itineraryData && (
                 <ItineraryDisplay itineraryData={itineraryData} />
+            )}
+
+            {showForm && isLoggedIn && (
+                <div className="fixed inset-0 flex items-center justify-center z-50">
+                    <div className="relative bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-lg">
+                        <TravelForm
+                            setItineraryData={setItineraryData}
+                            setError={setError}
+                            setLoading={setLoading}
+                            setShowForm={setShowForm}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     )

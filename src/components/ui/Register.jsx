@@ -1,15 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom'
-// Core
-import React, { useState } from 'react'
-// Components
+import React, { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
-// Uuid
 import { v4 as uuidv4 } from 'uuid'
-// Assets
 import beachSunset from '@/assets/images/background.png'
-// APIs
 import { authAPI } from '@/apis'
-// Auth Context
 import { useAuth } from '@/AuthContext'
 
 function Register() {
@@ -24,12 +18,19 @@ function Register() {
     const [signupRequestId, setSignupRequestId] = useState(null)
     const [showOtpField, setShowOtpField] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
-    const { login } = useAuth() // Use auth context
+    const { login, isLoggedIn } = useAuth()
+
+    // Redirect if already logged in
+    useEffect(() => {
+        console.log('Checking if already logged in: isLoggedIn=', isLoggedIn)
+        if (isLoggedIn) {
+            navigate('/')
+        }
+    }, [isLoggedIn, navigate])
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword)
     const toggleRePasswordVisibility = () => setShowRePassword(!showRePassword)
 
-    // Validate form
     const validateForm = () => {
         if (!email || !username || !password || !confirmPassword) {
             toast.error('Vui lòng điền đầy đủ tất cả các trường!')
@@ -42,13 +43,19 @@ function Register() {
         return true
     }
 
-    // Signup
     const handleSignup = async () => {
+        console.log(
+            'Attempting signup with email:',
+            email,
+            'username:',
+            username
+        )
         if (!validateForm()) return
 
         setIsLoading(true)
         try {
             const newSignupRequestId = uuidv4()
+            console.log('Generated signupRequestId:', newSignupRequestId)
             const response = await authAPI.signup(
                 email,
                 username,
@@ -56,6 +63,7 @@ function Register() {
                 confirmPassword,
                 newSignupRequestId
             )
+            console.log('Signup API response:', response)
             if (response.status === 200) {
                 if (response.data.invalidFields?.length > 0) {
                     const fields = response.data.invalidFields.join(', ')
@@ -69,6 +77,7 @@ function Register() {
                 toast.error('Đăng ký thất bại. Vui lòng thử lại.')
             }
         } catch (error) {
+            console.error('Signup error:', error)
             toast.error(
                 error.response?.data?.message ||
                     'Đăng ký thất bại. Vui lòng thử lại.'
@@ -78,8 +87,8 @@ function Register() {
         }
     }
 
-    // Verify OTP
     const handleVerifyOtp = async () => {
+        console.log('Attempting OTP verification with OTP:', otp)
         if (!otp) {
             toast.error('Vui lòng nhập mã OTP!')
             return
@@ -95,14 +104,17 @@ function Register() {
                 signupRequestId
             }
             const response = await authAPI.verifyOtp(otp, userSignupData)
+            console.log('OTP verification API response:', response)
             if (response.status === 200 || response.status === 201) {
                 toast.success('Đăng ký thành công!')
-                login(username) // Update auth context
+                console.log('Calling login with username:', username)
+                login(username)
                 navigate('/')
             } else {
                 toast.error(response.data.message || 'Xác minh OTP thất bại.')
             }
         } catch (error) {
+            console.error('OTP verification error:', error)
             toast.error(
                 error.response?.data?.message || 'Xác minh OTP thất bại.'
             )

@@ -1,17 +1,8 @@
-// Core
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-
-// Assets
 import beachSunset from '@/assets/images/background.png'
-
-// APIs
 import { authAPI } from '@/apis'
-
-// Components
 import { toast } from 'react-toastify'
-
-// Auth Context
 import { useAuth } from '@/AuthContext'
 
 function SignIn() {
@@ -19,44 +10,64 @@ function SignIn() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
-    const { login } = useAuth() // Use auth context
+    const { login, isLoggedIn } = useAuth()
+
+    // Redirect if already logged in
+    useEffect(() => {
+        console.log('Checking if already logged in: isLoggedIn=', isLoggedIn)
+        if (isLoggedIn) {
+            navigate('/')
+        }
+    }, [isLoggedIn, navigate])
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword)
 
     const handleLogin = async () => {
+        console.log('Attempting login with email:', email)
         try {
             const deviceId = '1'
             const response = await authAPI.login(email, password, deviceId)
+            console.log('Login API response:', response)
             if (response.status === 200) {
                 toast.success('Đăng nhập thành công!')
-                // Assuming the API returns username in response.data.username
-                const username = response.data.username || email.split('@')[0] // Fallback to email prefix
-                login(username) // Update auth context
+                const username = response.data.username || email.split('@')[0]
+                console.log('Calling login with username:', username)
+                login(username)
                 navigate('/')
             } else {
-                toast.error(response.data)
+                toast.error(response.data.message || 'Đăng nhập thất bại.')
             }
         } catch (error) {
-            toast.error('Đăng nhập thất bại. Vui lòng thử lại.')
+            console.error('Login error:', error)
+            toast.error(
+                error.response?.data?.message ||
+                    'Đăng nhập thất bại. Vui lòng thử lại.'
+            )
         }
     }
 
     const handleGoogleLogin = async (credentialResponse) => {
+        console.log('Attempting Google login')
         try {
             const idToken = credentialResponse.credential
             const deviceId = '1'
             const response = await authAPI.googleLogin(idToken, deviceId)
+            console.log('Google login API response:', response)
             if (response.status === 200) {
                 toast.success('Đăng nhập bằng Google thành công!')
-                // Assuming the API returns username in response.data.username
-                const username = response.data.username || 'GoogleUser' // Fallback username
-                login(username) // Update auth context
+                const username = response.data.username || 'GoogleUser'
+                console.log('Calling login with username:', username)
+                login(username)
                 navigate('/')
             } else {
-                toast.error(response.data)
+                toast.error(response.data.message || 'Đăng nhập thất bại.')
             }
         } catch (error) {
-            toast.error('Đăng nhập bằng Google thất bại. Vui lòng thử lại.')
+            console.error('Google login error:', error)
+            toast.error(
+                error.response?.data?.message ||
+                    'Đăng nhập bằng Google thất bại. Vui lòng thử lại.'
+            )
         }
     }
 
@@ -91,7 +102,6 @@ function SignIn() {
 
     return (
         <div className="min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-white-50">
-            {/* Left Section: Form */}
             <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-6 md:p-8 bg-white">
                 <div className="w-full max-w-md space-y-6">
                     <div className="text-center">
@@ -189,8 +199,6 @@ function SignIn() {
                     </p>
                 </div>
             </div>
-
-            {/* Right Section: Image with Logo */}
             <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-8 bg-white-50">
                 <div
                     className="relative w-full max-w-md md:max-w-2xl h-64 md:h-[500px] rounded-lg overflow-hidden shadow-lg bg-cover bg-center bg-no-repeat"
