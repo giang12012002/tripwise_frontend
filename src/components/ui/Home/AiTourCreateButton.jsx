@@ -37,7 +37,7 @@ function AiTourCreateButton() {
                     Tạo tour cá nhân hóa bằng AI!
                 </h1>
                 <p className="text-gray-700 mb-6">
-                    Khám phá di sản Việt theo cách của bạn.
+                    Khám phá di sản Việt Nam theo cách của bạn.
                 </p>
                 <div className="flex justify-center">
                     <button
