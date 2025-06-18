@@ -1,15 +1,11 @@
-import React, { useState } from 'react'
-import { useAuth } from '@/AuthContext' // Adjust path if needed
-import TravelForm from '../TravelForm/TravelForm' // Adjust path if needed
-import ItineraryDisplay from '../TravelForm/ItineraryDisplay' // Adjust path if needed
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/AuthContext'
 import { toast } from 'react-toastify'
 
 function AiTourCreateButton() {
     const { isLoggedIn } = useAuth()
-    const [showForm, setShowForm] = useState(false)
-    const [itineraryData, setItineraryData] = useState(null)
-    const [error, setError] = useState('')
-    const [loading, setLoading] = useState(false)
+    const navigate = useNavigate()
 
     // Handle create tour button click
     const handleCreateTour = () => {
@@ -17,9 +13,7 @@ function AiTourCreateButton() {
             toast.error('Vui lòng đăng nhập để tạo tour!')
             return
         }
-        setShowForm(true)
-        setItineraryData(null)
-        setError('')
+        navigate('/TravelForm')
     }
 
     return (
@@ -48,35 +42,6 @@ function AiTourCreateButton() {
                     </button>
                 </div>
             </div>
-
-            {loading && (
-                <div className="text-center mt-4">
-                    <p className="text-blue-600">Đang tạo lịch trình...</p>
-                </div>
-            )}
-
-            {error && (
-                <div className="max-w-7xl w-full p-4 mt-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg">
-                    <p>Lỗi: {error}</p>
-                </div>
-            )}
-
-            {itineraryData && (
-                <ItineraryDisplay itineraryData={itineraryData} />
-            )}
-
-            {showForm && isLoggedIn && (
-                <div className="fixed inset-0 flex items-center justify-center z-50">
-                    <div className="relative bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-lg">
-                        <TravelForm
-                            setItineraryData={setItineraryData}
-                            setError={setError}
-                            setLoading={setLoading}
-                            setShowForm={setShowForm}
-                        />
-                    </div>
-                </div>
-            )}
         </div>
     )
 }
