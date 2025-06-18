@@ -3,6 +3,7 @@ import HotToursSection from '@/components/ui/Home/HotToursSection'
 import WhyChooseUsSection from '@/components/ui/Home/WhyChooseUsSection'
 import AboutUsSection from '@/components/ui/Home//AboutUsSection'
 import FeedbackSection from '@/components/ui/Home/FeedbackSection.jsx'
+import BlogsSection from './BlogsSection'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 function App() {
@@ -13,6 +14,7 @@ function App() {
             <HotToursSection />
             <WhyChooseUsSection />
             <AboutUsSection />
+            <BlogsSection />
             <FeedbackSection />
             <Footer />
         </div>
