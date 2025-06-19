@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import { toast } from 'react-toastify'
 import { travelFormAPI } from '@/apis'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 function ItineraryDisplay() {
     const location = useLocation()
+    const navigate = useNavigate()
     const itineraryData = location.state?.itineraryData || null
     const [openDays, setOpenDays] = useState({})
-    const [sharing, setSharing] = useState(false)
+    const [saving, setSaving] = useState(false)
 
     const toggleDay = (dayNumber) => {
         setOpenDays((prev) => ({ ...prev, [dayNumber]: !prev[dayNumber] }))
@@ -21,26 +22,24 @@ function ItineraryDisplay() {
         }).format(value)
     }
 
-    const handleShare = async () => {
-        if (!itineraryData?.itineraryId) {
-            toast.error('Không có lịch trình để chia sẻ.')
+    const handleSaveAsTour = async () => {
+        if (!itineraryData?.generatePlanId) {
+            toast.error('Không có ID lịch trình để lưu thành tour.')
             return
         }
-        setSharing(true)
+        setSaving(true)
         try {
-            const response = await travelFormAPI.shareItinerary(
-                itineraryData.itineraryId
+            const response = await travelFormAPI.saveTourFromGenerated(
+                itineraryData.generatePlanId
             )
-            if (response.status === 200 && response.data.shareUrl) {
-                await navigator.clipboard.writeText(response.data.shareUrl)
-                toast.success('Đã sao chép liên kết chia sẻ lịch trình!')
-            } else {
-                throw new Error('Không thể tạo liên kết chia sẻ.')
-            }
+            toast.success(response.data.message)
+            navigate('/my-tours')
         } catch (err) {
-            toast.error(err.message || 'Lỗi khi tạo liên kết chia sẻ.')
+            toast.error(
+                err.response?.data?.error || err.message || 'Lỗi khi lưu tour.'
+            )
         } finally {
-            setSharing(false)
+            setSaving(false)
         }
     }
 
@@ -64,11 +63,11 @@ function ItineraryDisplay() {
                     Lịch trình du lịch tại {itineraryData.destination}
                 </h2>
                 <button
-                    onClick={handleShare}
-                    className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-md disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center"
-                    disabled={sharing}
+                    onClick={handleSaveAsTour}
+                    className="px-5 py-2 bg-gradient-to-r from-green-600 to-green-800 text-white rounded-lg hover:from-green-700 hover:to-green-900 transition-all duration-300 shadow-md disabled:bg-green-400 disabled:cursor-not-allowed flex items-center"
+                    disabled={saving}
                 >
-                    {sharing ? (
+                    {saving ? (
                         <div className="flex items-center">
                             <svg
                                 className="animate-spin h-5 w-5 text-white mr-2"
@@ -90,7 +89,7 @@ function ItineraryDisplay() {
                                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                 ></path>
                             </svg>
-                            Đang tạo liên kết...
+                            Đang lưu...
                         </div>
                     ) : (
                         <>
@@ -105,16 +104,15 @@ function ItineraryDisplay() {
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                     strokeWidth="2"
-                                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
                                 />
                             </svg>
-                            Chia sẻ lịch trình
+                            Lưu thành tour
                         </>
                     )}
                 </button>
             </div>
 
-            {/* Summary Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-white p-6 rounded-xl shadow-md">
                 <div>
                     <h3 className="text-lg font-semibold text-blue-800 mb-3">
@@ -135,7 +133,6 @@ function ItineraryDisplay() {
                             <strong>Số ngày:</strong>
                             {itineraryData.days || 'Không xác định'}
                         </p>
-
                         <p className="flex items-center text-gray-700">
                             <span className="mr-2">💸</span>
                             <strong>Tổng chi phí ước tính:</strong>
@@ -219,7 +216,6 @@ function ItineraryDisplay() {
                 </div>
             </div>
 
-            {/* Itinerary Details */}
             <h3 className="text-2xl font-semibold text-blue-900 mb-6">
                 Chi tiết lịch trình
             </h3>
@@ -229,7 +225,7 @@ function ItineraryDisplay() {
                     itineraryData.itinerary.map((day) => (
                         <div
                             key={day.dayNumber}
-                            className="bg-white rounded-xl shadow-md overflow-hidden"
+                            className="bg-white rounded-xl shadow-lg overflow-hidden"
                         >
                             <button
                                 onClick={() => toggleDay(day.dayNumber)}
@@ -285,7 +281,7 @@ function ItineraryDisplay() {
                                                                 1 && (
                                                             <span className="absolute left-3 top-6 w-0.5 h-full bg-blue-200"></span>
                                                         )}
-                                                        <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
+                                                        <div className="bg-blue-50 p-5 rounded-lg shadow-md">
                                                             {activity.image && (
                                                                 <img
                                                                     src={
@@ -295,26 +291,22 @@ function ItineraryDisplay() {
                                                                         activity.description ||
                                                                         'Activity'
                                                                     }
-                                                                    className="w-full h-48 object-cover rounded-lg mb-4"
+                                                                    className="w-full h-64 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg mb-5 shadow-sm"
                                                                 />
                                                             )}
                                                             <p className="text-gray-700">
                                                                 <strong>
                                                                     Thời gian:
-                                                                </strong>
-
-                                                                {(activity.startTime ||
-                                                                    activity.starttime) &&
-                                                                (activity.endTime ||
-                                                                    activity.endtime)
-                                                                    ? `${activity.startTime || activity.starttime} - ${activity.endTime || activity.endtime}`
+                                                                </strong>{' '}
+                                                                {activity.starttime &&
+                                                                activity.endtime
+                                                                    ? `${activity.starttime} - ${activity.endtime}`
                                                                     : 'Không xác định'}
                                                             </p>
                                                             <p className="text-gray-700">
                                                                 <strong>
                                                                     Hoạt động:
-                                                                </strong>
-
+                                                                </strong>{' '}
                                                                 {activity.description ||
                                                                     'Không xác định'}
                                                             </p>
@@ -322,8 +314,7 @@ function ItineraryDisplay() {
                                                                 <strong>
                                                                     Chi phí ước
                                                                     tính:
-                                                                </strong>
-
+                                                                </strong>{' '}
                                                                 <span className="text-blue-600">
                                                                     {formatCurrency(
                                                                         activity.estimatedCost
@@ -333,8 +324,7 @@ function ItineraryDisplay() {
                                                             <p className="text-gray-700">
                                                                 <strong>
                                                                     Phương tiện:
-                                                                </strong>
-
+                                                                </strong>{' '}
                                                                 {activity.transportation ||
                                                                     'Không xác định'}
                                                             </p>
@@ -342,8 +332,7 @@ function ItineraryDisplay() {
                                                                 <p className="text-gray-700">
                                                                     <strong>
                                                                         Địa chỉ:
-                                                                    </strong>
-
+                                                                    </strong>{' '}
                                                                     <a
                                                                         href={
                                                                             activity.mapUrl ||
@@ -362,8 +351,7 @@ function ItineraryDisplay() {
                                                             <p className="text-gray-700">
                                                                 <strong>
                                                                     Chi tiết:
-                                                                </strong>
-
+                                                                </strong>{' '}
                                                                 {activity.placeDetail ||
                                                                     'Không xác định'}
                                                             </p>

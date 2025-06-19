@@ -4,6 +4,7 @@ import SignInPage from '@/pages/SignInPage/SignInPage'
 import HomePage from '@/pages/HomePage/HomePage'
 import ItineraryPage from '@/pages/ItineraryPage/ItineraryPage'
 import TravelFormPage from '@/pages/TravelFormPage/TravelFormPage'
+import MyTourPage from '@/pages/MyTourPage/MyTourPage'
 import { AuthProvider } from '@/AuthContext'
 
 function Index() {
@@ -16,6 +17,7 @@ function Index() {
                     <Route path="/signin" element={<SignInPage />} />
                     <Route path="/TravelForm" element={<TravelFormPage />} />
                     <Route path="/itinerary" element={<ItineraryPage />} />
+                    <Route path="/myTour" element={<MyTourPage />} />
                 </Routes>
             </AuthProvider>
         </Router>

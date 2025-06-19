@@ -89,12 +89,16 @@ function TravelForm() {
 
         try {
             const response = await travelFormAPI.createItinerary(submissionData)
+            const itineraryData = response.data.data
+            const generatePlanId = response.data.generatePlanId
             console.log('API Response:', response.data) // Debug log
 
             if (response.status === 200 && response.data.success) {
                 toast.success('Tạo lịch trình thành công!')
                 navigate('/itinerary', {
-                    state: { itineraryData: response.data.data }
+                    state: {
+                        itineraryData: { ...itineraryData, generatePlanId } // Truyền generatePlanId
+                    }
                 })
             } else {
                 throw new Error(
@@ -156,8 +160,8 @@ function TravelForm() {
                     icon: '🏞️'
                 },
                 {
-                    label: 'Thưởng thức ẩm thực',
-                    value: 'Thưởng thức ẩm thực',
+                    label: 'đồ ăn đường phố',
+                    value: 'đồ ăn đường phố',
                     icon: '🍽️'
                 },
                 { label: 'Đêm sôi động', value: 'Đêm sôi động', icon: '🌃' },
