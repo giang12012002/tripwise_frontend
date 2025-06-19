@@ -37,7 +37,7 @@ function BlogsSection() {
         <section className="py-12 max-w-7xl w-full mx-auto">
             <div className="container mx-auto px-4">
                 <h2 className="text-2xl font-bold text-center mb-8">
-                    VỀ CHÚNG TÔI
+                    CÁC BÀI VIẾT MỚI NHẤT
                 </h2>
                 <p className="text-center max-w-xl mx-auto mb-6 hidden">
                     TripeWise là nền tảng trực tuyến tiên phong trong việc sử
