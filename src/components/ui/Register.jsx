@@ -20,9 +20,14 @@ function Register() {
     const [isLoading, setIsLoading] = useState(false)
     const { login, isLoggedIn } = useAuth()
 
-    // Redirect if already logged in
+    // Generate or retrieve deviceId
     useEffect(() => {
-        console.log('Checking if already logged in: isLoggedIn=', isLoggedIn)
+        if (!localStorage.getItem('deviceId')) {
+            localStorage.setItem('deviceId', uuidv4())
+        }
+    }, [])
+
+    useEffect(() => {
         if (isLoggedIn) {
             navigate('/')
         }
@@ -44,18 +49,11 @@ function Register() {
     }
 
     const handleSignup = async () => {
-        console.log(
-            'Attempting signup with email:',
-            email,
-            'username:',
-            username
-        )
         if (!validateForm()) return
-
         setIsLoading(true)
         try {
             const newSignupRequestId = uuidv4()
-            console.log('Generated signupRequestId:', newSignupRequestId)
+            setSignupRequestId(newSignupRequestId)
             const response = await authAPI.signup(
                 email,
                 username,
@@ -63,13 +61,11 @@ function Register() {
                 confirmPassword,
                 newSignupRequestId
             )
-            console.log('Signup API response:', response)
             if (response.status === 200) {
                 if (response.data.invalidFields?.length > 0) {
                     const fields = response.data.invalidFields.join(', ')
                     toast.error(`Lỗi: ${fields} đã tồn tại!`)
                 } else {
-                    setSignupRequestId(newSignupRequestId)
                     setShowOtpField(true)
                     toast.success('Vui lòng kiểm tra email để lấy mã OTP!')
                 }
@@ -77,10 +73,41 @@ function Register() {
                 toast.error('Đăng ký thất bại. Vui lòng thử lại.')
             }
         } catch (error) {
-            console.error('Signup error:', error)
+            toast.error(error.response?.data?.message || 'Đăng ký thất bại.')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handleResendOtp = async () => {
+        if (!signupRequestId) {
+            toast.error('Không thể gửi lại OTP. Vui lòng thử đăng ký lại.')
+            return
+        }
+        setIsLoading(true)
+        try {
+            const response = await authAPI.signup(
+                email,
+                username,
+                password,
+                confirmPassword,
+                signupRequestId
+            )
+            if (response.status === 200) {
+                if (response.data.invalidFields?.length > 0) {
+                    toast.error(
+                        'Không thể gửi lại OTP do email hoặc username đã tồn tại.'
+                    )
+                    setShowOtpField(false)
+                } else {
+                    toast.success('Mã OTP mới đã được gửi đến email của bạn!')
+                }
+            } else {
+                toast.error('Gửi lại OTP thất bại. Vui lòng thử lại.')
+            }
+        } catch (error) {
             toast.error(
-                error.response?.data?.message ||
-                    'Đăng ký thất bại. Vui lòng thử lại.'
+                error.response?.data?.message || 'Gửi lại OTP thất bại.'
             )
         } finally {
             setIsLoading(false)
@@ -88,12 +115,10 @@ function Register() {
     }
 
     const handleVerifyOtp = async () => {
-        console.log('Attempting OTP verification with OTP:', otp)
         if (!otp) {
             toast.error('Vui lòng nhập mã OTP!')
             return
         }
-
         setIsLoading(true)
         try {
             const userSignupData = {
@@ -104,17 +129,26 @@ function Register() {
                 signupRequestId
             }
             const response = await authAPI.verifyOtp(otp, userSignupData)
-            console.log('OTP verification API response:', response)
             if (response.status === 200 || response.status === 201) {
                 toast.success('Đăng ký thành công!')
-                console.log('Calling login with username:', username)
+                const { accessToken, refreshToken, userId } = response.data
+                if (accessToken && refreshToken) {
+                    localStorage.setItem('accessToken', accessToken)
+                    localStorage.setItem('refreshToken', refreshToken)
+                    localStorage.setItem(
+                        'deviceId',
+                        localStorage.getItem('deviceId')
+                    )
+                    if (userId) {
+                        localStorage.setItem('userId', userId)
+                    }
+                }
                 login(username)
                 navigate('/')
             } else {
                 toast.error(response.data.message || 'Xác minh OTP thất bại.')
             }
         } catch (error) {
-            console.error('OTP verification error:', error)
             toast.error(
                 error.response?.data?.message || 'Xác minh OTP thất bại.'
             )
@@ -270,6 +304,14 @@ function Register() {
                                     className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
                                     disabled={isLoading}
                                 />
+                                <button
+                                    type="button"
+                                    onClick={handleResendOtp}
+                                    className="text-blue-600 hover:underline mt-2 text-sm"
+                                    disabled={isLoading}
+                                >
+                                    Gửi lại OTP
+                                </button>
                             </div>
                         )}
                         <button

@@ -5,7 +5,7 @@ import AboutUsSection from '@/components/ui/Home//AboutUsSection'
 import FeedbackSection from '@/components/ui/Home/FeedbackSection.jsx'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
-function App() {
+function HomePage() {
     return (
         <div className="min-h-screen bg-gray-100 font-sans">
             <Header />
@@ -19,4 +19,4 @@ function App() {
     )
 }
 
-export default App
+export default HomePage
