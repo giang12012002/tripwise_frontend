@@ -38,16 +38,20 @@ function SignIn() {
             const response = await authAPI.login(email, password, deviceId)
             if (response.status === 200) {
                 toast.success('Đăng nhập thành công!')
-                const { AccessToken, RefreshToken, userId, username } =
+                const { accessToken, refreshToken, userId, username } =
                     response.data
-                localStorage.setItem('accessToken', AccessToken)
-                localStorage.setItem('refreshToken', RefreshToken)
+                localStorage.setItem('accessToken', accessToken)
+                localStorage.setItem('refreshToken', refreshToken)
                 localStorage.setItem('deviceId', deviceId)
+                console.log(
+                    'Access token stored:',
+                    !!localStorage.getItem('accessToken')
+                )
                 if (userId) {
                     localStorage.setItem('userId', userId)
                 }
                 const user = username || email.split('@')[0]
-                login(user)
+                login(user, userId) // Truyền userId vào login
                 navigate('/')
             } else {
                 toast.error(response.data.message || 'Đăng nhập thất bại.')
@@ -64,12 +68,18 @@ function SignIn() {
             const response = await authAPI.googleLogin(idToken, deviceId)
             if (response.status === 200) {
                 toast.success('Đăng nhập bằng Google thành công!')
-                const { AccessToken, RefreshToken, username } = response.data
-                localStorage.setItem('accessToken', AccessToken)
-                localStorage.setItem('refreshToken', RefreshToken)
+                const { accessToken, refreshToken, username, userId } =
+                    response.data
+                localStorage.setItem('accessToken', accessToken)
+                localStorage.setItem('refreshToken', refreshToken)
                 localStorage.setItem('deviceId', deviceId)
+                localStorage.setItem('userId', userId)
+                console.log(
+                    'Access token stored:',
+                    !!localStorage.getItem('accessToken')
+                )
                 const user = username || 'GoogleUser'
-                login(user)
+                login(user, userId) // Truyền userId vào login
                 navigate('/')
             } else {
                 toast.error(response.data.message || 'Đăng nhập thất bại.')

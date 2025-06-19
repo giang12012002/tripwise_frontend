@@ -16,10 +16,10 @@ const createItinerary = async (formData) => {
 const saveTourFromGenerated = async (generatePlanId) => {
     const response = await authorizedAxios.post(
         `api/AIGeneratePlan/SaveTourFromGenerated/${generatePlanId}`
-    );
-    console.log('saveTourFromGenerated response:', response.data);
-    return response;
-};
+    )
+    console.log('saveTourFromGenerated response:', response.data)
+    return response
+}
 const getToursByUserId = async (userId) => {
     return await authorizedAxios.get(
         `api/AIGeneratePlan/GetToursByUserId?userId=${userId}`

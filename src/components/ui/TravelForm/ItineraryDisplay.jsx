@@ -24,7 +24,7 @@ function ItineraryDisplay() {
 
     const handleSaveAsTour = async () => {
         if (!itineraryData?.generatePlanId) {
-            toast.error('Không có ID lịch trình để lưu thành tour.')
+            toast.error('Không có lịch trình để lưu thành tour.')
             return
         }
         setSaving(true)
@@ -33,7 +33,7 @@ function ItineraryDisplay() {
                 itineraryData.generatePlanId
             )
             toast.success(response.data.message)
-            navigate('/my-tours')
+            navigate('/mytour')
         } catch (err) {
             toast.error(
                 err.response?.data?.error || err.message || 'Lỗi khi lưu tour.'
@@ -121,7 +121,7 @@ function ItineraryDisplay() {
                     <div className="space-y-3">
                         <p className="flex items-center text-gray-700">
                             <span className="mr-2">📅</span>
-                            <strong>Ngày đi:</strong>
+                            <strong>Ngày đi:</strong>{' '}
                             {itineraryData.travelDate
                                 ? new Date(
                                       itineraryData.travelDate
@@ -135,7 +135,7 @@ function ItineraryDisplay() {
                         </p>
                         <p className="flex items-center text-gray-700">
                             <span className="mr-2">💸</span>
-                            <strong>Tổng chi phí ước tính:</strong>
+                            <strong>Tổng chi phí ước tính:</strong>{' '}
                             <span className="text-blue-600">
                                 {formatCurrency(
                                     itineraryData.totalEstimatedCost
@@ -183,7 +183,7 @@ function ItineraryDisplay() {
                         </p>
                         <p className="flex items-center text-gray-700">
                             <span className="mr-2">🚗</span>
-                            <strong>Phương tiện:</strong>
+                            <strong>Phương tiện: </strong>
                             {itineraryData.transportation || 'Không xác định'}
                         </p>
                         <p className="flex items-center text-gray-700">
@@ -225,7 +225,7 @@ function ItineraryDisplay() {
                     itineraryData.itinerary.map((day) => (
                         <div
                             key={day.dayNumber}
-                            className="bg-white rounded-xl shadow-lg overflow-hidden"
+                            className="bg-white rounded-xl shadow-md overflow-hidden"
                         >
                             <button
                                 onClick={() => toggleDay(day.dayNumber)}
@@ -260,7 +260,7 @@ function ItineraryDisplay() {
                             {openDays[day.dayNumber] && (
                                 <div className="p-6 animate-fade-in">
                                     <p className="text-gray-700 mb-4">
-                                        <strong>Chi phí ngày:</strong>
+                                        <strong>Chi phí ngày:</strong>{' '}
                                         <span className="text-blue-600">
                                             {formatCurrency(day.dailyCost)}
                                         </span>
@@ -281,7 +281,7 @@ function ItineraryDisplay() {
                                                                 1 && (
                                                             <span className="absolute left-3 top-6 w-0.5 h-full bg-blue-200"></span>
                                                         )}
-                                                        <div className="bg-blue-50 p-5 rounded-lg shadow-md">
+                                                        <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
                                                             {activity.image && (
                                                                 <img
                                                                     src={
@@ -291,7 +291,7 @@ function ItineraryDisplay() {
                                                                         activity.description ||
                                                                         'Activity'
                                                                     }
-                                                                    className="w-full h-64 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg mb-5 shadow-sm"
+                                                                    className="w-full h-48 object-cover rounded-lg mb-4"
                                                                 />
                                                             )}
                                                             <p className="text-gray-700">

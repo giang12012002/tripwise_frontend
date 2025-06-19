@@ -131,10 +131,10 @@ function Register() {
             const response = await authAPI.verifyOtp(otp, userSignupData)
             if (response.status === 200 || response.status === 201) {
                 toast.success('Đăng ký thành công!')
-                const { AccessToken, RefreshToken, userId } = response.data
-                if (AccessToken && RefreshToken) {
-                    localStorage.setItem('accessToken', AccessToken)
-                    localStorage.setItem('refreshToken', RefreshToken)
+                const { accessToken, refreshToken, userId } = response.data
+                if (accessToken && refreshToken) {
+                    localStorage.setItem('accessToken', accessToken)
+                    localStorage.setItem('refreshToken', refreshToken)
                     localStorage.setItem(
                         'deviceId',
                         localStorage.getItem('deviceId')

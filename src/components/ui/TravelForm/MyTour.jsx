@@ -3,6 +3,7 @@ import { toast } from 'react-toastify'
 import { travelFormAPI } from '@/apis'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
+
 function MyTours() {
     const { userId } = useAuth()
     const [tours, setTours] = useState([])
@@ -12,15 +13,12 @@ function MyTours() {
     useEffect(() => {
         const fetchTours = async () => {
             try {
-                // Lấy userId từ localStorage (được thiết lập khi đăng nhập trong SignIn.jsx)
-
                 if (!userId) {
                     toast.error('Vui lòng đăng nhập để xem danh sách tour.')
-                    navigate('/signin') // Chuyển hướng đến trang đăng nhập nếu chưa xác thực
+                    navigate('/signin')
                     return
                 }
 
-                // Gọi API để lấy danh sách tour theo userId
                 const response = await travelFormAPI.getToursByUserId(userId)
                 if (
                     response.status === 200 &&
@@ -40,7 +38,7 @@ function MyTours() {
         }
 
         fetchTours()
-    }, [navigate])
+    }, [userId, navigate])
 
     const formatCurrency = (value) => {
         if (!value || isNaN(value)) return 'Không xác định'
@@ -57,10 +55,10 @@ function MyTours() {
 
     if (loading) {
         return (
-            <div className="max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
-                <div className="flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+                <div className="flex items-center space-x-3 p-6 bg-white rounded-xl shadow-lg">
                     <svg
-                        className="animate-spin h-8 w-8 text-blue-600 mr-3"
+                        className="animate-spin h-8 w-8 text-indigo-600"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -79,59 +77,96 @@ function MyTours() {
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                     </svg>
-                    <span className="text-xl text-gray-700">Đang tải...</span>
+                    <span className="text-lg font-medium text-gray-700">
+                        Đang tải...
+                    </span>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
-            <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight mb-6">
-                Danh sách tour của bạn
-            </h2>
-            {tours.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {tours.map((tour) => (
-                        <div
-                            key={tour.tourId}
-                            className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
-                        >
-                            <h3 className="text-xl font-semibold text-blue-800 mb-3">
-                                {tour.tourName}
-                            </h3>
-                            <div className="space-y-2">
-                                <p className="text-gray-700">
-                                    <strong>Địa điểm:</strong>{' '}
-                                    {tour.location || 'Không xác định'}
-                                </p>
-                                <p className="text-gray-700">
-                                    <strong>Loại tour:</strong>{' '}
-                                    {tour.category || 'Không xác định'}
-                                </p>
-                                <p className="text-gray-700">
-                                    <strong>Giá:</strong>{' '}
-                                    <span className="text-blue-600">
-                                        {formatCurrency(tour.price)}
-                                    </span>
-                                </p>
-                                <p className="text-gray-700">
-                                    <strong>Ghi chú:</strong>{' '}
-                                    {tour.tourNote || 'Không có ghi chú'}
-                                </p>
-                                <p className="text-gray-700">
-                                    <strong>Ngày tạo:</strong>{' '}
-                                    {formatDate(tour.createdDate)}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+                <div className="text-center mb-10">
+                    <h2 className="text-3xl font-extrabold text-indigo-700 inline-block px-6 py-2 bg-indigo-50 rounded-full shadow-sm">
+                        Lịch Trình Yêu Thích Được Tạo Bằng AI
+                    </h2>
                 </div>
-            ) : (
-                <p className="text-gray-600">
-                    Bạn chưa có tour nào. Hãy lưu một lịch trình để tạo tour!
-                </p>
-            )}
+                {tours.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {tours.map((tour) => (
+                            <div
+                                key={tour.tourId}
+                                className="bg-white rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl"
+                            >
+                                <div className="p-6">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-xl font-semibold text-gray-800 truncate">
+                                            {tour.tourName || 'Tour Yêu Thích'}
+                                        </h3>
+                                        <button className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                            Xem chi tiết
+                                        </button>
+                                    </div>
+                                    <div className="space-y-3 text-sm text-gray-600">
+                                        <div className="flex items-center">
+                                            <span className="font-medium w-24">
+                                                Địa điểm:
+                                            </span>
+                                            <span>
+                                                {tour.location || 'N/A'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <span className="font-medium w-24">
+                                                Loại tour:
+                                            </span>
+                                            <span>
+                                                {tour.category || 'N/A'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <span className="font-medium w-24">
+                                                Giá:
+                                            </span>
+                                            <span className="text-indigo-600 font-semibold">
+                                                {formatCurrency(tour.price)}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <span className="font-medium w-24">
+                                                Ngày tạo:
+                                            </span>
+                                            <span>
+                                                {formatDate(tour.createdDate)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-indigo-50 px-6 py-3">
+                                    <button className="w-full text-center text-indigo-700 font-medium hover:text-indigo-900 transition">
+                                        Chỉnh sửa tour
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center bg-white p-8 rounded-xl shadow-lg">
+                        <p className="text-lg text-gray-600">
+                            Bạn chưa có tour nào. Hãy lưu một lịch trình để tạo
+                            tour!
+                        </p>
+                        <button
+                            onClick={() => navigate('/TravelForm')}
+                            className="mt-4 inline-block px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition"
+                        >
+                            Tạo Tour Mới
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
