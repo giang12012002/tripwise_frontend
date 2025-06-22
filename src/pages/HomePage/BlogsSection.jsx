@@ -1,37 +1,33 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { blogAPI } from '@/apis'
 
 function BlogsSection() {
     const navigate = useNavigate()
+    const [blogs, setBlogs] = useState([])
 
-    const blogs = [
-        {
-            id: 1,
-            blogName: 'Bài viết 111 111 11111 1 1111 11111 11 111 111',
-            blogContent:
-                'Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung. Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung. Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung. Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung. Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung. Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung.',
-            blogImage: '/image.png',
-            createdDate: '2025-01-01',
-            createdBy: 'admin'
-        },
-        {
-            id: 2,
-            blogName: 'Bài viết 2',
-            blogContent:
-                'Nội dung bài viết 2 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung.',
-            blogImage: '/image.png',
-            createdDate: '2025-01-02',
-            createdBy: 'admin'
-        },
-        {
-            id: 3,
-            blogName: 'Bài viết 3',
-            blogContent:
-                'Nội dung bài viết 3 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung.',
-            blogImage: '/image.png',
-            createdDate: '2025-01-03',
-            createdBy: 'admin'
+    const fetchBlogs = async () => {
+        const response = await blogAPI.fetchBlogs()
+        if (response.status === 200 && response.data.data) {
+            setBlogs(response.data.data.slice(0, 3))
         }
-    ]
+    }
+
+    useEffect(() => {
+        fetchBlogs()
+    }, [])
+
+    const formatDate = (dateString) => {
+        let date = dateString
+        if (!dateString) {
+            date = '2025-01-01'
+        }
+        return new Date(date).toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        })
+    }
 
     return (
         <section className="py-12 max-w-7xl w-full mx-auto">
@@ -48,13 +44,17 @@ function BlogsSection() {
                 <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-6">
                     {blogs.map((blog) => (
                         <div
-                            key={blog.id}
+                            key={blog.blogID}
                             className="max-w-sm bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 hover:scale-105 cursor-pointer"
-                            onClick={() => navigate(`/blogs/${blog.id}`)}
+                            onClick={() => navigate(`/blogs/${blog.blogID}`)}
+                            title={blog.blogName}
                         >
                             <img
-                                src={blog.blogImage}
-                                alt={`Image for ${blog.blogName}`}
+                                src={blog.blogImages[0].imageURL}
+                                alt={
+                                    blog.blogImages[0].imageAlt ||
+                                    `Image for ${blog.blogName}`
+                                }
                                 className="w-full h-48 object-cover"
                             />
                             <div className="p-4">
@@ -66,7 +66,7 @@ function BlogsSection() {
                                         {blog.blogName}
                                     </h3>
                                     <p className="text-gray-400 text-sm font-light mb-2 max-w-[40%]">
-                                        {blog.createdDate}
+                                        {formatDate(blog.createdDate)}
                                     </p>
                                 </div>
                                 <p className="text-gray-600 text-sm line-clamp-4 mb-4">
