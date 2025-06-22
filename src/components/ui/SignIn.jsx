@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { v4 as uuidv4 } from 'uuid' // Add uuid import
 import beachSunset from '@/assets/images/background.png'
 import { authAPI } from '@/apis'
 import { toast } from 'react-toastify'
@@ -12,9 +13,14 @@ function SignIn() {
     const [showPassword, setShowPassword] = useState(false)
     const { login, isLoggedIn } = useAuth()
 
-    // Redirect if already logged in
+    // Generate or retrieve deviceId
     useEffect(() => {
-        console.log('Checking if already logged in: isLoggedIn=', isLoggedIn)
+        if (!localStorage.getItem('deviceId')) {
+            localStorage.setItem('deviceId', uuidv4())
+        }
+    }, [])
+
+    useEffect(() => {
         if (isLoggedIn) {
             navigate('/')
         }
@@ -23,50 +29,65 @@ function SignIn() {
     const togglePasswordVisibility = () => setShowPassword(!showPassword)
 
     const handleLogin = async () => {
-        console.log('Attempting login with email:', email)
+        if (!email || !password) {
+            toast.error('Vui lòng điền email và mật khẩu!')
+            return
+        }
         try {
-            const deviceId = '1'
+            const deviceId = localStorage.getItem('deviceId')
             const response = await authAPI.login(email, password, deviceId)
-            console.log('Login API response:', response)
             if (response.status === 200) {
                 toast.success('Đăng nhập thành công!')
-                const username = response.data.username || email.split('@')[0]
-                console.log('Calling login with username:', username)
-                login(username)
+                const { accessToken, refreshToken, userId, username } =
+                    response.data
+                localStorage.setItem('accessToken', accessToken)
+                localStorage.setItem('refreshToken', refreshToken)
+                localStorage.setItem('deviceId', deviceId)
+                console.log(
+                    'Access token stored:',
+                    !!localStorage.getItem('accessToken')
+                )
+                if (userId) {
+                    localStorage.setItem('userId', userId)
+                }
+                const user = username || email.split('@')[0]
+                login(user, userId) // Truyền userId vào login
                 navigate('/')
             } else {
                 toast.error(response.data.message || 'Đăng nhập thất bại.')
             }
         } catch (error) {
-            console.error('Login error:', error)
-            toast.error(
-                error.response?.data?.message ||
-                    'Đăng nhập thất bại. Vui lòng thử lại.'
-            )
+            toast.error(error.response?.data?.message || 'Đăng nhập thất bại.')
         }
     }
 
     const handleGoogleLogin = async (credentialResponse) => {
-        console.log('Attempting Google login')
         try {
             const idToken = credentialResponse.credential
-            const deviceId = '1'
+            const deviceId = localStorage.getItem('deviceId')
             const response = await authAPI.googleLogin(idToken, deviceId)
-            console.log('Google login API response:', response)
             if (response.status === 200) {
                 toast.success('Đăng nhập bằng Google thành công!')
-                const username = response.data.username || 'GoogleUser'
-                console.log('Calling login with username:', username)
-                login(username)
+                const { accessToken, refreshToken, username, userId } =
+                    response.data
+                localStorage.setItem('accessToken', accessToken)
+                localStorage.setItem('refreshToken', refreshToken)
+                localStorage.setItem('deviceId', deviceId)
+                localStorage.setItem('userId', userId)
+                console.log(
+                    'Access token stored:',
+                    !!localStorage.getItem('accessToken')
+                )
+                const user = username || 'GoogleUser'
+                login(user, userId) // Truyền userId vào login
                 navigate('/')
             } else {
                 toast.error(response.data.message || 'Đăng nhập thất bại.')
             }
         } catch (error) {
-            console.error('Google login error:', error)
             toast.error(
                 error.response?.data?.message ||
-                    'Đăng nhập bằng Google thất bại. Vui lòng thử lại.'
+                    'Đăng nhập bằng Google thất bại.'
             )
         }
     }
@@ -141,7 +162,6 @@ function SignIn() {
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -156,7 +176,6 @@ function SignIn() {
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
                                     >
                                         <path
                                             strokeLinecap="round"

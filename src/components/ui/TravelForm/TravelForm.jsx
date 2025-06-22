@@ -40,6 +40,7 @@ function TravelForm() {
         setError('')
         setLoading(true)
 
+        // Xác thực các trường biểu mẫu
         if (
             !formData.destination ||
             !formData.days ||
@@ -66,15 +67,35 @@ function TravelForm() {
             return
         }
 
-        if (!['1000000', '3000000', '5000000'].includes(formData.budget)) {
+        if (
+            ![
+                '1000000',
+                '2000000-3000000',
+                '3000000-4000000',
+                '5000000+'
+            ].includes(formData.budget)
+        ) {
             setError('Vui lòng chọn một mức ngân sách hợp lệ.')
             setLoading(false)
             return
         }
 
+        const accessToken = localStorage.getItem('accessToken')
+        if (!accessToken) {
+            setError('Không tìm thấy token đăng nhập. Vui lòng đăng nhập lại.')
+            toast.error('Vui lòng đăng nhập để tạo lịch trình.')
+            setLoading(false)
+            navigate('/sign-in')
+            return
+        }
+
         const submissionData = {
             ...formData,
-            budgetVND: parseFloat(formData.budget), // Explicitly set budgetVND
+            budgetVND: formData.budget.includes('-')
+                ? formData.budget.split('-').map(Number)
+                : formData.budget === '5000000+'
+                  ? [5000000, Infinity]
+                  : [Number(formData.budget)],
             preferences: formData.preferences.join(', '),
             diningStyle:
                 formData.diningStyle.length > 0
@@ -85,16 +106,28 @@ function TravelForm() {
             accommodation: formData.accommodation || null
         }
 
-        console.log('Submission Data:', submissionData) // Debug log
+        console.log('Dữ liệu gửi đi:', submissionData)
+        console.log('Access Token:', accessToken)
 
         try {
-            const response = await travelFormAPI.createItinerary(submissionData)
-            console.log('API Response:', response.data) // Debug log
+            const response = await travelFormAPI.createItinerary(
+                submissionData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                }
+            )
+            const itineraryData = response.data.data
+            const generatePlanId = response.data.generatePlanId
+            console.log('Phản hồi API:', response.data)
 
             if (response.status === 200 && response.data.success) {
                 toast.success('Tạo lịch trình thành công!')
                 navigate('/itinerary', {
-                    state: { itineraryData: response.data.data }
+                    state: {
+                        itineraryData: { ...itineraryData, generatePlanId }
+                    }
                 })
             } else {
                 throw new Error(
@@ -102,8 +135,21 @@ function TravelForm() {
                 )
             }
         } catch (err) {
-            setError(err.message)
-            toast.error(err.message)
+            console.error('Lỗi API:', err.response || err)
+            const errorMessage =
+                err.response?.data?.error ||
+                err.message ||
+                'Không thể tạo lịch trình. Vui lòng thử lại.'
+            setError(errorMessage)
+            toast.error(errorMessage)
+            if (
+                err.response?.status === 401 ||
+                err.response?.data?.error?.includes('token')
+            ) {
+                localStorage.removeItem('accessToken')
+                navigate('/sign-in')
+                toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.')
+            }
         } finally {
             setLoading(false)
         }
@@ -141,28 +187,37 @@ function TravelForm() {
             required: true,
             options: [
                 {
-                    label: 'Tham quan bãi biển',
-                    value: 'Tham quan bãi biển',
-                    icon: '🏖️'
+                    label: 'chùa chiền',
+                    value: 'chùa chiền',
+                    icon: '🛕'
                 },
                 {
-                    label: 'Khám phá thành phố',
-                    value: 'Khám phá thành phố',
-                    icon: '🏙️'
+                    label: 'cảnh đẹp',
+                    value: 'cảnh đẹp',
+                    icon: '🏞️️'
                 },
                 {
-                    label: 'Phiêu lưu ngoài trời',
-                    value: 'Phiêu lưu ngoài trời',
-                    icon: '🏞️'
+                    label: 'chụp ảnh',
+                    value: 'chụp ảnh',
+                    icon: '📸'
                 },
                 {
-                    label: 'Thưởng thức ẩm thực',
-                    value: 'Thưởng thức ẩm thực',
+                    label: 'thưởng thức đặc sản địa phương',
+                    value: 'thưởng thức đặc sản địa phương',
                     icon: '🍽️'
                 },
-                { label: 'Đêm sôi động', value: 'Đêm sôi động', icon: '🌃' },
-                { label: 'Mua sắm', value: 'Mua sắm', icon: '🛍️' },
-                { label: 'Thư giãn spa', value: 'Thư giãn spa', icon: '💆‍♀️' }
+                {
+                    label: 'trải nghiệm văn hóa',
+                    value: 'trải nghiệm văn hóa',
+                    icon: '⛩️'
+                },
+                { label: 'leo núi', value: 'leo núi', icon: '🧗' },
+                {
+                    label: 'lớp học nấu ăn',
+                    value: 'lớp học nấu ăn',
+                    icon: '🥘'
+                },
+                { label: 'Thư giãn', value: 'Thư giãn', icon: '💆‍♀️' }
             ]
         },
         {
@@ -172,18 +227,23 @@ function TravelForm() {
             required: true,
             options: [
                 {
-                    label: 'Thấp (1,000,000 VND)',
+                    label: '1,000,000 VND',
                     value: '1000000',
                     icon: '💰'
                 },
                 {
-                    label: 'Trung bình (3,000,000 VND)',
-                    value: '3000000',
+                    label: '2,000,000 - 3,000,000 VND',
+                    value: '2000000-3000000',
                     icon: '💵'
                 },
                 {
-                    label: 'Cao (5,000,000 VND)',
-                    value: '5000000',
+                    label: '3,000,000 - 4,000,000 VND',
+                    value: '3000000-4000000',
+                    icon: '💵'
+                },
+                {
+                    label: '> 5,000,000 VND ',
+                    value: '5000000+',
                     icon: '💸'
                 }
             ]
@@ -284,7 +344,7 @@ function TravelForm() {
                 </p>
             </div>
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-lg transition-all duration-300">
+                <div className="mb-6 p-4 bg-red-50 border-l-4 border-redemption-500 text-red-700 rounded-lg">
                     <p className="font-medium">{error}</p>
                 </div>
             )}
@@ -294,7 +354,7 @@ function TravelForm() {
                         <label className="block text-lg font-semibold text-gray-800 mb-3">
                             {field.label}
                             {field.required && (
-                                <span className="text-red-500 ml-1">*</span>
+                                <span className="text-red-600 ml-1">*</span>
                             )}
                         </label>
                         {field.type === 'checkbox' ? (
@@ -306,8 +366,8 @@ function TravelForm() {
                                             formData[field.name].includes(
                                                 option.value
                                             )
-                                                ? 'border-indigo-500 bg-indigo-50'
-                                                : 'border-gray-200 hover:border-indigo-300'
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-gray-200 hover:border-blue-300'
                                         }`}
                                     >
                                         <input
@@ -338,8 +398,8 @@ function TravelForm() {
                                         className={`relative flex items-center p-4 bg-white border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${
                                             formData[field.name] ===
                                             option.value
-                                                ? 'border-indigo-500 bg-indigo-50'
-                                                : 'border-gray-200 hover:border-indigo-300'
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-gray-200 hover:border-blue-300'
                                         }`}
                                     >
                                         <input
@@ -372,7 +432,7 @@ function TravelForm() {
                                         name={field.name}
                                         value={formData[field.name]}
                                         onChange={handleChange}
-                                        className="w-full p-3 bg-white border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        className="w-full p-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                         placeholder={field.placeholder}
                                         min={field.min}
                                         step={field.step}
@@ -428,7 +488,7 @@ function TravelForm() {
                                                 : formData[field.name]
                                         }
                                         onChange={handleChange}
-                                        className="w-full p-3 bg-white border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        className="w-full p-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                         placeholder={field.placeholder}
                                         min={field.min}
                                         required={field.required}
@@ -451,7 +511,7 @@ function TravelForm() {
             <div className="flex justify-end mt-10">
                 <button
                     onClick={handleSubmit}
-                    className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-blue-700 focus:ring-4 focus:ring-indigo-300 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-300 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
                     disabled={loading}
                 >
                     {loading ? (

@@ -8,6 +8,8 @@ import BlogList from '@/pages/BlogsPage'
 import BlogDetail from '@/pages/BlogsPage/id'
 import AdminBlogList from '@/pages/Admin/Blogs'
 import AdminBlogDetail from '@/pages/Admin/Blogs/id'
+
+import MyTourPage from '@/pages/MyTourPage/MyTourPage'
 import { AuthProvider } from '@/AuthContext'
 
 function Index() {
@@ -20,6 +22,7 @@ function Index() {
                     <Route path="/signin" element={<SignInPage />} />
                     <Route path="/TravelForm" element={<TravelFormPage />} />
                     <Route path="/itinerary" element={<ItineraryPage />} />
+                    <Route path="/myTour" element={<MyTourPage />} />
                     <Route path="/blogs" element={<BlogList />} />
                     <Route path="/blogs/:id" element={<BlogDetail />} />
                     <Route path="/admin/blogs" element={<AdminBlogList />} />
