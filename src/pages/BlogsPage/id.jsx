@@ -3,6 +3,8 @@ import Footer from '@/components/footer/Footer'
 import { useParams, useNavigate } from 'react-router-dom'
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import blogAPI from '@/apis/blogAPI'
+import { formatDate } from '@/utils/format'
+import { sortBlogsByLatest } from '@/utils/sort'
 
 function Id() {
     const { id } = useParams()
@@ -24,7 +26,7 @@ function Id() {
         const fetchBlogs = async () => {
             const response = await blogAPI.fetchBlogs()
             if (response.status === 200 && response.data.data) {
-                setBlogs(response.data.data.slice(0, 3))
+                setBlogs(sortBlogsByLatest(response.data.data).slice(0, 3))
             }
         }
         fetchBlogs()
@@ -64,18 +66,6 @@ function Id() {
 
     const splitParagraphs = (blog) => {
         return blog.split('\n').filter((paragraph) => paragraph.trim() !== '')
-    }
-
-    const formatDate = (dateString) => {
-        let date = dateString
-        if (!dateString) {
-            date = '2025-01-01'
-        }
-        return new Date(date).toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        })
     }
 
     return (
@@ -163,13 +153,15 @@ function Id() {
                                     </div>
                                 ))}
 
-                            <p className="text-gray-700 text-justify">
-                                {
-                                    blog.blogParagraphs[
-                                        blog.blogParagraphs.length - 1
-                                    ]
-                                }
-                            </p>
+                            {blog.blogParagraphs.length !== 1 && (
+                                <p className="text-gray-700 text-justify">
+                                    {
+                                        blog.blogParagraphs[
+                                            blog.blogParagraphs.length - 1
+                                        ]
+                                    }
+                                </p>
+                            )}
 
                             {/* Phần ký tên cuối bài */}
                             <p className="text-right mt-8 text-gray-700 italic">

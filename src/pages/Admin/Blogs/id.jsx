@@ -178,13 +178,15 @@ function Id() {
                                     </div>
                                 ))}
 
-                            <p className="text-gray-700 text-justify">
-                                {
-                                    blog.blogParagraphs[
-                                        blog.blogParagraphs.length - 1
-                                    ]
-                                }
-                            </p>
+                            {blog.blogParagraphs.length !== 1 && (
+                                <p className="text-gray-700 text-justify">
+                                    {
+                                        blog.blogParagraphs[
+                                            blog.blogParagraphs.length - 1
+                                        ]
+                                    }
+                                </p>
+                            )}
 
                             {/* Phần ký tên cuối bài */}
                             <p className="text-right mt-8 text-gray-700 italic">

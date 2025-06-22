@@ -5,6 +5,7 @@ import { blogAPI } from '@/apis'
 import { toast } from 'react-toastify'
 import { formatDate } from '@/utils/format'
 import { useLocation } from 'react-router-dom'
+import { sortBlogsByLatest } from '@/utils/sort'
 
 function Index() {
     const navigate = useNavigate()
@@ -31,14 +32,6 @@ function Index() {
         } finally {
             setLoading(false)
         }
-    }
-
-    const sortBlogsByLatest = (blogs) => {
-        return blogs.sort((a, b) => {
-            const dateA = new Date(a.modifiedDate || a.createdDate)
-            const dateB = new Date(b.modifiedDate || b.createdDate)
-            return dateB - dateA // mới nhất lên trước
-        })
     }
 
     useEffect(() => {

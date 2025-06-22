@@ -3,6 +3,7 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import { useNavigate } from 'react-router-dom'
 import blogAPI from '@/apis/blogAPI'
+import { sortBlogsByLatest } from '@/utils/sort'
 
 function Index() {
     const [blogs, setBlogs] = useState([])
@@ -13,7 +14,7 @@ function Index() {
         const fetchBlogs = async () => {
             const response = await blogAPI.fetchBlogs()
             if (response.status === 200 && response.data.data) {
-                setBlogs(response.data.data)
+                setBlogs(sortBlogsByLatest(response.data.data))
             } else {
                 setError(response.data.message || 'Không thể tải bài viết')
             }
