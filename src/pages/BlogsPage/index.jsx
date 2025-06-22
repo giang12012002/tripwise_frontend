@@ -8,43 +8,12 @@ function Index() {
     const [blogs, setBlogs] = useState([])
     const [error, setError] = useState(null)
     const navigate = useNavigate()
-    // const blogs = [
-    //     {
-    //         id: 1,
-    //         blogName: 'Bài viết 111 111 11111 1 1111 11111 11 111 111',
-    //         blogContent:
-    //             'Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung. Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung. Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung. Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung. Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung. Nội dung bài viết 1 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung.',
-    //         blogImage: '/image.png',
-    //         createdDate: '2025-01-01',
-    //         createdBy: 'admin'
-    //     },
-    //     {
-    //         id: 2,
-    //         blogName: 'Bài viết 2',
-    //         blogContent:
-    //             'Nội dung bài viết 2 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung.',
-    //         blogImage: '/image.png',
-    //         createdDate: '2025-01-02',
-    //         createdBy: 'admin'
-    //     },
-    //     {
-    //         id: 3,
-    //         blogName: 'Bài viết 3',
-    //         blogContent:
-    //             'Nội dung bài viết 3 sẽ được hiển thị ở đây. 100 kí tự đầu tiên của nội dung bài viết sẽ được hiển thị. Nếu nội dung bài viết dài hơn 100 kí tự, sẽ có nút "Xem thêm" để xem toàn bộ nội dung.',
-    //         blogImage: '/image.png',
-    //         createdDate: '2025-01-03',
-    //         createdBy: 'admin'
-    //     }
-    // ]
 
     useEffect(() => {
-        // Fetch blogs from API or perform any necessary setup
         const fetchBlogs = async () => {
             const response = await blogAPI.fetchBlogs()
             if (response.status === 200 && response.data.data) {
                 setBlogs(response.data.data)
-                console.log(response.data.data)
             } else {
                 setError(response.data.message || 'Không thể tải bài viết')
             }

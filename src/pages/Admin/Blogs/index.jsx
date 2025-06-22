@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddBlogDialog from './AddBlogDialog'
-import BlogAPI from '@/apis/blogAPI'
+import { blogAPI } from '@/apis'
 import { toast } from 'react-toastify'
+import { formatDate } from '@/utils/format'
+import { useLocation } from 'react-router-dom'
 
 function Index() {
     const navigate = useNavigate()
+    const location = useLocation()
 
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -17,9 +20,9 @@ function Index() {
     const fetchBlogs = async () => {
         setLoading(true)
         try {
-            const response = await BlogAPI.fetchBlogs()
+            const response = await blogAPI.fetchBlogs()
             if (response.status === 200 && response.data.data) {
-                setBlogs(response.data.data)
+                setBlogs(sortBlogsByLatest(response.data.data))
             } else {
                 setError('Không thể lấy danh sách bài viết')
             }
@@ -30,9 +33,23 @@ function Index() {
         }
     }
 
+    const sortBlogsByLatest = (blogs) => {
+        return blogs.sort((a, b) => {
+            const dateA = new Date(a.modifiedDate || a.createdDate)
+            const dateB = new Date(b.modifiedDate || b.createdDate)
+            return dateB - dateA // mới nhất lên trước
+        })
+    }
+
     useEffect(() => {
         fetchBlogs()
     }, [])
+
+    useEffect(() => {
+        if (location.state?.refetch) {
+            fetchBlogs()
+        }
+    }, [location.state])
 
     useEffect(() => {
         const handleClick = () => {
@@ -67,7 +84,7 @@ function Index() {
         const confirm = window.confirm('Bạn có chắc muốn xóa bài viết này?')
         if (confirm) {
             try {
-                const res = await BlogAPI.deleteBlogById(selectedBlog.blogID)
+                const res = await blogAPI.deleteBlogById(selectedBlog.blogID)
                 if (res.status === 200) {
                     setBlogs(
                         blogs.filter((b) => b.blogID !== selectedBlog.blogID)
@@ -81,12 +98,16 @@ function Index() {
     }
 
     const handleAdd = async (data) => {
+        console.log('Index handleAdd data:', data)
         try {
-            const response = await BlogAPI.createBlog(data)
+            const response = await blogAPI.createBlog(data)
             if (response.status === 200 || response.status === 201)
                 toast.success(response.data.message)
+            else toast.error(response.data.message || 'Tạo bài viết thất bại!')
         } catch (error) {
-            toast.error(error.message)
+            toast.error(error.message || 'Tạo blog thất bại!')
+        } finally {
+            fetchBlogs()
         }
         setShowDialog(false)
     }
@@ -127,9 +148,18 @@ function Index() {
                                 }
                                 className="bg-white p-4 rounded shadow hover:shadow-lg transition hover:scale-105 active:scale-95 duration-200 cursor-pointer"
                             >
-                                <h2 className="text-xl font-semibold line-clamp-1">
-                                    {blog.blogName}
-                                </h2>
+                                <div className="flex justify-between items-center mb-2">
+                                    <h2
+                                        className="text-xl font-bold line-clamp-1 mb-2 max-w-[40%] text-gray-800"
+                                        title={blog.blogName}
+                                    >
+                                        {blog.blogName}
+                                    </h2>
+                                    <p className="text-gray-400 text-sm font-light mb-2 max-w-[40%]">
+                                        {formatDate(blog.createdDate)}
+                                    </p>
+                                </div>
+
                                 <p className="text-gray-600 line-clamp-2">
                                     {blog.blogContent}
                                 </p>

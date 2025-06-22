@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { blogAPI } from '@/apis'
+import { formatDate } from '@/utils/format'
 
 function BlogsSection() {
     const navigate = useNavigate()
@@ -16,18 +17,6 @@ function BlogsSection() {
     useEffect(() => {
         fetchBlogs()
     }, [])
-
-    const formatDate = (dateString) => {
-        let date = dateString
-        if (!dateString) {
-            date = '2025-01-01'
-        }
-        return new Date(date).toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        })
-    }
 
     return (
         <section className="py-12 max-w-7xl w-full mx-auto">

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import LoadingSpinner from '@/components/states/LoadingSpinner'
+import { toast } from 'react-toastify'
 
 function AddBlogDialog({ isOpen, onClose, onConfirm }) {
     const [isVisible, setIsVisible] = useState(false)
@@ -10,6 +11,9 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
     const [blogContent, setBlogContent] = useState('')
     const [images, setImages] = useState([])
     const [previewURLs, setPreviewURLs] = useState([])
+    const [imageLinks, setImageLinks] = useState([])
+    const [newImageLink, setNewImageLink] = useState('')
+    const [checkingImageLink, setCheckingImageLink] = useState(false)
 
     useEffect(() => {
         if (isOpen) {
@@ -21,6 +25,7 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
         }
     }, [isOpen])
 
+    // Thêm ảnh từ thiết bị
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files)
         const newPreviews = files.map((file) => URL.createObjectURL(file))
@@ -28,34 +33,61 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
         setPreviewURLs((prev) => [...prev, ...newPreviews])
     }
 
+    // Xóa ảnh từ thiết bị
     const handleRemoveImage = (indexToRemove) => {
         setImages((prev) => prev.filter((_, i) => i !== indexToRemove))
         setPreviewURLs((prev) => prev.filter((_, i) => i !== indexToRemove))
     }
 
+    // Thêm ảnh từ link
+    const handleAddImageLink = async () => {
+        const url = newImageLink.trim()
+        if (!url) return
+        setCheckingImageLink(true)
+        const isValidImage = await checkImageExists(url)
+        setCheckingImageLink(false)
+        if (!isValidImage) {
+            toast.error(
+                'Ảnh không tồn tại hoặc không thể tải được từ liên kết này.'
+            )
+            return
+        }
+
+        setImageLinks((prev) => [...prev, url])
+        setNewImageLink('')
+    }
+
+    // Kiểm tra link ảnh hợp lệ
+    const checkImageExists = (url) => {
+        return new Promise((resolve) => {
+            const img = new Image()
+            img.onload = () => resolve(true)
+            img.onerror = () => resolve(false)
+            img.src = url
+        })
+    }
+
+    // Xóa ảnh từ link
+    const handleRemoveImageLink = (index) => {
+        setImageLinks((prev) => prev.filter((_, i) => i !== index))
+    }
+
+    // Submit
     const handleSubmit = async () => {
         if (!blogName.trim() || !blogContent.trim()) {
             alert('Vui lòng nhập đầy đủ tên và nội dung blog.')
             return
         }
-
         setLoading(true)
-
         try {
             // Giả lập delay (1.5s)
             await new Promise((resolve) => setTimeout(resolve, 1500))
-
             onConfirm({
                 blogName,
                 blogContent,
-                images
+                images,
+                imageLinks
             })
-
-            // // Reset form
-            // setBlogName('')
-            // setBlogContent('')
-            // setImages([])
-            // setPreviewURLs([])
         } finally {
             setLoading(false)
             handleClose()
@@ -63,7 +95,7 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
     }
 
     const handleClose = () => {
-        setBlogName('')
+        // setBlogName('')
         // setBlogContent('')
         // setImages([])
         // setPreviewURLs([])
@@ -88,10 +120,12 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
                 <div
                     className={`${loading ? 'opacity-50 pointer-events-none select-none' : ''}`}
                 >
+                    {/* Tiêu đề */}
                     <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                         Tạo Blog Mới
                     </h2>
 
+                    {/* Nhập tên */}
                     <div className="mb-4">
                         <label className="block mb-1 font-medium text-gray-700">
                             Tên blog
@@ -105,6 +139,7 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
                         />
                     </div>
 
+                    {/* Nhập content */}
                     <div className="mb-4">
                         <label className="block mb-1 font-medium text-gray-700">
                             Nội dung
@@ -117,6 +152,7 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
                         ></textarea>
                     </div>
 
+                    {/* Nhập hình ảnh từ thiết bị */}
                     <div className="mb-4">
                         <label className="block mb-1 font-medium text-gray-700">
                             Hình ảnh (có thể chọn nhiều)
@@ -139,25 +175,113 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
                         </div>
                     </div>
 
+                    {/* Xem trước hình ảnh từ thiết bị */}
                     {previewURLs.length > 0 && (
-                        <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mb-6">
-                            {previewURLs.map((url, index) => (
-                                <div key={index} className="relative group">
-                                    <img
-                                        src={url}
-                                        alt={`Preview ${index + 1}`}
-                                        className="w-full h-24 object-cover rounded border cursor-pointer"
-                                        onClick={() => handleRemoveImage(index)}
-                                        title="Click để xóa"
-                                    />
-                                    <span className="absolute top-1 right-2 text-white text-sm bg-black bg-opacity-50 px-1 rounded opacity-0 group-hover:opacity-100 transition">
-                                        Xóa
-                                    </span>
-                                </div>
-                            ))}
+                        <div className="mb-6 max-h-30 overflow-y-auto pr-1 border rounded">
+                            <div className="grid grid-cols-3 md:grid-cols-4 gap-3 p-2">
+                                {previewURLs.map((url, index) => (
+                                    <div key={index} className="relative group">
+                                        <img
+                                            src={url}
+                                            alt={`Preview ${index + 1}`}
+                                            className="w-full h-24 object-cover rounded border cursor-pointer"
+                                            onClick={() =>
+                                                handleRemoveImage(index)
+                                            }
+                                            title="Click để xóa"
+                                        />
+                                        <span className="absolute top-1 right-2 text-white text-sm bg-black bg-opacity-50 px-1 rounded opacity-0 group-hover:opacity-100 transition">
+                                            Xóa
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>{' '}
                         </div>
                     )}
 
+                    {/* Nhập ảnh từ URL */}
+                    <div className="mb-4">
+                        <label className="block mb-1 font-medium text-gray-700">
+                            Link ảnh từ bên ngoài
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={newImageLink}
+                                onChange={(e) =>
+                                    setNewImageLink(e.target.value)
+                                }
+                                placeholder="https://example.com/image.jpg"
+                                className="flex-1 border border-gray-300 rounded px-3 py-2"
+                            />
+
+                            <button
+                                onClick={handleAddImageLink}
+                                disabled={checkingImageLink}
+                                className={`px-4 py-2 rounded text-white flex items-center justify-center transition
+        ${checkingImageLink ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 hover:cursor-pointer'}
+    `}
+                            >
+                                {checkingImageLink ? (
+                                    <svg
+                                        className="animate-spin h-5 w-5 text-white"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8v4l3.536-3.536A9 9 0 103 12h1z"
+                                        ></path>
+                                    </svg>
+                                ) : (
+                                    'Thêm'
+                                )}
+                            </button>
+
+                            {/* <button
+                                onClick={handleAddImageLink}
+                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                            >
+                                Thêm
+                            </button> */}
+                        </div>
+                    </div>
+
+                    {/* Xem trước ảnh từ URL */}
+                    {imageLinks.length > 0 && (
+                        <div className="mb-6 max-h-30 overflow-y-auto pr-1 border rounded">
+                            <div className="grid grid-cols-3 md:grid-cols-4 gap-3 p-2">
+                                {imageLinks.map((link, index) => (
+                                    <div key={index} className="relative group">
+                                        <img
+                                            src={link}
+                                            alt={`External ${index + 1}`}
+                                            className="w-full h-24 object-cover rounded border cursor-pointer"
+                                            onClick={() =>
+                                                handleRemoveImageLink(index)
+                                            }
+                                            title="Click để xóa"
+                                        />
+                                        <span className="absolute top-1 right-2 text-white text-sm bg-black bg-opacity-50 px-1 rounded opacity-0 group-hover:opacity-100 transition">
+                                            Xóa
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Nút */}
                     <div className="flex justify-end gap-4">
                         <button
                             onClick={handleClose}

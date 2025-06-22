@@ -2,12 +2,15 @@ import { useParams, useNavigate } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
 import blogAPI from '@/apis/blogAPI'
 import DeletedConfirmDialog from './DeletedConfirmDialog'
+import { toast } from 'react-toastify'
+import { formatDate } from '@/utils/format'
 
 function Id() {
     const { id } = useParams()
     const navigate = useNavigate()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    // TODO: thiếu phần lọc ngày theo created, modified
     const [blog, setBlog] = useState({
         id: null,
         blogName: '',
@@ -19,54 +22,54 @@ function Id() {
 
     const [showDialog, setShowDialog] = useState(false)
 
-    const handleDelete = () => {
-        console.log('Đã xóa!')
-        setShowDialog(false)
+    const handleDelete = async () => {
+        try {
+            const response = await blogAPI.deleteBlog(id)
+            if (response.status === 200) {
+                toast.success(response.data.message)
+                navigate('/admin/blogs', { state: { refetch: true } })
+            } else {
+                toast.error(response.data.message || 'Xóa bài viết thất bại!')
+            }
+        } catch (error) {
+            toast.error(error.message || 'Xóa bài viết thất bại!')
+        } finally {
+            setShowDialog(false)
+        }
+    }
+
+    const fetchBlogById = async () => {
+        setLoading(true)
+        try {
+            const response = await blogAPI.fetchBlogById(id)
+            if (response.status === 200 && response.data.data) {
+                const blogData = response.data.data
+                setBlog({
+                    id: blogData.blogID,
+                    blogName: blogData.blogName,
+                    blogParagraphs: splitParagraphs(blogData.blogContent),
+                    blogImage: blogData.blogImages,
+                    createdDate: blogData.createdDate,
+                    createdBy: blogData.createdBy
+                })
+            } else {
+                setError(response.data.message || 'Không tìm thấy bài viết')
+            }
+        } catch (error) {
+            console.error('Lỗi khi lấy bài viết:', error)
+            setError('Không thể lấy bài viết')
+        } finally {
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
         if (!id) return
-        const fetchBlogById = async () => {
-            setLoading(true)
-            try {
-                const response = await blogAPI.fetchBlogById(id)
-                if (response.status === 200 && response.data.data) {
-                    const blogData = response.data.data
-                    setBlog({
-                        id: blogData.blogID,
-                        blogName: blogData.blogName,
-                        blogParagraphs: splitParagraphs(blogData.blogContent),
-                        blogImage: blogData.blogImages,
-                        createdDate: blogData.createdDate,
-                        createdBy: blogData.createdBy
-                    })
-                } else {
-                    setError(response.data.message || 'Không tìm thấy bài viết')
-                }
-            } catch (error) {
-                console.error('Lỗi khi lấy bài viết:', error)
-                setError('Không thể lấy bài viết')
-            } finally {
-                setLoading(false)
-            }
-        }
         fetchBlogById()
     }, [id])
 
     const splitParagraphs = (blog) => {
         return blog.split('\n').filter((paragraph) => paragraph.trim() !== '')
-    }
-
-    const formatDate = (dateString) => {
-        let date = dateString
-        if (!dateString) {
-            date = '2025-01-01'
-        }
-        return new Date(date).toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        })
     }
 
     return (
