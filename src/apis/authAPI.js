@@ -38,9 +38,17 @@ const verifyOtp = async (enteredOtp, userSignupData) => {
     )
 }
 
+const refreshToken = async (refreshToken, deviceId) => {
+    return await authorizedAxios.post('/authentication/refresh-token', {
+        refreshToken,
+        deviceId
+    })
+}
+
 export default {
     login,
     googleLogin,
     signup,
+    refreshToken,
     verifyOtp
 }
