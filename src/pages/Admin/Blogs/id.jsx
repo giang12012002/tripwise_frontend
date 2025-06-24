@@ -4,6 +4,7 @@ import blogAPI from '@/apis/blogAPI'
 import DeletedConfirmDialog from './DeletedConfirmDialog'
 import { toast } from 'react-toastify'
 import { formatDate } from '@/utils/format'
+import { splitToParagraphs } from '@/utils/text'
 
 function Id() {
     const { id } = useParams()
@@ -47,7 +48,7 @@ function Id() {
                 setBlog({
                     id: blogData.blogID,
                     blogName: blogData.blogName,
-                    blogParagraphs: splitParagraphs(blogData.blogContent),
+                    blogParagraphs: splitToParagraphs(blogData.blogContent),
                     blogImage: blogData.blogImages,
                     createdDate: blogData.createdDate,
                     createdBy: blogData.createdBy
@@ -67,10 +68,6 @@ function Id() {
         if (!id) return
         fetchBlogById()
     }, [id])
-
-    const splitParagraphs = (blog) => {
-        return blog.split('\n').filter((paragraph) => paragraph.trim() !== '')
-    }
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-100 font-sans">

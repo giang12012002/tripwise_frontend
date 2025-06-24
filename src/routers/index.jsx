@@ -8,8 +8,8 @@ import BlogList from '@/pages/BlogsPage'
 import BlogDetail from '@/pages/BlogsPage/id'
 import AdminBlogList from '@/pages/Admin/Blogs'
 import AdminBlogDetail from '@/pages/Admin/Blogs/id'
-
 import MyTourPage from '@/pages/MyTourPage/MyTourPage'
+import PlanList from '@/pages/PlanPage'
 import { AuthProvider } from '@/AuthContext'
 
 function Index() {
@@ -30,6 +30,7 @@ function Index() {
                         path="/admin/blogs/:id"
                         element={<AdminBlogDetail />}
                     />
+                    <Route path="/plans" element={<PlanList />} />
                 </Routes>
             </AuthProvider>
         </Router>
