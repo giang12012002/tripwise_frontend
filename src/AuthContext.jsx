@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { toast } from 'react-toastify'
+import { authAPI } from '@/apis' // Import authAPI để gọi API logout
 
 const AuthContext = createContext()
 
@@ -63,11 +65,33 @@ export const AuthProvider = ({ children }) => {
         setUserId(id) // Thiết lập userId khi đăng nhập
     }
 
-    const logout = () => {
-        setIsLoggedIn(false)
-        setUsername('')
-        setUserId(null)
-        clearAuthData()
+    const logout = async () => {
+        try {
+            const deviceId = localStorage.getItem('deviceId') // Lấy deviceId từ localStorage
+            if (!deviceId) {
+                throw new Error('Không tìm thấy deviceId')
+            }
+
+            // Gọi API logout với deviceId
+            const response = await authAPI.logout(deviceId)
+            if (response.status === 200) {
+                toast.success('Đăng xuất thành công!')
+            } else {
+                toast.error(response.data?.message || 'Đăng xuất thất bại.')
+            }
+        } catch (error) {
+            toast.error(
+                error.message ||
+                    error.response?.data?.message ||
+                    'Đăng xuất thất bại.'
+            )
+        } finally {
+            // Xóa dữ liệu xác thực và cập nhật trạng thái
+            setIsLoggedIn(false)
+            setUsername('')
+            setUserId(null)
+            clearAuthData()
+        }
     }
 
     const clearAuthData = () => {
