@@ -1,53 +1,65 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import PlanCard from './PlanCard'
 import ConfirmDialog from './ConfirmDialog'
-import { useNavigate } from 'react-router-dom'
-
-import { splitToParagraphs } from '@/utils/text'
-
-const periodMultipliers = {
-    week: 1,
-    month: 4,
-    year: 48
-}
+import axios from 'axios'
+import { splitTextByType } from '@/utils/text'
+import { planAPI } from '@/apis'
 
 function Index() {
-    const [plans, setPlans] = useState([
-        {
-            id: 1,
-            name: 'Plan 1',
-            price: 20000,
-            features: splitToParagraphs(
-                `ABC ladasd asdasd asd asd asd as da sd asd a da aaaaaa\nXYZ\nMLN\nMLN\nMLN\nMLN\nMLN`
-            )
-        },
-        {
-            id: 2,
-            name: 'Plan 2',
-            price: 30000,
-            features: splitToParagraphs(`ABC\nDEF\nGHI`)
+    const [plans, setPlans] = useState([])
+
+    const fetchPlans = async () => {
+        const response = await planAPI.fetchPlans()
+        if (response.status === 200) {
+            const processing = response.data.map((plan) => ({
+                ...plan,
+                features: splitTextByType(plan.description, 'dot_space')
+            }))
+            setPlans(processing)
+            console.log(processing)
         }
-    ])
-    const [selectedPeriod, setSelectedPeriod] = useState('month')
+    }
+
+    useEffect(() => {
+        fetchPlans()
+    }, [])
+
     const [selectedPlan, setSelectedPlan] = useState({
-        plan: null,
-        multiplier: 1,
-        billingPeriod: 'month'
+        plan: null
     })
     const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
-    const handleOpenConfirmDialog = (plan, billingPeriod, multiplier) => {
-        setSelectedPlan({ plan, multiplier, billingPeriod })
+    const handleOpenConfirmDialog = (plan) => {
+        setSelectedPlan({ plan })
         setShowConfirmDialog(true)
     }
 
-    const handleCheckout = ({ plan, method, price, billingPeriod }) => {
-        console.log({ plan, method, price, billingPeriod })
-    }
+    const handleCheckout = async ({ plan, method }) => {
+        //TODO: cần sửa lại chỗ này
+        let userId = localStorage.getItem('userId')
+        if (userId === 'undefined') {
+            userId = '1'
+        }
+        console.log('handleCheckout', plan, method, userId)
+        if (method === 'vnpay') {
+            const res = await axios.post(
+                'http://localhost:3000/api/create-qr',
+                {
+                    plan, // planId, planName, price, features
+                    method,
+                    userId
+                }
+            )
 
-    const navigate = useNavigate()
+            console.log('res.data', res.data)
+
+            window.location.href = res.data
+        } else if (method === 'visa') {
+            console.log('visa')
+        }
+    }
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-100 font-sans">
@@ -60,26 +72,6 @@ function Index() {
                     Hãy mua gói để tận hưởng nhiều đặc quyền hơn.
                 </p>
 
-                <div className="flex justify-center space-x-4 mb-8">
-                    {['week', 'month', 'year'].map((period) => (
-                        <button
-                            key={period}
-                            className={`px-4 py-2 rounded hover:cursor-pointer active:bg-gray-500 ${
-                                selectedPeriod === period
-                                    ? 'bg-gray-300 text-black'
-                                    : 'text-gray-500 hover:text-black hover:bg-gray-200 '
-                            }`}
-                            onClick={() => setSelectedPeriod(period)}
-                        >
-                            {period === 'week'
-                                ? 'Tuần'
-                                : period === 'month'
-                                  ? 'Tháng'
-                                  : 'Năm'}
-                        </button>
-                    ))}
-                </div>
-
                 <div className="mt-8 max-w-4xl mx-auto px-4">
                     {plans.length === 0 ? (
                         <p className="text-center text-gray-500">
@@ -90,12 +82,8 @@ function Index() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto px-4 items-stretch">
                                 {plans.map((plan) => (
                                     <PlanCard
-                                        key={plan.id}
+                                        key={plan.planId}
                                         plan={plan}
-                                        billingPeriod={selectedPeriod}
-                                        multiplier={
-                                            periodMultipliers[selectedPeriod]
-                                        }
                                         onSelect={handleOpenConfirmDialog}
                                     />
                                 ))}
@@ -108,8 +96,6 @@ function Index() {
 
             <ConfirmDialog
                 plan={selectedPlan?.plan}
-                billingPeriod={selectedPlan?.billingPeriod}
-                multiplier={selectedPlan?.multiplier}
                 isOpen={showConfirmDialog}
                 onClose={() => setShowConfirmDialog(false)}
                 onConfirm={handleCheckout}

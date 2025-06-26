@@ -20,28 +20,6 @@ function ConfirmDialog({
     const [animationClass, setAnimationClass] = useState('fade-in')
     const [selectedMethod, setSelectedMethod] = useState('vnpay')
 
-    const price = plan?.price * multiplier || 0
-
-    const durationString = () => {
-        // Tính thời hạn sử dụng (start -> end)
-        const startDate = dayjs()
-        let endDate = startDate
-        let duration = 'tuần'
-        if (billingPeriod === 'week') {
-            endDate = startDate.add(7, 'day')
-            duration = 'tuần'
-        } else if (billingPeriod === 'month') {
-            endDate = startDate.add(1, 'month')
-            duration = 'tháng'
-        } else if (billingPeriod === 'year') {
-            endDate = startDate.add(1, 'year')
-            duration = 'năm'
-        }
-
-        return `Thời hạn từ ${startDate.format('DD/MM/YYYY')} đến ${endDate.format('DD/MM/YYYY')} (1 ${duration})`
-    }
-    const benefits = plan ? [durationString(), ...plan.features] : []
-
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true)
@@ -66,7 +44,7 @@ function ConfirmDialog({
                 <p className="text-gray-700 mb-4 text-base">
                     Tổng giá:{' '}
                     <span className="font-bold text-green-600">
-                        {price.toLocaleString()} VND
+                        {plan.price.toLocaleString()} VND
                     </span>
                 </p>
 
@@ -120,13 +98,13 @@ function ConfirmDialog({
                     <div className="flex-1 bg-gray-100 p-4 rounded-lg">
                         <p className="font-semibold mb-2">Bạn sẽ nhận được:</p>
                         <ul className="space-y-2 text-sm">
-                            {benefits.map((b, i) => (
+                            {plan.features.map((f, i) => (
                                 <li key={i} className="flex items-center gap-2">
                                     <Check
                                         size={16}
                                         className="text-green-600"
                                     />
-                                    <span>{b}</span>
+                                    <span>{f}</span>
                                 </li>
                             ))}
                         </ul>
@@ -149,9 +127,7 @@ function ConfirmDialog({
                             }
                             onConfirm({
                                 plan,
-                                method: selectedMethod,
-                                price,
-                                billingPeriod
+                                method: selectedMethod
                             })
                         }}
                         className="px-5 py-2 rounded bg-black text-white hover:bg-gray-800 hover:cursor-pointer active:bg-gray-900"

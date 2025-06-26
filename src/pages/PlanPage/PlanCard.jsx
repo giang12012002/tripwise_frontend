@@ -1,22 +1,12 @@
 import React from 'react'
 import { Check } from 'lucide-react'
 
-function PlanCard({ plan, multiplier, billingPeriod, onSelect }) {
-    const totalPrice = plan.price * multiplier
-
+function PlanCard({ plan, onSelect }) {
     return (
         <div className="bg-white rounded-lg border shadow p-6 flex flex-col items-center text-center h-full">
             <h2 className="text-xl font-semibold mb-2">{plan.name}</h2>
             <div className="flex items-end justify-center text-3xl font-bold mb-1">
-                <span>{totalPrice.toLocaleString('vi-VN')}₫</span>
-                <span className="text-sm text-gray-500 font-normal ml-1">
-                    /{' '}
-                    {billingPeriod === 'week'
-                        ? 'tuần'
-                        : billingPeriod === 'month'
-                          ? 'tháng'
-                          : 'năm'}
-                </span>
+                <span>{plan.price.toLocaleString('vi-VN')}₫</span>
             </div>
 
             <ul className="mb-6 space-y-2 text-sm w-full flex-1">
@@ -32,7 +22,7 @@ function PlanCard({ plan, multiplier, billingPeriod, onSelect }) {
 
             <div className="mt-auto w-full">
                 <button
-                    onClick={() => onSelect(plan, billingPeriod, multiplier)}
+                    onClick={() => onSelect(plan)}
                     className="bg-black text-white w-full py-2 rounded hover:bg-gray-800 hover:cursor-pointer active:bg-gray-900 transition duration-300 ease-in-out"
                 >
                     Chọn
