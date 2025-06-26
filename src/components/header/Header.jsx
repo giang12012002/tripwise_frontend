@@ -138,6 +138,20 @@ function Header() {
                                             </Link>
                                         </li>
                                         <li>
+                                            <Link
+                                                to="/HistoryItinerary"
+                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                onClick={() => {
+                                                    setIsMenuOpen(false)
+                                                    setIsProfileDropdownOpen(
+                                                        false
+                                                    )
+                                                }}
+                                            >
+                                                Lịch sử lịch trình AI
+                                            </Link>
+                                        </li>
+                                        <li>
                                             <button
                                                 className="block w-full text-left hover:bg-blue-800 px-4 py-2 rounded text-base"
                                                 onClick={handleLogout}
