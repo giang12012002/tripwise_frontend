@@ -7,6 +7,7 @@ import { formatDate } from '@/utils/format'
 import { sortBlogsByLatest } from '@/utils/sort'
 import { splitTextByType } from '@/utils/text'
 
+// TODO: cần chuyển thành 1 page editor
 function Id() {
     const { id } = useParams()
     const navigate = useNavigate()

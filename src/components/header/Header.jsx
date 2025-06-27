@@ -96,6 +96,36 @@ function Header() {
                             Hỗ trợ
                         </Link>
                     </li>
+
+                    {isLoggedIn && (
+                        <li title="Subcription plan">
+                            <Link
+                                to="/plans"
+                                className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-800 transition-colors duration-200"
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                <svg
+                                    className="w-6 h-6 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M3 10h18M7 15h1m4 0h1m4 0h1M3 6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6z"
+                                    />
+                                </svg>
+                                {/* Badge (hiện tại là 0) */}
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                                    0
+                                </span>
+                            </Link>
+                        </li>
+                    )}
+
                     {/* Profile Icon */}
                     <li className="relative">
                         {isLoggedIn ? (

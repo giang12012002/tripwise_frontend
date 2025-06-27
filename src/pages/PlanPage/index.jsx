@@ -18,7 +18,6 @@ function Index() {
                 features: splitTextByType(plan.description, 'dot_space')
             }))
             setPlans(processing)
-            console.log(processing)
         }
     }
 
@@ -37,11 +36,15 @@ function Index() {
     }
 
     const handleCheckout = async ({ plan, method }) => {
-        //TODO: cần sửa lại chỗ này
+        // //TODO: cần sửa lại chỗ này
         let userId = localStorage.getItem('userId')
-        if (userId === 'undefined') {
+        if (userId === 'undefined' || userId === null) {
             userId = '1'
         }
+
+        const accessToken = localStorage.getItem('accessToken')
+        console.log('accessToken', accessToken)
+
         console.log('handleCheckout', plan, method, userId)
         if (method === 'vnpay') {
             const res = await axios.post(
@@ -49,16 +52,20 @@ function Index() {
                 {
                     plan, // planId, planName, price, features
                     method,
-                    userId
+                    userId,
+                    accessToken
                 }
             )
 
             console.log('res.data', res.data)
 
             window.location.href = res.data
-        } else if (method === 'visa') {
-            console.log('visa')
+        } else if (method === 'qr') {
+            console.log('qr')
         }
+
+        const res = await planAPI.upgrade(plan.planId)
+        console.log('res', res)
     }
 
     return (
@@ -79,7 +86,7 @@ function Index() {
                         </p>
                     ) : (
                         <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto px-4 items-stretch">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto px-4 items-stretch">
                                 {plans.map((plan) => (
                                     <PlanCard
                                         key={plan.planId}

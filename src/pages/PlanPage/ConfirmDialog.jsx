@@ -5,7 +5,7 @@ import { toast } from 'react-toastify'
 
 const paymentMethods = [
     { id: 'vnpay', name: 'VNPAY', icon: '/vnpay-logo.svg' },
-    { id: 'visa', name: 'VISA', icon: '/visa-logo.svg' }
+    { id: 'qr', name: 'QR', icon: '/qr-logo.svg' }
 ]
 
 function ConfirmDialog({
@@ -121,8 +121,10 @@ function ConfirmDialog({
                     </button>
                     <button
                         onClick={() => {
-                            if (selectedMethod === 'visa') {
-                                toast.error('Hiện tại chưa hỗ trợ VISA')
+                            if (selectedMethod === 'qr') {
+                                toast.error(
+                                    'Hiện tại chưa hỗ trợ thanh toán QR'
+                                )
                                 return
                             }
                             onConfirm({

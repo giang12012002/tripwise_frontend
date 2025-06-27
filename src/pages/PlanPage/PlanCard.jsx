@@ -9,6 +9,10 @@ function PlanCard({ plan, onSelect }) {
                 <span>{plan.price.toLocaleString('vi-VN')}₫</span>
             </div>
 
+            <div className="flex items-end justify-center text-xl font-bold mb-1">
+                <span>{plan.planName}</span>
+            </div>
+
             <ul className="mb-6 space-y-2 text-sm w-full flex-1">
                 {plan.features.map((f, i) => (
                     <li key={i} className="flex items-center space-x-2">

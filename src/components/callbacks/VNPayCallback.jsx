@@ -11,12 +11,11 @@ function VNPayCallback() {
         const success = params.get('success')
         const message = params.get('message')
         const transactionId = params.get('transactionId')
-        const amount = params.get('amount')
 
-        console.log(success, message, transactionId, amount)
+        console.log('VNPayCallback', success, message, transactionId)
 
         if (success === 'true') {
-            toast.success(message + '\n' + transactionId + '\n' + amount)
+            toast.success(message + '\n' + transactionId)
             setTimeout(() => {
                 navigate('/plans')
             }, 1200)
