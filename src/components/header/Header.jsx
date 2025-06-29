@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
-import { useAuth } from '@/AuthContext' // Import AuthContext
+import { useAuth } from '@/AuthContext'
+import Swal from 'sweetalert2'
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
-    const { isLoggedIn, username, logout } = useAuth() // Use auth context
+    const { isLoggedIn, username, logout } = useAuth()
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
     const toggleProfileDropdown = () =>
@@ -15,6 +16,13 @@ function Header() {
         logout()
         setIsMenuOpen(false)
         setIsProfileDropdownOpen(false)
+        Swal.fire({
+            icon: 'success',
+            title: 'Thành công',
+            text: 'Đăng xuất thành công!',
+            showConfirmButton: false,
+            timer: 1500
+        })
     }
 
     return (
@@ -135,6 +143,20 @@ function Header() {
                                                 }}
                                             >
                                                 Thông tin tài khoản
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                to="/HistoryItinerary"
+                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                onClick={() => {
+                                                    setIsMenuOpen(false)
+                                                    setIsProfileDropdownOpen(
+                                                        false
+                                                    )
+                                                }}
+                                            >
+                                                Lịch sử lịch trình AI
                                             </Link>
                                         </li>
                                         <li>
