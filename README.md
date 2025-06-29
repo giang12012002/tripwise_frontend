@@ -2,9 +2,12 @@
 1. Landing page
 2. Create tour using AI
 3. Authentication
-4. Save initerary to tour ( fix form )
+4. Save initerary to tour + edit initerary before saving
 5. ViewTourAI Page ( fix )
 6. Blog ( missing update )
+7. CRUD Tour
+8. CRUD initerary history
+9. Purchasing service plan (VNPay)
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
