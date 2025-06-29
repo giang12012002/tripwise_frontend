@@ -3,16 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import { travelFormAPI } from '@/apis'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
-import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
-import { useAuth } from '@/AuthContext' // Import useAuth
+import { useAuth } from '@/AuthContext'
 
 function History() {
     const navigate = useNavigate()
-    const { isLoggedIn } = useAuth() // Lấy isLoggedIn từ AuthContext
+    const { isLoggedIn } = useAuth()
     const [histories, setHistories] = useState([])
     const [loading, setLoading] = useState(true)
     const [currentPage, setCurrentPage] = useState(1)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [selectedMonth, setSelectedMonth] = useState('')
+    const [selectedYear, setSelectedYear] = useState('')
     const itemsPerPage = 6
 
     // Kiểm tra trạng thái đăng nhập
@@ -22,7 +24,8 @@ function History() {
                 icon: 'error',
                 title: 'Lỗi',
                 text: 'Vui lòng đăng nhập để xem lịch sử lịch trình.',
-                confirmButtonColor: '#2563eb'
+                showConfirmButton: false,
+                timer: 1500
             })
             navigate('/')
         }
@@ -36,7 +39,8 @@ function History() {
                     icon: 'error',
                     title: 'Lỗi',
                     text: 'Vui lòng đăng nhập để xem lịch sử lịch trình.',
-                    confirmButtonColor: '#2563eb'
+                    showConfirmButton: false,
+                    timer: 1500
                 })
                 navigate('/signin')
                 return
@@ -72,7 +76,13 @@ function History() {
                         .filter((item) => item !== null)
                     setHistories(normalizedHistories)
                     if (normalizedHistories.length === 0) {
-                        toast.error('Không tìm thấy lịch trình hợp lệ.')
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Không tìm thấy lịch trình hợp lệ.',
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
                     }
                 } else {
                     throw new Error('Dữ liệu lịch sử không hợp lệ.')
@@ -82,7 +92,13 @@ function History() {
                     err.response?.data?.error ||
                     err.message ||
                     'Không thể tải lịch sử lịch trình.'
-                toast.error(errorMessage)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: errorMessage,
+                    showConfirmButton: false,
+                    timer: 1500
+                })
                 if (
                     err.response?.status === 401 ||
                     err.response?.data?.error?.includes('token')
@@ -94,7 +110,8 @@ function History() {
                         icon: 'error',
                         title: 'Lỗi',
                         text: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
-                        confirmButtonColor: '#2563eb'
+                        showConfirmButton: false,
+                        timer: 1500
                     })
                 }
             } finally {
@@ -145,10 +162,30 @@ function History() {
         ))
     }
 
+    // Filter histories based on search term, month, and year
+    const filteredHistories = histories.filter((history) => {
+        const matchesSearch =
+            history.Destination?.toLowerCase().includes(
+                searchTerm.toLowerCase()
+            ) || false
+        const historyDate = history.CreatedAt
+            ? new Date(history.CreatedAt)
+            : null
+        const monthMatch = selectedMonth
+            ? historyDate &&
+              historyDate.getMonth() + 1 === parseInt(selectedMonth)
+            : true
+        const yearMatch = selectedYear
+            ? historyDate &&
+              historyDate.getFullYear() === parseInt(selectedYear)
+            : true
+        return matchesSearch && monthMatch && yearMatch
+    })
+
     // Pagination logic
-    const totalPages = Math.ceil(histories.length / itemsPerPage)
+    const totalPages = Math.ceil(filteredHistories.length / itemsPerPage)
     const startIndex = (currentPage - 1) * itemsPerPage
-    const currentHistories = histories.slice(
+    const currentHistories = filteredHistories.slice(
         startIndex,
         startIndex + itemsPerPage
     )
@@ -156,6 +193,18 @@ function History() {
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page)
+        }
+    }
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
         }
     }
 
@@ -205,7 +254,54 @@ function History() {
                             Lịch Sử Lịch Trình AI
                         </h2>
                     </div>
-                    {histories.length > 0 ? (
+                    <div className="mb-5 flex flex-col sm:flex-row gap-4">
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo địa điểm..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value)
+                                setCurrentPage(1)
+                            }}
+                            className="flex-1 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                        <select
+                            value={selectedMonth}
+                            onChange={(e) => {
+                                setSelectedMonth(e.target.value)
+                                setCurrentPage(1)
+                            }}
+                            className="p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                            <option value="">Chọn tháng</option>
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                                (month) => (
+                                    <option key={month} value={month}>
+                                        Tháng {month}
+                                    </option>
+                                )
+                            )}
+                        </select>
+                        <select
+                            value={selectedYear}
+                            onChange={(e) => {
+                                setSelectedYear(e.target.value)
+                                setCurrentPage(1)
+                            }}
+                            className="p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                            <option value="">Chọn năm</option>
+                            {Array.from(
+                                { length: 10 },
+                                (_, i) => new Date().getFullYear() - 5 + i
+                            ).map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {filteredHistories.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {currentHistories.map((history, index) => (
                                 <div
@@ -225,7 +321,7 @@ function History() {
                                             </div>
                                             <div className="flex space-x-2">
                                                 <button
-                                                    className="px-3 py-1 border-2 border-indigo-600 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-50 hover:border-indigo-700 transition duration-200"
+                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
                                                     onClick={() => {
                                                         console.log(
                                                             'Navigating to History Detail with ID:',
@@ -239,7 +335,21 @@ function History() {
                                                         !history.Id || loading
                                                     }
                                                 >
-                                                    Xem chi tiết
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M15 12c0-1.5-1.5-3-3-3s-3 1.5-3 3 1.5 3 3 3 3-1.5 3-3zm6 0c0 4.5-4.5 9-9 9s-9-4.5-9-9 4.5-9 9-9 9 4.5 9 9z"
+                                                        />
+                                                    </svg>
+                                                    <span>Xem chi tiết</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -301,8 +411,9 @@ function History() {
                     ) : (
                         <div className="text-center bg-white p-8 rounded-xl shadow-lg">
                             <p className="text-lg text-gray-600">
-                                Bạn chưa tạo lịch trình nào. Hãy bắt đầu tạo một
-                                lịch trình mới!
+                                {searchTerm || selectedMonth || selectedYear
+                                    ? 'Không tìm thấy lịch trình phù hợp với bộ lọc.'
+                                    : 'Bạn chưa tạo lịch trình nào. Hãy bắt đầu tạo một lịch trình mới!'}
                             </p>
                             <button
                                 onClick={() => navigate('/CreateItinerary')}
@@ -314,6 +425,27 @@ function History() {
                     )}
                     {totalPages > 1 && (
                         <div className="flex justify-center mt-8 space-x-2">
+                            <button
+                                onClick={handlePreviousPage}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-lg hover:from-gray-500 hover:to-gray-700 transition-all duration-300 shadow-md flex items-center disabled:opacity-50"
+                            >
+                                <svg
+                                    className="w-5 h-5 mr-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M15 19l-7-7 7-7"
+                                    />
+                                </svg>
+                                Trước
+                            </button>
                             {Array.from(
                                 { length: totalPages },
                                 (_, index) => index + 1
@@ -330,6 +462,27 @@ function History() {
                                     {page}
                                 </button>
                             ))}
+                            <button
+                                onClick={handleNextPage}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-lg hover:from-blue-500 hover:to-blue-700 transition-all duration-300 shadow-md flex items-center disabled:opacity-50"
+                            >
+                                Sau
+                                <svg
+                                    className="w-5 h-5 ml-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M9 5l7 7-7 7"
+                                    />
+                                </svg>
+                            </button>
                         </div>
                     )}
                 </div>

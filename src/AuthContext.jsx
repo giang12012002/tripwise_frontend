@@ -75,7 +75,6 @@ export const AuthProvider = ({ children }) => {
             // Gọi API logout với deviceId
             const response = await authAPI.logout(deviceId)
             if (response.status === 200) {
-                toast.success('Đăng xuất thành công!')
             } else {
                 toast.error(response.data?.message || 'Đăng xuất thất bại.')
             }

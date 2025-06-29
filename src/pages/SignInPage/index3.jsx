@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { v4 as uuidv4 } from 'uuid'
 import beachSunset from '@/assets/images/background.png'
 import { authAPI } from '@/apis'
-import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
 import { useAuth } from '@/AuthContext'
 import { jwtDecode } from 'jwt-decode'
 import Header from '@/components/header/Header'
@@ -32,14 +32,26 @@ function SignIn() {
 
     const handleLogin = async () => {
         if (!email || !password) {
-            toast.error('Vui lòng điền email và mật khẩu!')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng điền email và mật khẩu!',
+                showConfirmButton: false,
+                timer: 500
+            })
             return
         }
         try {
             const deviceId = localStorage.getItem('deviceId')
             const response = await authAPI.login(email, password, deviceId)
             if (response.status === 200) {
-                toast.success('Đăng nhập thành công!')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Đăng nhập thành công!',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
                 const { accessToken, refreshToken } = response.data
                 localStorage.setItem('accessToken', accessToken)
                 localStorage.setItem('refreshToken', refreshToken)
@@ -54,10 +66,26 @@ function SignIn() {
                 login(username, userId)
                 navigate('/')
             } else {
-                toast.error(response.data?.message || 'Đăng nhập thất bại.')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text:
+                        response.data?.message ||
+                        'Đăng nhập thất bại. Email hoặc mật khẩu không đúng.',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
             }
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Đăng nhập thất bại.')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text:
+                    error.response?.data?.message ||
+                    'Đăng nhập thất bại. Email hoặc mật khẩu không đúng.',
+                showConfirmButton: false,
+                timer: 1500
+            })
         }
     }
 
@@ -67,7 +95,13 @@ function SignIn() {
             const deviceId = localStorage.getItem('deviceId')
             const response = await authAPI.googleLogin(idToken, deviceId)
             if (response.status === 200) {
-                toast.success('Đăng nhập bằng Google thành công!')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Đăng nhập bằng Google thành công!',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
                 const { accessToken, refreshToken } = response.data
                 localStorage.setItem('accessToken', accessToken)
                 localStorage.setItem('refreshToken', refreshToken)
@@ -82,13 +116,24 @@ function SignIn() {
                 login(username, userId)
                 navigate('/')
             } else {
-                toast.error(response.data?.message || 'Đăng nhập thất bại.')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: response.data?.message || 'Đăng nhập thất bại.',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
             }
         } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                    'Đăng nhập bằng Google thất bại.'
-            )
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text:
+                    error.response?.data?.message ||
+                    'Đăng nhập bằng Google thất bại.',
+                showConfirmButton: false,
+                timer: 1500
+            })
         }
     }
 

@@ -1,28 +1,30 @@
 import React, { useState, useEffect } from 'react'
-import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
 import { travelFormAPI } from '@/apis'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
-import Swal from 'sweetalert2'
 
 function MyTours() {
-    const { userId, isLoggedIn } = useAuth() // Lấy isLoggedIn và userId
+    const { userId, isLoggedIn } = useAuth()
     const [tours, setTours] = useState([])
     const [loading, setLoading] = useState(true)
     const [currentPage, setCurrentPage] = useState(1)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [selectedMonth, setSelectedMonth] = useState('')
+    const [selectedYear, setSelectedYear] = useState('')
     const toursPerPage = 6
     const navigate = useNavigate()
 
-    // Kiểm tra trạng thái đăng nhập
     useEffect(() => {
         if (!isLoggedIn) {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
                 text: 'Vui lòng đăng nhập để xem danh sách tour.',
-                confirmButtonColor: '#2563eb'
+                showConfirmButton: false,
+                timer: 1500
             })
             navigate('/')
         }
@@ -40,21 +42,40 @@ function MyTours() {
                     response.status === 200 &&
                     response.data.message.includes('thành công')
                 ) {
-                    setTours(response.data.data)
+                    const sortedTours = response.data.data.sort((a, b) => {
+                        const dateA = a.createdDate
+                            ? new Date(a.createdDate)
+                            : new Date(0)
+                        const dateB = b.createdDate
+                            ? new Date(b.createdDate)
+                            : new Date(0)
+                        return dateB - dateA
+                    })
+                    setTours(sortedTours)
                 } else {
                     throw new Error(
                         response.data.message || 'Không thể lấy danh sách tour.'
                     )
                 }
             } catch (err) {
-                toast.error(err.message || 'Lỗi khi lấy danh sách tour.')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: err.message || 'Lỗi khi lấy danh sách tour.',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
                 if (err.response?.status === 401) {
                     localStorage.removeItem('accessToken')
                     localStorage.removeItem('userId')
                     navigate('/signin')
-                    toast.error(
-                        'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.'
-                    )
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    })
                 }
             } finally {
                 setLoading(false)
@@ -65,6 +86,7 @@ function MyTours() {
             fetchTours()
         }
     }, [isLoggedIn, userId, navigate])
+
     const formatCurrency = (value) => {
         if (!value || isNaN(value)) return 'Không xác định'
         return new Intl.NumberFormat('vi-VN', {
@@ -118,31 +140,76 @@ function MyTours() {
             const response = await travelFormAPI.deleteTour(tourId)
             if (response.status === 200 && response.data.success) {
                 setTours(tours.filter((tour) => tour.tourId !== tourId))
-                toast.success('Xóa tour thành công!')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Xóa tour thành công!',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
             } else {
                 throw new Error(response.data.message || 'Không thể xóa tour.')
             }
         } catch (err) {
-            toast.error(err.message || 'Lỗi khi xóa tour.')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: err.message || 'Lỗi khi xóa tour.',
+                showConfirmButton: false,
+                timer: 1500
+            })
             if (err.response?.status === 401) {
                 localStorage.removeItem('accessToken')
                 localStorage.removeItem('userId')
                 navigate('/signin')
-                toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
             }
         } finally {
             setLoading(false)
         }
     }
 
+    // Filter tours based on search term, month, and year
+    const filteredTours = tours.filter((tour) => {
+        const matchesSearch =
+            tour.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            false
+        const tourDate = tour.createdDate ? new Date(tour.createdDate) : null
+        const monthMatch = selectedMonth
+            ? tourDate && tourDate.getMonth() + 1 === parseInt(selectedMonth)
+            : true
+        const yearMatch = selectedYear
+            ? tourDate && tourDate.getFullYear() === parseInt(selectedYear)
+            : true
+        return matchesSearch && monthMatch && yearMatch
+    })
+
     // Pagination logic
-    const totalPages = Math.ceil(tours.length / toursPerPage)
+    const totalPages = Math.ceil(filteredTours.length / toursPerPage)
     const indexOfLastTour = currentPage * toursPerPage
     const indexOfFirstTour = indexOfLastTour - toursPerPage
-    const currentTours = tours.slice(indexOfFirstTour, indexOfLastTour)
+    const currentTours = filteredTours.slice(indexOfFirstTour, indexOfLastTour)
 
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber)
+    }
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
     }
 
     if (loading) {
@@ -191,7 +258,54 @@ function MyTours() {
                             Tour Yêu Thích Được Tạo Bằng AI
                         </h2>
                     </div>
-                    {tours.length > 0 ? (
+                    <div className="mb-5 flex flex-col sm:flex-row gap-4">
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo địa điểm..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value)
+                                setCurrentPage(1)
+                            }}
+                            className="flex-1 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                        <select
+                            value={selectedMonth}
+                            onChange={(e) => {
+                                setSelectedMonth(e.target.value)
+                                setCurrentPage(1)
+                            }}
+                            className="p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                            <option value="">Chọn tháng</option>
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                                (month) => (
+                                    <option key={month} value={month}>
+                                        Tháng {month}
+                                    </option>
+                                )
+                            )}
+                        </select>
+                        <select
+                            value={selectedYear}
+                            onChange={(e) => {
+                                setSelectedYear(e.target.value)
+                                setCurrentPage(1)
+                            }}
+                            className="p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                            <option value="">Chọn năm</option>
+                            {Array.from(
+                                { length: 10 },
+                                (_, i) => new Date().getFullYear() - 5 + i
+                            ).map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {filteredTours.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {currentTours.map((tour, index) => (
                                 <div
@@ -214,7 +328,7 @@ function MyTours() {
                                             </div>
                                             <div className="flex space-x-2">
                                                 <button
-                                                    className="px-1 py-1 border-2 border-indigo-600 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-50 hover:border-indigo-700 transition duration-200"
+                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
                                                     onClick={() =>
                                                         navigate(
                                                             `/TourDetail/${tour.tourId}`
@@ -222,10 +336,24 @@ function MyTours() {
                                                     }
                                                     disabled={loading}
                                                 >
-                                                    Xem chi tiết
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M15 12c0-1.5-1.5-3-3-3s-3 1.5-3 3 1.5 3 3 3 3-1.5 3-3zm6 0c0 4.5-4.5 9-9 9s-9-4.5-9-9 4.5-9 9-9 9 4.5 9 9z"
+                                                        />
+                                                    </svg>
+                                                    <span>Xem chi tiết</span>
                                                 </button>
                                                 <button
-                                                    className="px-2 py-2 border-2 border-red-600 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 hover:border-red-700 transition duration-200"
+                                                    className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
                                                     onClick={() =>
                                                         handleDelete(
                                                             tour.tourId
@@ -233,7 +361,21 @@ function MyTours() {
                                                     }
                                                     disabled={loading}
                                                 >
-                                                    X
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0h4m-7 4h12"
+                                                        />
+                                                    </svg>
+                                                    <span>Xóa</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -276,24 +418,41 @@ function MyTours() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="bg-indigo-50 px-6 py-3">
-                                        <button className="w-full text-center text-indigo-700 font-medium hover:text-indigo-900 transition">
-                                            Chỉnh sửa tour
-                                        </button>
-                                    </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
                         <div className="text-center bg-white p-8 rounded-xl shadow-lg">
                             <p className="text-lg text-gray-600">
-                                Bạn chưa có tour nào. Hãy lưu một lịch trình để
-                                tạo tour!
+                                {searchTerm || selectedMonth || selectedYear
+                                    ? 'Không tìm thấy tour phù hợp với bộ lọc.'
+                                    : 'Bạn chưa có tour nào. Hãy lưu một lịch trình để tạo tour!'}
                             </p>
                         </div>
                     )}
                     {totalPages > 1 && (
                         <div className="flex justify-center mt-8 space-x-2">
+                            <button
+                                onClick={handlePreviousPage}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-lg hover:from-gray-500 hover:to-gray-700 transition-all duration-300 shadow-md flex items-center disabled:opacity-50"
+                            >
+                                <svg
+                                    className="w-5 h-5 mr-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M15 19l-7-7 7-7"
+                                    />
+                                </svg>
+                                Trước
+                            </button>
                             {Array.from({ length: totalPages }, (_, index) => (
                                 <button
                                     key={index + 1}
@@ -307,6 +466,27 @@ function MyTours() {
                                     {index + 1}
                                 </button>
                             ))}
+                            <button
+                                onClick={handleNextPage}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-lg hover:from-blue-500 hover:to-blue-700 transition-all duration-300 shadow-md flex items-center disabled:opacity-50"
+                            >
+                                Sau
+                                <svg
+                                    className="w-5 h-5 ml-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M9 5l7 7-7 7"
+                                    />
+                                </svg>
+                            </button>
                         </div>
                     )}
                 </div>
