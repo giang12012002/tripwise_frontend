@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
-import { useAuth } from '@/AuthContext' // Import AuthContext
+import { useAuth } from '@/AuthContext'
+import Swal from 'sweetalert2'
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
-    const { isLoggedIn, username, logout } = useAuth() // Use auth context
+    const { isLoggedIn, username, logout } = useAuth()
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
     const toggleProfileDropdown = () =>
@@ -15,6 +16,13 @@ function Header() {
         logout()
         setIsMenuOpen(false)
         setIsProfileDropdownOpen(false)
+        Swal.fire({
+            icon: 'success',
+            title: 'Thành công',
+            text: 'Đăng xuất thành công!',
+            showConfirmButton: false,
+            timer: 1500
+        })
     }
 
     return (
@@ -96,6 +104,36 @@ function Header() {
                             Hỗ trợ
                         </Link>
                     </li>
+
+                    {isLoggedIn && (
+                        <li title="Subcription plan">
+                            <Link
+                                to="/plans"
+                                className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-800 transition-colors duration-200"
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                <svg
+                                    className="w-6 h-6 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M3 10h18M7 15h1m4 0h1m4 0h1M3 6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6z"
+                                    />
+                                </svg>
+                                {/* Badge (hiện tại là 0) */}
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                                    0
+                                </span>
+                            </Link>
+                        </li>
+                    )}
+
                     {/* Profile Icon */}
                     <li className="relative">
                         {isLoggedIn ? (
@@ -135,6 +173,20 @@ function Header() {
                                                 }}
                                             >
                                                 Thông tin tài khoản
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                to="/HistoryItinerary"
+                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                onClick={() => {
+                                                    setIsMenuOpen(false)
+                                                    setIsProfileDropdownOpen(
+                                                        false
+                                                    )
+                                                }}
+                                            >
+                                                Lịch sử lịch trình AI
                                             </Link>
                                         </li>
                                         <li>

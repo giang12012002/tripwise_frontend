@@ -45,10 +45,15 @@ const refreshToken = async (refreshToken, deviceId) => {
     })
 }
 
+const logout = async (deviceId) => {
+    return await authorizedAxios.post(`/authentication/logout/${deviceId}`)
+}
+
 export default {
     login,
     googleLogin,
     signup,
     refreshToken,
-    verifyOtp
+    verifyOtp,
+    logout
 }

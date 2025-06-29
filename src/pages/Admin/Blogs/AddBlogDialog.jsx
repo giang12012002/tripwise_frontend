@@ -88,6 +88,13 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
                 images,
                 imageLinks
             })
+
+            setBlogName('')
+            setBlogContent('')
+            setImages([])
+            setPreviewURLs([])
+            setImageLinks([])
+            setNewImageLink('')
         } finally {
             setLoading(false)
             handleClose()
@@ -95,10 +102,6 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
     }
 
     const handleClose = () => {
-        // setBlogName('')
-        // setBlogContent('')
-        // setImages([])
-        // setPreviewURLs([])
         onClose()
     }
 

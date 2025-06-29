@@ -13,7 +13,7 @@ function AiTourCreateButton() {
             toast.error('Vui lòng đăng nhập để tạo tour!')
             return
         }
-        navigate('/TravelForm')
+        navigate('/CreateItinerary')
     }
 
     return (
