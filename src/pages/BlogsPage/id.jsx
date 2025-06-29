@@ -5,7 +5,9 @@ import React, { useEffect, useLayoutEffect, useState } from 'react'
 import blogAPI from '@/apis/blogAPI'
 import { formatDate } from '@/utils/format'
 import { sortBlogsByLatest } from '@/utils/sort'
+import { splitTextByType } from '@/utils/text'
 
+// TODO: cần chuyển thành 1 page editor
 function Id() {
     const { id } = useParams()
     const navigate = useNavigate()
@@ -43,7 +45,10 @@ function Id() {
                     setBlog({
                         id: blogData.blogID,
                         blogName: blogData.blogName,
-                        blogParagraphs: splitParagraphs(blogData.blogContent),
+                        blogParagraphs: splitTextByType(
+                            blogData.blogContent,
+                            'newline'
+                        ),
                         blogImage: blogData.blogImages,
                         createdDate: blogData.createdDate,
                         createdBy: blogData.createdBy
@@ -63,10 +68,6 @@ function Id() {
     useLayoutEffect(() => {
         window.scrollTo(0, 0)
     }, [])
-
-    const splitParagraphs = (blog) => {
-        return blog.split('\n').filter((paragraph) => paragraph.trim() !== '')
-    }
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-100 font-sans">

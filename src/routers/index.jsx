@@ -14,6 +14,8 @@ import ItineraryDisplayHistory from '@/pages/ItineraryDisplayHistory/History'
 import ItineraryDisplayHistoryDetail from '@/pages/ItineraryDisplayHistory/HistoryDetail'
 import MyTourPage from '@/pages/MyTourPage/index1.jsx'
 import TourDetail from '@/pages/MyTourPage/TourDetail'
+import PlanList from '@/pages/PlanPage'
+import VNPayCallback from '@/components/callbacks/VNPayCallback'
 import { AuthProvider } from '@/AuthContext'
 
 function Index() {
@@ -51,6 +53,8 @@ function Index() {
                         path="/admin/blogs/:id"
                         element={<AdminBlogDetail />}
                     />
+                    <Route path="/plans" element={<PlanList />} />
+                    <Route path="/vnpay-callback" element={<VNPayCallback />} />
                 </Routes>
             </AuthProvider>
         </Router>
