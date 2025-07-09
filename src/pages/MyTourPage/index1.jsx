@@ -350,7 +350,7 @@ function MyTours() {
                                                             d="M15 12c0-1.5-1.5-3-3-3s-3 1.5-3 3 1.5 3 3 3 3-1.5 3-3zm6 0c0 4.5-4.5 9-9 9s-9-4.5-9-9 4.5-9 9-9 9 4.5 9 9z"
                                                         />
                                                     </svg>
-                                                    <span>Xem chi tiết</span>
+                                                    {/*<span>Xem chi tiết</span>*/}
                                                 </button>
                                                 <button
                                                     className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
@@ -375,7 +375,7 @@ function MyTours() {
                                                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0h4m-7 4h12"
                                                         />
                                                     </svg>
-                                                    <span>Xóa</span>
+                                                    {/*<span>Xóa</span>*/}
                                                 </button>
                                             </div>
                                         </div>

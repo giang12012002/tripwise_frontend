@@ -349,7 +349,7 @@ function History() {
                                                             d="M15 12c0-1.5-1.5-3-3-3s-3 1.5-3 3 1.5 3 3 3 3-1.5 3-3zm6 0c0 4.5-4.5 9-9 9s-9-4.5-9-9 4.5-9 9-9 9 4.5 9 9z"
                                                         />
                                                     </svg>
-                                                    <span>Xem chi tiết</span>
+                                                    {/*<span>Xem chi tiết</span>*/}
                                                 </button>
                                             </div>
                                         </div>

@@ -163,7 +163,7 @@ function Header() {
                                     <ul className="absolute top-full right-0 bg-blue-700 text-white rounded shadow-md mt-2 w-48 z-20">
                                         <li>
                                             <Link
-                                                to="/profile"
+                                                to="/view-Profile"
                                                 className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)

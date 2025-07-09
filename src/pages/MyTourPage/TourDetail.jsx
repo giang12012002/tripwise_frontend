@@ -319,11 +319,7 @@ function TourDetail() {
                                         <strong>Sở thích:&nbsp; </strong>
                                         {formatPreferences(tourDetail.Category)}
                                     </p>
-                                    {/*<p className="flex items-center text-gray-700">*/}
-                                    {/*    <span className="mr-2">📝</span>*/}
-                                    {/*    <strong>Mô tả:&nbsp; </strong>*/}
-                                    {/*    {tourDetail.Description}*/}
-                                    {/*</p>*/}
+
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">📌</span>
                                         <strong>Đề xuất chỗ ở:&nbsp; </strong>
@@ -340,12 +336,17 @@ function TourDetail() {
                                             'Không xác định'
                                         )}
                                     </p>
-
                                     {/*<p className="flex items-center text-gray-700">*/}
-                                    {/*    <span className="mr-2">🏨</span>*/}
-                                    {/*    <strong>Ghi Chú:&nbsp; </strong>*/}
-                                    {/*    {tourDetail.TourInfo}*/}
+                                    {/*    <span className="mr-2">📝</span>*/}
+                                    {/*    <strong>Mô tả:&nbsp; </strong>*/}
+                                    {/*    {tourDetail.Description}*/}
                                     {/*</p>*/}
+
+                                    {/*  <p className="flex items-center text-gray-700">
+                                        <span className="mr-2">🏨</span>
+                                        <strong>Ghi Chú:&nbsp; </strong>
+                                        {tourDetail.TourInfo}
+                                    </p>*/}
                                 </div>
                             </div>
                         </div>
@@ -448,7 +449,9 @@ function TourDetail() {
                                                                         <p className="text-gray-700">
                                                                             <strong>
                                                                                 Chi
-                                                                                phí:{' '}
+                                                                                phí
+                                                                                ước
+                                                                                tính:{' '}
                                                                             </strong>
                                                                             <span className="text-blue-600">
                                                                                 {formatCurrency(

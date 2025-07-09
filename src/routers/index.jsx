@@ -6,10 +6,13 @@ import HomePage from '@/pages/HomePage/HomePage'
 import ItineraryPage from '@/pages/ItineraryPage/index.jsx'
 import ChatbotUpdate from '@/pages/ItineraryPage/ChatbotUpdate'
 import CreateItineraryPage from '@/pages/CreateItineraryPage/index4.jsx'
+import ViewProfilePage from '@/pages/UserProfilePage/ViewUserProfile.jsx'
+import EditProfilePage from '@/pages/UserProfilePage/EditUserProfile.jsx'
 import BlogList from '@/pages/BlogsPage'
 import BlogDetail from '@/pages/BlogsPage/id'
 import AdminBlogList from '@/pages/Admin/Blogs'
 import AdminBlogDetail from '@/pages/Admin/Blogs/id'
+import AdminManagerUser from '@/pages/Admin/Users/UserManager.jsx'
 import ItineraryDisplayHistory from '@/pages/ItineraryDisplayHistory/History'
 import ItineraryDisplayHistoryDetail from '@/pages/ItineraryDisplayHistory/HistoryDetail'
 import MyTourPage from '@/pages/MyTourPage/index1.jsx'
@@ -30,6 +33,8 @@ function Index() {
                         path="/otp-verification"
                         element={<OtpVerification />}
                     />
+                    <Route path="/view-Profile" element={<ViewProfilePage />} />
+                    <Route path="/edit-Profile" element={<EditProfilePage />} />
                     <Route
                         path="/CreateItinerary"
                         element={<CreateItineraryPage />}
@@ -52,6 +57,10 @@ function Index() {
                     <Route
                         path="/admin/blogs/:id"
                         element={<AdminBlogDetail />}
+                    />
+                    <Route
+                        path="/admin/user-manager"
+                        element={<AdminManagerUser />}
                     />
                     <Route path="/plans" element={<PlanList />} />
                     <Route path="/vnpay-callback" element={<VNPayCallback />} />
