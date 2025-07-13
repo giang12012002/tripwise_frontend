@@ -10,6 +10,13 @@ const planAPI = {
             `/api/plan/upgrade/${planId}`
         )
         return response
+    },
+
+    getCurrentRequest: async (userId) => {
+        const response = await authorizedAxios.get(
+            `/api/plan/requests-remaining/${userId}`
+        )
+        return response
     }
 }
 

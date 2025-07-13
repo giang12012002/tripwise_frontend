@@ -1,15 +1,33 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/AuthContext' // Import AuthContext
+
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchRemainingRequests } from '@/stores/planSlice'
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
     const { isLoggedIn, username, logout } = useAuth() // Use auth context
 
+    const dispatch = useDispatch()
+    const remainingRequests = useSelector(
+        (state) => state.plan.remainingRequests
+    )
+    console.log('remainingRequests:', remainingRequests)
+    const userId = localStorage.getItem('userId')
+    console.log('userId:', userId)
+
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
     const toggleProfileDropdown = () =>
         setIsProfileDropdownOpen(!isProfileDropdownOpen)
+
+    useEffect(() => {
+        if (isLoggedIn && userId) {
+            console.log('Dispatching fetchRemainingRequests with:', userId)
+            dispatch(fetchRemainingRequests(userId))
+        }
+    }, [isLoggedIn])
 
     const handleLogout = () => {
         logout()
@@ -120,7 +138,7 @@ function Header() {
                                 </svg>
                                 {/* Badge (hiện tại là 0) */}
                                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                                    0
+                                    {remainingRequests}
                                 </span>
                             </Link>
                         </li>

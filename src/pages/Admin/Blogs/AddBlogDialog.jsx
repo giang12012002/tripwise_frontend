@@ -3,17 +3,14 @@ import LoadingSpinner from '@/components/states/LoadingSpinner'
 import { toast } from 'react-toastify'
 
 function AddBlogDialog({ isOpen, onClose, onConfirm }) {
+    const [page, setPage] = useState('method')
+    const [documentId, setDocumentId] = useState(null)
+    const [documentContent, setDocumentContent] = useState('')
     const [isVisible, setIsVisible] = useState(false)
     const [animationClass, setAnimationClass] = useState('fade-in')
     const [loading, setLoading] = useState(false)
 
-    const [blogName, setBlogName] = useState('')
-    const [blogContent, setBlogContent] = useState('')
-    const [images, setImages] = useState([])
-    const [previewURLs, setPreviewURLs] = useState([])
-    const [imageLinks, setImageLinks] = useState([])
-    const [newImageLink, setNewImageLink] = useState('')
-    const [checkingImageLink, setCheckingImageLink] = useState(false)
+    const userId = localStorage.getItem('userId')
 
     useEffect(() => {
         if (isOpen) {
@@ -25,84 +22,86 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
         }
     }, [isOpen])
 
-    // Thêm ảnh từ thiết bị
-    const handleImageChange = (e) => {
-        const files = Array.from(e.target.files)
-        const newPreviews = files.map((file) => URL.createObjectURL(file))
-        setImages((prev) => [...prev, ...files])
-        setPreviewURLs((prev) => [...prev, ...newPreviews])
-    }
+    const handleUseGoogleDocs = async () => {
+        if (!userId) return alert('Chưa có userId')
 
-    // Xóa ảnh từ thiết bị
-    const handleRemoveImage = (indexToRemove) => {
-        setImages((prev) => prev.filter((_, i) => i !== indexToRemove))
-        setPreviewURLs((prev) => prev.filter((_, i) => i !== indexToRemove))
-    }
+        try {
+            setLoading(true)
 
-    // Thêm ảnh từ link
-    const handleAddImageLink = async () => {
-        const url = newImageLink.trim()
-        if (!url) return
-        setCheckingImageLink(true)
-        const isValidImage = await checkImageExists(url)
-        setCheckingImageLink(false)
-        if (!isValidImage) {
-            toast.error(
-                'Ảnh không tồn tại hoặc không thể tải được từ liên kết này.'
-            )
-            return
+            const response = await fetch('http://localhost:4000/create-doc', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    userEmail: 'vietanhnguyenvu219@gmail.com'
+                })
+            })
+
+            const data = await response.json()
+
+            if (!response.ok || !data.docUrl) {
+                alert('Không thể tạo tài liệu Google Docs')
+                return
+            }
+
+            setPage('confirm')
+            setDocumentId(data.documentId)
+
+            window.open(data.docUrl, '_blank')
+        } catch (error) {
+            console.error('Lỗi khi tạo Google Doc:', error)
+            alert('Lỗi khi tạo Google Doc')
+        } finally {
+            setLoading(false)
         }
-
-        setImageLinks((prev) => [...prev, url])
-        setNewImageLink('')
     }
 
-    // Kiểm tra link ảnh hợp lệ
-    const checkImageExists = (url) => {
-        return new Promise((resolve) => {
-            const img = new Image()
-            img.onload = () => resolve(true)
-            img.onerror = () => resolve(false)
-            img.src = url
-        })
-    }
+    const handleUserDone = async () => {
+        if (!documentId) return toast.error('Thiếu documentId')
 
-    // Xóa ảnh từ link
-    const handleRemoveImageLink = (index) => {
-        setImageLinks((prev) => prev.filter((_, i) => i !== index))
+        try {
+            setLoading(true)
+
+            const res = await fetch(
+                `http://localhost:4000/get-doc?docId=${documentId}`
+            )
+            const htmlText = await res.text()
+            if (res.ok) {
+                setDocumentContent(htmlText)
+                console.log('htmlText', htmlText)
+                setPage('preview')
+            } else {
+                toast.error('Không thể lấy nội dung từ Google Docs')
+            }
+        } catch (error) {
+            toast.error('Lỗi khi lấy nội dung tài liệu')
+            console.error(error)
+        } finally {
+            setLoading(false)
+        }
     }
 
     // Submit
     const handleSubmit = async () => {
-        if (!blogName.trim() || !blogContent.trim()) {
-            alert('Vui lòng nhập đầy đủ tên và nội dung blog.')
-            return
-        }
         setLoading(true)
         try {
             // Giả lập delay (1.5s)
             await new Promise((resolve) => setTimeout(resolve, 1500))
             onConfirm({
-                blogName,
-                blogContent,
-                images,
-                imageLinks
+                documentId,
+                documentContent
             })
-
-            setBlogName('')
-            setBlogContent('')
-            setImages([])
-            setPreviewURLs([])
-            setImageLinks([])
-            setNewImageLink('')
         } finally {
             setLoading(false)
-            handleClose()
+            // handleClose()
         }
     }
 
     const handleClose = () => {
         onClose()
+        setPage('method')
+        setDocumentId(null)
+        setDocumentContent('')
     }
 
     if (!isVisible) return null
@@ -124,181 +123,97 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
                     className={`${loading ? 'opacity-50 pointer-events-none select-none' : ''}`}
                 >
                     {/* Tiêu đề */}
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
                         Tạo Blog Mới
                     </h2>
 
-                    {/* Nhập tên */}
-                    <div className="mb-4">
-                        <label className="block mb-1 font-medium text-gray-700">
-                            Tên blog
-                        </label>
-                        <input
-                            type="text"
-                            value={blogName}
-                            onChange={(e) => setBlogName(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
-                            placeholder="Nhập tên blog"
-                        />
-                    </div>
-
-                    {/* Nhập content */}
-                    <div className="mb-4">
-                        <label className="block mb-1 font-medium text-gray-700">
-                            Nội dung
-                        </label>
-                        <textarea
-                            value={blogContent}
-                            onChange={(e) => setBlogContent(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2 h-32 resize-none focus:outline-none focus:ring focus:ring-blue-300"
-                            placeholder="Nhập nội dung blog"
-                        ></textarea>
-                    </div>
-
-                    {/* Nhập hình ảnh từ thiết bị */}
-                    <div className="mb-4">
-                        <label className="block mb-1 font-medium text-gray-700">
-                            Hình ảnh (có thể chọn nhiều)
-                        </label>
-                        <div>
-                            <label
-                                htmlFor="file-upload"
-                                className="inline-block px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600 active:scale-95 transition"
-                            >
-                                Chọn ảnh
+                    {page === 'method' && (
+                        <div className="mb-4">
+                            <label className="block mb-1 font-medium text-gray-700">
+                                Bạn muốn tải lên bằng:
                             </label>
-                            <input
-                                id="file-upload"
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                className="hidden"
-                            />
-                        </div>
-                    </div>
 
-                    {/* Xem trước hình ảnh từ thiết bị */}
-                    {previewURLs.length > 0 && (
-                        <div className="mb-6 max-h-30 overflow-y-auto pr-1 border rounded">
-                            <div className="grid grid-cols-3 md:grid-cols-4 gap-3 p-2">
-                                {previewURLs.map((url, index) => (
-                                    <div key={index} className="relative group">
-                                        <img
-                                            src={url}
-                                            alt={`Preview ${index + 1}`}
-                                            className="w-full h-24 object-cover rounded border cursor-pointer"
-                                            onClick={() =>
-                                                handleRemoveImage(index)
-                                            }
-                                            title="Click để xóa"
-                                        />
-                                        <span className="absolute top-1 right-2 text-white text-sm bg-black bg-opacity-50 px-1 rounded opacity-0 group-hover:opacity-100 transition">
-                                            Xóa
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>{' '}
-                        </div>
-                    )}
+                            <div className="flex gap-4 mt-2">
+                                {/* Upload from Word */}
+                                <button className="flex-1 border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center hover:bg-gray-100 transition hover:cursor-pointer active:bg-gray-200">
+                                    <img
+                                        src="/microsoft-word-icon.svg"
+                                        alt="Word"
+                                        className="w-10 h-10 mb-2"
+                                    />
+                                    <span className="text-gray-800 font-medium">
+                                        Tải lên từ Word
+                                    </span>
+                                </button>
 
-                    {/* Nhập ảnh từ URL */}
-                    <div className="mb-4">
-                        <label className="block mb-1 font-medium text-gray-700">
-                            Link ảnh từ bên ngoài
-                        </label>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                value={newImageLink}
-                                onChange={(e) =>
-                                    setNewImageLink(e.target.value)
-                                }
-                                placeholder="https://example.com/image.jpg"
-                                className="flex-1 border border-gray-300 rounded px-3 py-2"
-                            />
-
-                            <button
-                                onClick={handleAddImageLink}
-                                disabled={checkingImageLink}
-                                className={`px-4 py-2 rounded text-white flex items-center justify-center transition
-        ${checkingImageLink ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 hover:cursor-pointer'}
-    `}
-                            >
-                                {checkingImageLink ? (
-                                    <svg
-                                        className="animate-spin h-5 w-5 text-white"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <circle
-                                            className="opacity-25"
-                                            cx="12"
-                                            cy="12"
-                                            r="10"
-                                            stroke="currentColor"
-                                            strokeWidth="4"
-                                        ></circle>
-                                        <path
-                                            className="opacity-75"
-                                            fill="currentColor"
-                                            d="M4 12a8 8 0 018-8v4l3.536-3.536A9 9 0 103 12h1z"
-                                        ></path>
-                                    </svg>
-                                ) : (
-                                    'Thêm'
-                                )}
-                            </button>
-
-                            {/* <button
-                                onClick={handleAddImageLink}
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                            >
-                                Thêm
-                            </button> */}
-                        </div>
-                    </div>
-
-                    {/* Xem trước ảnh từ URL */}
-                    {imageLinks.length > 0 && (
-                        <div className="mb-6 max-h-30 overflow-y-auto pr-1 border rounded">
-                            <div className="grid grid-cols-3 md:grid-cols-4 gap-3 p-2">
-                                {imageLinks.map((link, index) => (
-                                    <div key={index} className="relative group">
-                                        <img
-                                            src={link}
-                                            alt={`External ${index + 1}`}
-                                            className="w-full h-24 object-cover rounded border cursor-pointer"
-                                            onClick={() =>
-                                                handleRemoveImageLink(index)
-                                            }
-                                            title="Click để xóa"
-                                        />
-                                        <span className="absolute top-1 right-2 text-white text-sm bg-black bg-opacity-50 px-1 rounded opacity-0 group-hover:opacity-100 transition">
-                                            Xóa
-                                        </span>
-                                    </div>
-                                ))}
+                                {/* Upload from Google Docs */}
+                                <button
+                                    onClick={handleUseGoogleDocs}
+                                    className="flex-1 border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center hover:bg-gray-100 transition hover:cursor-pointer active:bg-gray-200 "
+                                >
+                                    <img
+                                        src="/google-docs-icon.svg"
+                                        alt="Google Docs"
+                                        className="w-10 h-10 mb-2"
+                                    />
+                                    <span className="text-gray-800 font-medium">
+                                        Dùng Google Docs
+                                    </span>
+                                </button>
                             </div>
                         </div>
                     )}
 
-                    {/* Nút */}
-                    <div className="flex justify-end gap-4">
-                        <button
-                            onClick={handleClose}
-                            className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 transition hover:cursor-pointer active:bg-gray-500"
-                        >
-                            Hủy
-                        </button>
-                        <button
-                            onClick={handleSubmit}
-                            className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white transition hover:cursor-pointer active:bg-green-800"
-                        >
-                            Tạo blog
-                        </button>
-                    </div>
+                    {page === 'confirm' && (
+                        <>
+                            <div className="mb-4">
+                                <h3>Bạn đã tạo bài viết chưa ?</h3>
+                            </div>
+                            {/* Nút */}
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    onClick={handleClose}
+                                    className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 transition hover:cursor-pointer active:bg-gray-500"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    onClick={handleUserDone}
+                                    className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white transition hover:cursor-pointer active:bg-green-800"
+                                >
+                                    Xem
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {page === 'preview' && (
+                        <>
+                            <iframe
+                                src={`https://docs.google.com/document/d/${documentId}/preview`}
+                                width="100%"
+                                height="600"
+                                className="rounded border"
+                            />
+
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    onClick={handleClose}
+                                    className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 transition"
+                                >
+                                    Đóng
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleSubmit()
+                                    }}
+                                    className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white transition"
+                                >
+                                    Xác nhận
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
