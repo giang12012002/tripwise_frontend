@@ -28,7 +28,6 @@ function AddPlanDialog({ isOpen, onClose, onConfirm, plan }) {
 
     useEffect(() => {
         if (plan) {
-            console.log('plan choose: ', plan)
             setPlanName(plan.planName || '')
             setPrice(plan.price !== undefined ? String(plan.price) : '')
             setDescription(plan.description || '')
