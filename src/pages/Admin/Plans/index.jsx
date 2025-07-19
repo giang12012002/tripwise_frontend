@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { planAdminAPI } from '@/apis'
+import { planAdminAPI, appSettingAPI } from '@/apis'
 import { useLocation } from 'react-router-dom'
-import { plansData } from './mockData'
 import PlanCard from './PlanCard'
 import AddPlanDialog from './AddPlanDialog'
 import UpdatePlanDialog from './AddPlanDialog'
+import SettingDialog from './SettingDialog'
 import DeleteConfirmDialog from './DeleteConfirmDialog'
 import { toast } from 'react-toastify'
+import { FaGear } from 'react-icons/fa6'
+
+const getValueByKey = (dataArray, targetKey) => {
+    const setting = dataArray.find((item) => item.key === targetKey)
+    return setting?.value ?? null
+}
 
 function Index() {
-    const navigate = useNavigate()
     const location = useLocation()
     const [plans, setPlans] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -18,13 +22,24 @@ function Index() {
     const [showAddPlanDialog, setShowAddPlanDialog] = useState(false)
     const [showUpdatePlanDialog, setShowUpdatePlanDialog] = useState(false)
     const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+    const [showSettingDialog, setShowSettingDialog] = useState(false)
     const [updatingPlan, setUpdatingPlan] = useState(null)
     const [deletingPlan, setDeletingPlan] = useState(null)
+
+    const [freePlan, setFreePlan] = useState('')
+    const [trialPlan, setTrialPlan] = useState('')
+    const [duration, setDuration] = useState(null)
 
     const fetchPlans = async () => {
         setLoading(true)
         try {
-            setPlans(plansData.filter((p) => p.isDeleted === false))
+            const plansResponse = await planAdminAPI.fetchPlans()
+            if (
+                plansResponse.status === 200 &&
+                plansResponse.data.success === true
+            ) {
+                setPlans(plansResponse.data.data)
+            }
         } catch (error) {
             setError('Không thể lấy danh sách gói')
         } finally {
@@ -32,8 +47,23 @@ function Index() {
         }
     }
 
+    const fetchStates = async () => {
+        try {
+            const response = await appSettingAPI.fetchKeys()
+            if (response.status === 200) {
+                const data = response.data
+                setFreePlan(getValueByKey(data, 'FreePlan'))
+                setTrialPlan(getValueByKey(data, 'DefaultTrialPlanName'))
+                setDuration(Number(getValueByKey(data, 'TrialDurationInDays')))
+            }
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
     useEffect(() => {
         fetchPlans()
+        fetchStates()
     }, [])
 
     useEffect(() => {
@@ -42,39 +72,44 @@ function Index() {
         }
     }, [location.state])
 
-    // TODO
     const handleOnDelete = (plan) => {
         setDeletingPlan(plan)
         setShowDeleteDialog(true)
     }
 
-    const handleDelete = (plan) => {
+    // done
+    const handleDelete = async (plan) => {
         try {
-            setPlans(plans.filter((p) => p.planId !== plan.planId))
+            const response = await planAdminAPI.deletePlan(plan.planId)
+            if (response.status === 200) {
+                fetchPlans()
+                toast.success(response.data.message || 'Xóa gói thành công')
+            }
             setDeletingPlan(null)
-            toast.success('Xóa gói thành công')
+            setShowDeleteDialog(false)
         } catch (e) {
             toast.error('Không thể xóa gói')
             console.log(e)
         }
     }
-    // TODO
+
     const handleOnUpdate = (plan) => {
         setUpdatingPlan(plan)
         setShowUpdatePlanDialog(true)
     }
 
-    const handleUpdate = (plan, planId) => {
+    // done
+    const handleUpdate = async (plan, planId) => {
         try {
-            if (planId !== null && updatingPlan.planId === planId) {
-                const newPlans = plans.map((p) =>
-                    p.planId === planId ? { ...plan, planId } : p
+            const response = await planAdminAPI.updatePlan(planId, plan)
+            if (response.status === 200) {
+                fetchPlans()
+                toast.success(
+                    response.data.message || 'Cập nhật gói thành công'
                 )
-                setPlans(newPlans)
-                setUpdatingPlan(null)
-                setShowUpdatePlanDialog(false)
-                toast.success('Cập nhật gói thành công')
             }
+            setUpdatingPlan(null)
+            setShowUpdatePlanDialog(false)
         } catch (e) {
             toast.error('Không thể cập nhật gói')
             console.log(e)
@@ -83,20 +118,19 @@ function Index() {
         }
     }
 
-    const handleAdd = (plan, planId) => {
-        const nextId =
-            plans && plans.length > 0
-                ? Math.max(...plans.map((p) => p.planId)) + 1
-                : 1
-
-        const completePlan = {
-            ...plan,
-            planId: nextId
+    // done
+    const handleAdd = async (plan, planId) => {
+        try {
+            const response = await planAdminAPI.createPlan(plan)
+            if (response.status === 200) {
+                fetchPlans()
+                toast.success(response.data.message || 'Tạo gói thành công')
+            }
+        } catch (error) {
+            toast.error(error.message || 'Không thể tạo gói')
+        } finally {
+            setShowAddPlanDialog(false)
         }
-
-        setPlans((prev) => [...(prev || []), completePlan])
-        toast.success('Thêm gói thành công')
-        setShowAddPlanDialog(false)
     }
 
     return (
@@ -106,7 +140,7 @@ function Index() {
                     Danh sách các gói
                 </h1>
 
-                <div className="py-4 px-8 flex justify-end">
+                <div className="py-4 px-8 flex justify-end gap-4">
                     <button
                         onClick={() => setShowAddPlanDialog(true)}
                         className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 hover:cursor-pointer active:scale-95 transition duration-200 ease-in-out"
@@ -114,6 +148,23 @@ function Index() {
                     >
                         Thêm
                     </button>
+
+                    <button
+                        onClick={() => {
+                            setUpdatingPlan(plans[0]),
+                                setShowSettingDialog(true)
+                        }}
+                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 hover:cursor-pointer active:scale-95 transition duration-200 ease-in-out"
+                        title="Thêm plan mới"
+                    >
+                        <FaGear />
+                    </button>
+                </div>
+
+                <div>
+                    <span>{freePlan}</span>
+                    <span>{trialPlan}</span>
+                    <span>{duration}</span>
                 </div>
 
                 {loading ? (
@@ -138,6 +189,12 @@ function Index() {
                                             onDelete={handleOnDelete}
                                             onUpdate={handleOnUpdate}
                                             isPreview={true}
+                                            isFreePlan={
+                                                plan.planName === freePlan
+                                            }
+                                            isTrialPlan={
+                                                plan.planName === trialPlan
+                                            }
                                         />
                                     ))}
                                 </div>
@@ -175,6 +232,14 @@ function Index() {
                     setShowDeleteDialog(false)
                 }}
                 onConfirm={handleDelete}
+            />
+
+            <SettingDialog
+                isOpen={showSettingDialog}
+                onClose={() => {
+                    setShowSettingDialog(false), fetchStates()
+                }}
+                plans={plans}
             />
         </div>
     )

@@ -11,38 +11,21 @@ const planAdminAPI = {
         )
         return response
     },
-    // TODO: vì sao update này lại phải truyền createdBy ?
-    createPlan: async (
-        planName,
-        price,
-        description,
-        maxResquests,
-        createdBy
-    ) => {
-        const response = await authorizedAxios.put(`/api/admin/plan`, {
-            planName,
-            price,
-            description,
-            maxResquests,
-            createdBy
-        })
+    createPlan: async (data) => {
+        const response = await authorizedAxios.post(`/api/admin/plan`, data)
         return response
     },
-    updatePlan: async (
-        id,
-        planName,
-        price,
-        description,
-        maxResquests,
-        modifiedBy
-    ) => {
-        const response = await authorizedAxios.put(`/api/admin/plan/${id}`, {
-            planName,
-            price,
-            description,
-            maxResquests,
-            modifiedBy
-        })
+    updatePlan: async (id, data) => {
+        const response = await authorizedAxios.put(
+            `/api/admin/plan/update/${id}`,
+            data
+        )
+        return response
+    },
+    deletePlan: async (id) => {
+        const response = await authorizedAxios.delete(
+            `/api/admin/plan/delete/${id}`
+        )
         return response
     }
 }

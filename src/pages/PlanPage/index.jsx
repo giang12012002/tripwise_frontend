@@ -7,6 +7,7 @@ import axios from 'axios'
 import { splitTextByType } from '@/utils/text'
 import { planAPI, paymentAPI } from '@/apis'
 
+// TODO : sửa lại các plan mặc định không thanh toán được
 function Index() {
     const [plans, setPlans] = useState([])
 
