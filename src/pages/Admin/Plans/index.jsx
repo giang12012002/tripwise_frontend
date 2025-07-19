@@ -161,12 +161,6 @@ function Index() {
                     </button>
                 </div>
 
-                <div>
-                    <span>{freePlan}</span>
-                    <span>{trialPlan}</span>
-                    <span>{duration}</span>
-                </div>
-
                 {loading ? (
                     <div className="text-center text-gray-500">
                         Đang tải danh sách gói...
