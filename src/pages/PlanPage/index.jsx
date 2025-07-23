@@ -5,8 +5,9 @@ import PlanCard from './PlanCard'
 import ConfirmDialog from './ConfirmDialog'
 import axios from 'axios'
 import { splitTextByType } from '@/utils/text'
-import { planAPI } from '@/apis'
+import { planAPI, paymentAPI } from '@/apis'
 
+// TODO : sửa lại các plan mặc định không thanh toán được
 function Index() {
     const [plans, setPlans] = useState([])
 
@@ -36,36 +37,19 @@ function Index() {
     }
 
     const handleCheckout = async ({ plan, method }) => {
-        // //TODO: cần sửa lại chỗ này
-        let userId = localStorage.getItem('userId')
-        if (userId === 'undefined' || userId === null) {
-            userId = '1'
-        }
-
-        const accessToken = localStorage.getItem('accessToken')
-        console.log('accessToken', accessToken)
-
-        console.log('handleCheckout', plan, method, userId)
+        // TODO: cần sửa lại chỗ này
         if (method === 'vnpay') {
-            const res = await axios.post(
-                'http://localhost:3000/api/create-qr',
-                {
-                    plan, // planId, planName, price, features
-                    method,
-                    userId,
-                    accessToken
-                }
-            )
-
-            console.log('res.data', res.data)
-
-            window.location.href = res.data
+            const res = await paymentAPI.sendPlanRequest({
+                planId: plan.planId,
+                paymentMethod: method
+            })
+            localStorage.setItem('vnpay-redirect', '/plans')
+            window.location.href = res.data.url
         } else if (method === 'qr') {
             console.log('qr')
         }
 
-        const res = await planAPI.upgrade(plan.planId)
-        console.log('res', res)
+        // const res = await planAPI.upgrade(plan.planId)
     }
 
     return (

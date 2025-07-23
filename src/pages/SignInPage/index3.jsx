@@ -243,6 +243,15 @@ function SignIn() {
                                     )}
                                 </button>
                             </div>
+                            <p className="text-right text-sm mt-1">
+                                <Link
+                                    to="/forgot-password"
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    Quên mật khẩu?
+                                </Link>
+                            </p>
+
                             <button
                                 type="submit"
                                 onClick={handleLogin}

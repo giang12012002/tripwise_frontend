@@ -49,11 +49,34 @@ const logout = async (deviceId) => {
     return await authorizedAxios.post(`/authentication/logout/${deviceId}`)
 }
 
+const forgotPassword = async ({ email }) => {
+    return await authorizedAxios.post('/authentication/forgot-password', {
+        email
+    })
+}
+
+const verifyForgotOtp = async ({ email, enteredOtp }) => {
+    return await authorizedAxios.post(
+        `authentication/verify-forgot-otp?enteredOtp=${enteredOtp}`,
+        { email }
+    )
+}
+
+const resetPassword = async ({ email, newPassword }) => {
+    return await authorizedAxios.post('/authentication/reset-password', {
+        email,
+        newPassword
+    })
+}
+
 export default {
     login,
     googleLogin,
     signup,
     refreshToken,
     verifyOtp,
-    logout
+    logout,
+    forgotPassword,
+    verifyForgotOtp,
+    resetPassword
 }

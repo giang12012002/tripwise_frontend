@@ -1,25 +1,28 @@
 import TourCard from './TourCard'
+import story1Image from '@/assets/images/story1.jpg'
+import story2Image from '@/assets/images/story2.jpg'
+import story3Image from '@/assets/images/story3.jpg'
 // Tours
 const tours = [
     {
         id: 1,
         name: 'Hà Nội City Tour 3N2Đ',
         price: '2,500,000 VND',
-        image: 'https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/11/4/1263015/IMG_6714.jpeg',
+        image: story1Image,
         address: 'Hà Nội, Việt Nam'
     },
     {
         id: 2,
         name: 'Hạ Long Bay 2N1Đ',
         price: '3,000,000 VND',
-        image: 'https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/11/4/1263015/IMG_6714.jpeg',
+        image: story2Image,
         address: 'Quảng Ninh, Việt Nam'
     },
     {
         id: 3,
         name: 'Phú Quốc Island 4N3Đ',
         price: '4,500,000 VND',
-        image: 'https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/11/4/1263015/IMG_6714.jpeg',
+        image: story3Image,
         address: 'Kiên Giang, Việt Nam'
     }
 ]

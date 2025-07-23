@@ -12,7 +12,7 @@ function OtpVerification() {
     const navigate = useNavigate()
     const location = useLocation()
     const { login } = useAuth()
-    const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '', ''])
+    const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', ''])
     const [isLoading, setIsLoading] = useState(false)
     const inputRefs = useRef([])
     const { email, username, password, confirmPassword, signupRequestId } =
@@ -47,15 +47,25 @@ function OtpVerification() {
         newOtpDigits[index] = value
         setOtpDigits(newOtpDigits)
 
-        // Move to next input if digit is entered
+        // Move to next input if digit is entered, with slight delay
         if (value && index < 5) {
-            inputRefs.current[index + 1].focus()
+            setTimeout(() => {
+                inputRefs.current[index + 1].focus()
+            }, 0)
         }
     }
 
     const handleKeyDown = (index, e) => {
         if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
             inputRefs.current[index - 1].focus()
+        } else if (e.key === 'ArrowLeft' && index > 0) {
+            inputRefs.current[index - 1].focus()
+        } else if (e.key === 'ArrowRight' && index < 5) {
+            inputRefs.current[index + 1].focus()
+        } else if (e.key === 'Delete') {
+            const newOtpDigits = [...otpDigits]
+            newOtpDigits[index] = ''
+            setOtpDigits(newOtpDigits)
         }
     }
 
@@ -65,8 +75,14 @@ function OtpVerification() {
         if (/^\d{6}$/.test(pastedData)) {
             const newOtpDigits = pastedData.split('')
             setOtpDigits(newOtpDigits)
-            inputRefs.current[5].focus()
+            setTimeout(() => {
+                inputRefs.current[5].focus()
+            }, 0)
         }
+    }
+
+    const handleFocus = (index) => {
+        inputRefs.current[index].select()
     }
 
     const handleVerifyOtp = async () => {
@@ -227,6 +243,7 @@ function OtpVerification() {
                                     }
                                     onKeyDown={(e) => handleKeyDown(index, e)}
                                     onPaste={index === 0 ? handlePaste : null}
+                                    onFocus={() => handleFocus(index)}
                                     maxLength={1}
                                     className="w-12 h-12 text-center border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg font-medium"
                                     disabled={isLoading}
@@ -236,14 +253,14 @@ function OtpVerification() {
                                 />
                             ))}
                         </div>
-                        <button
-                            type="button"
-                            onClick={handleResendOtp}
-                            className="text-blue-600 hover:underline mb-4 text-sm"
-                            disabled={isLoading}
-                        >
-                            Gửi lại OTP
-                        </button>
+                        {/*<button*/}
+                        {/*    type="button"*/}
+                        {/*    onClick={handleResendOtp}*/}
+                        {/*    className="text-blue-600 hover:underline mb-4 text-sm"*/}
+                        {/*    disabled={isLoading}*/}
+                        {/*>*/}
+                        {/*    Gửi lại OTP*/}
+                        {/*</button>*/}
                         <button
                             type="submit"
                             onClick={handleVerifyOtp}

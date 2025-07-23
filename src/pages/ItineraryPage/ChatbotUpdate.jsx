@@ -4,10 +4,12 @@ import { travelFormAPI } from '@/apis'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
+import { useAuth } from '@/AuthContext'
 
 function ChatbotUpdate() {
     const location = useLocation()
     const navigate = useNavigate()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const itineraryData = location.state?.itineraryData || null
     const [messages, setMessages] = useState([
         {
@@ -24,6 +26,18 @@ function ChatbotUpdate() {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
+    useEffect(() => {
+        if (!isAuthLoading && !isLoggedIn) {
+            Swal.fire({
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
+            })
+            navigate('/')
+        }
+    }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
         scrollToBottom()
@@ -245,7 +259,7 @@ function ChatbotUpdate() {
                                 <div className="space-y-4">
                                     <p className="flex items-center text-gray-700 text-sm leading-6">
                                         <span className="mr-2">📅</span>
-                                        <strong>Ngày đi: </strong>
+                                        <strong>Ngày đi:&nbsp; </strong>
                                         {itineraryData.travelDate
                                             ? new Date(
                                                   itineraryData.travelDate
@@ -254,12 +268,14 @@ function ChatbotUpdate() {
                                     </p>
                                     <p className="flex items-center text-gray-700 text-sm leading-6">
                                         <span className="mr-2">⏳</span>
-                                        <strong>Số ngày: </strong>
+                                        <strong>Số ngày:&nbsp; </strong>
                                         {itineraryData.days || 'Không xác định'}
                                     </p>
                                     <p className="flex items-center text-gray-700 text-sm leading-6">
                                         <span className="mr-2">💸</span>
-                                        <strong>Tổng chi phí ước tính: </strong>
+                                        <strong>
+                                            Tổng chi phí ước tính:&nbsp;{' '}
+                                        </strong>
                                         <span className="text-blue-600">
                                             {formatCurrency(
                                                 itineraryData.totalEstimatedCost
@@ -275,74 +291,95 @@ function ChatbotUpdate() {
                                     Sở thích & Chi tiết
                                 </h4>
                                 <div className="space-y-4">
-                                    <p className="flex items-center text-gray-700 text-sm leading-6">
-                                        <span className="mr-2">🌟</span>
-                                        <strong>Sở thích: </strong>
-                                        {itineraryData.preferences
-                                            ? itineraryData.preferences
-                                                  .split(', ')
-                                                  .map((pref, index) => (
-                                                      <span
-                                                          key={index}
-                                                          className="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full mr-2"
-                                                      >
-                                                          {pref}
-                                                      </span>
-                                                  ))
-                                            : 'Không xác định'}
-                                    </p>
-                                    <p className="flex items-center text-gray-700 text-sm leading-6">
-                                        <span className="mr-2">🍽️</span>
-                                        <strong>Phong cách ăn uống: </strong>
-                                        {itineraryData.diningStyle
-                                            ? itineraryData.diningStyle
-                                                  .split(', ')
-                                                  .map((style, index) => (
-                                                      <span
-                                                          key={index}
-                                                          className="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full mr-2"
-                                                      >
-                                                          {style}
-                                                      </span>
-                                                  ))
-                                            : 'Không xác định'}
-                                    </p>
-                                    <p className="flex items-center text-gray-700 text-sm leading-6">
-                                        <span className="mr-2">🚗</span>
-                                        <strong>Phương tiện: </strong>
-                                        {itineraryData.transportation ||
-                                            'Không xác định'}
-                                    </p>
-                                    <p className="flex items-center text-gray-700 text-sm leading-6">
-                                        <span className="mr-2">👥</span>
-                                        <strong>Nhóm: </strong>
-                                        {itineraryData.groupType ||
-                                            'Không xác định'}
-                                    </p>
-                                    <p className="flex items-center text-gray-700 text-sm leading-6">
-                                        <span className="mr-2">🏨</span>
-                                        <strong>Chỗ ở: </strong>
-                                        {itineraryData.accommodation ||
-                                            'Không xác định'}
-                                    </p>
-                                    <p className="flex items-center text-gray-700 text-sm leading-6">
-                                        <span className="mr-2">🗺️</span>
-                                        <strong>Đề xuất chỗ ở: </strong>
-                                        {itineraryData.suggestedAccommodation ? (
-                                            <a
-                                                href={
-                                                    itineraryData.suggestedAccommodation
-                                                }
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-600 hover:underline hover:text-blue-800 transition-colors"
-                                            >
-                                                Tìm trên Google Maps
-                                            </a>
-                                        ) : (
-                                            'Không xác định'
+                                    {itineraryData.preferences &&
+                                        itineraryData.preferences !==
+                                            'Không xác định' && (
+                                            <p className="flex items-center text-gray-700 text-sm leading-6">
+                                                <span className="mr-2">🌟</span>
+                                                <strong>
+                                                    Sở thích:&nbsp;{' '}
+                                                </strong>
+                                                {itineraryData.preferences
+                                                    .split(', ')
+                                                    .map((pref, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full mr-2"
+                                                        >
+                                                            {pref}
+                                                        </span>
+                                                    ))}
+                                            </p>
                                         )}
-                                    </p>
+                                    {itineraryData.diningStyle &&
+                                        itineraryData.diningStyle !==
+                                            'Không xác định' && (
+                                            <p className="flex items-center text-gray-700 text-sm leading-6">
+                                                <span className="mr-2">🍽️</span>
+                                                <strong>
+                                                    Phong cách ăn uống:{' '}
+                                                </strong>
+                                                {itineraryData.diningStyle
+                                                    .split(', ')
+                                                    .map((style, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full mr-2"
+                                                        >
+                                                            {style}
+                                                        </span>
+                                                    ))}
+                                            </p>
+                                        )}
+                                    {itineraryData.transportation &&
+                                        itineraryData.transportation !==
+                                            'Không xác định' && (
+                                            <p className="flex items-center text-gray-700 text-sm leading-6">
+                                                <span className="mr-2">🚗</span>
+                                                <strong>
+                                                    Phương tiện:&nbsp;{' '}
+                                                </strong>
+                                                {itineraryData.transportation}
+                                            </p>
+                                        )}
+                                    {itineraryData.groupType &&
+                                        itineraryData.groupType !==
+                                            'Không xác định' && (
+                                            <p className="flex items-center text-gray-700 text-sm leading-6">
+                                                <span className="mr-2">👥</span>
+                                                <strong>Nhóm:&nbsp; </strong>
+                                                {itineraryData.groupType}
+                                            </p>
+                                        )}
+                                    {itineraryData.accommodation &&
+                                        itineraryData.accommodation !==
+                                            'Không xác định' && (
+                                            <p className="flex items-center text-gray-700 text-sm leading-6">
+                                                <span className="mr-2">🏨</span>
+                                                <strong>Chỗ ở:&nbsp; </strong>
+                                                {itineraryData.accommodation}
+                                            </p>
+                                        )}
+                                    {itineraryData.suggestedAccommodation &&
+                                        itineraryData.suggestedAccommodation !==
+                                            'Không xác định' && (
+                                            <p className="flex items-center text-gray-700 text-sm leading-6">
+                                                <span className="mr-2">🗺️</span>
+                                                <strong>
+                                                    Đề xuất chỗ ở:&nbsp;{' '}
+                                                </strong>
+                                                <a
+                                                    href={
+                                                        itineraryData.suggestedAccommodation
+                                                    }
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline hover:text-blue-800 transition-colors"
+                                                >
+                                                    Tìm trên Google Maps
+                                                </a>
+                                            </p>
+                                        )}
                                 </div>
                             </div>
                         </div>

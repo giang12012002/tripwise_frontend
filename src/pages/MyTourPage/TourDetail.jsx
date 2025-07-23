@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { travelFormAPI } from '@/apis'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
+import ReviewTourAI from './ReviewTourAI/index'
 import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
 import { useAuth } from '@/AuthContext'
@@ -10,7 +11,7 @@ import { useAuth } from '@/AuthContext'
 function TourDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const { isLoggedIn } = useAuth()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const [tourDetail, setTourDetail] = useState(null)
     const [loading, setLoading] = useState(true)
     const [openDays, setOpenDays] = useState({})
@@ -20,12 +21,13 @@ function TourDetail() {
     }
 
     useEffect(() => {
-        if (!isLoggedIn) {
+        if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem chi tiết tour.',
-                confirmButtonColor: '#2563eb'
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
             })
             navigate('/')
             return
@@ -52,10 +54,7 @@ function TourDetail() {
 
             try {
                 const response = await travelFormAPI.getTourDetailById(id)
-                console.log(
-                    'Tour Detail API Response:',
-                    JSON.stringify(response.data, null, 2)
-                )
+
                 if (
                     response.status === 200 &&
                     response.data.success &&
@@ -117,10 +116,6 @@ function TourDetail() {
                               }))
                             : []
                     }
-                    console.log(
-                        'Normalized Tour Detail:',
-                        JSON.stringify(normalizedData, null, 2)
-                    )
                     setTourDetail(normalizedData)
                 } else {
                     throw new Error('Dữ liệu chi tiết tour không hợp lệ.')
@@ -215,6 +210,8 @@ function TourDetail() {
         ))
     }
 
+    console.log('tourId ở components cha', id)
+
     return (
         <div className="min-h-screen flex flex-col">
             <Header />
@@ -223,6 +220,9 @@ function TourDetail() {
                     <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">
                         {tourDetail?.TourName || 'Không xác định'}
                     </h2>
+
+                    <ReviewTourAI tourId={id} />
+
                     <button
                         onClick={() => navigate('/myTour')}
                         className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-md flex items-center"
@@ -319,11 +319,7 @@ function TourDetail() {
                                         <strong>Sở thích:&nbsp; </strong>
                                         {formatPreferences(tourDetail.Category)}
                                     </p>
-                                    {/*<p className="flex items-center text-gray-700">*/}
-                                    {/*    <span className="mr-2">📝</span>*/}
-                                    {/*    <strong>Mô tả:&nbsp; </strong>*/}
-                                    {/*    {tourDetail.Description}*/}
-                                    {/*</p>*/}
+
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">📌</span>
                                         <strong>Đề xuất chỗ ở:&nbsp; </strong>
@@ -340,12 +336,17 @@ function TourDetail() {
                                             'Không xác định'
                                         )}
                                     </p>
-
                                     {/*<p className="flex items-center text-gray-700">*/}
-                                    {/*    <span className="mr-2">🏨</span>*/}
-                                    {/*    <strong>Ghi Chú:&nbsp; </strong>*/}
-                                    {/*    {tourDetail.TourInfo}*/}
+                                    {/*    <span className="mr-2">📝</span>*/}
+                                    {/*    <strong>Mô tả:&nbsp; </strong>*/}
+                                    {/*    {tourDetail.Description}*/}
                                     {/*</p>*/}
+
+                                    {/*  <p className="flex items-center text-gray-700">
+                                        <span className="mr-2">🏨</span>
+                                        <strong>Ghi Chú:&nbsp; </strong>
+                                        {tourDetail.TourInfo}
+                                    </p>*/}
                                 </div>
                             </div>
                         </div>
@@ -448,7 +449,9 @@ function TourDetail() {
                                                                         <p className="text-gray-700">
                                                                             <strong>
                                                                                 Chi
-                                                                                phí:{' '}
+                                                                                phí
+                                                                                ước
+                                                                                tính:{' '}
                                                                             </strong>
                                                                             <span className="text-blue-600">
                                                                                 {formatCurrency(
@@ -486,10 +489,10 @@ function TourDetail() {
                                                                                 </a>
                                                                             </p>
                                                                         )}
-                                                                        {activity.ImageUrl && (
+                                                                        {activity.imageUrls && (
                                                                             <img
                                                                                 src={
-                                                                                    activity.ImageUrl
+                                                                                    activity.imageUrls
                                                                                 }
                                                                                 alt={
                                                                                     activity.TourAttractionsName ||
