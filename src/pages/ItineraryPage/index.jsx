@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
 import { travelFormAPI } from '@/apis'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '@/components/header/Header'
@@ -12,8 +12,30 @@ function ItineraryDisplay() {
     const [openDays, setOpenDays] = useState({})
     const [saving, setSaving] = useState(false)
 
-    const toggleDay = (dayNumber) => {
-        setOpenDays((prev) => ({ ...prev, [dayNumber]: !prev[dayNumber] }))
+    const weatherTranslations = {
+        'clear sky': 'trời quang đãng',
+        'few clouds': 'ít mây',
+        'scattered clouds': 'mây rải rác',
+        'broken clouds': 'mây đứt quãng',
+        'overcast clouds': 'trời nhiều mây',
+        'light rain': 'mưa nhẹ',
+        'moderate rain': 'mưa vừa',
+        'heavy rain': 'mưa to',
+        'light snow': 'tuyết nhẹ',
+        snow: 'tuyết',
+        'heavy snow': 'tuyết dày',
+        mist: 'sương mù',
+        fog: 'sương mù dày',
+        thunderstorm: 'giông bão',
+        drizzle: 'mưa phùn'
+    }
+
+    const translateWeatherDescription = (description) => {
+        return (
+            weatherTranslations[description?.toLowerCase()] ||
+            description ||
+            'mây rải rác'
+        )
     }
 
     const formatCurrency = (value) => {
@@ -24,9 +46,19 @@ function ItineraryDisplay() {
         }).format(value)
     }
 
+    const toggleDay = (dayNumber) => {
+        setOpenDays((prev) => ({ ...prev, [dayNumber]: !prev[dayNumber] }))
+    }
+
     const handleSaveAsTour = async () => {
         if (!itineraryData?.generatePlanId) {
-            toast.error('Không có lịch trình để lưu thành tour.')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Không có lịch trình để lưu thành tour.',
+                showConfirmButton: false,
+                timer: 1500
+            })
             return
         }
         setSaving(true)
@@ -34,15 +66,42 @@ function ItineraryDisplay() {
             const response = await travelFormAPI.saveTourFromGenerated(
                 itineraryData.generatePlanId
             )
-            toast.success('lịch trình đã được lưu thành tour.')
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công',
+                text: 'Lịch trình đã được lưu thành tour.',
+                showConfirmButton: false,
+                timer: 1500
+            })
             navigate('/mytour')
         } catch (err) {
-            toast.error(
-                err.response?.data?.error || err.message || 'Lỗi khi lưu tour.'
-            )
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text:
+                    err.response?.data?.error ||
+                    err.message ||
+                    'Lỗi khi lưu tour.',
+                showConfirmButton: false,
+                timer: 1500
+            })
         } finally {
             setSaving(false)
         }
+    }
+
+    const handleUpdateItinerary = () => {
+        if (!itineraryData?.generatePlanId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Không có lịch trình để cập nhật.',
+                showConfirmButton: false,
+                timer: 1500
+            })
+            return
+        }
+        navigate('/chatbot-update', { state: { itineraryData } })
     }
 
     if (!itineraryData) {
@@ -70,55 +129,77 @@ function ItineraryDisplay() {
                     <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">
                         Lịch trình du lịch tại {itineraryData.destination}
                     </h2>
-                    <button
-                        onClick={handleSaveAsTour}
-                        className="px-5 py-2 bg-gradient-to-r from-green-600 to-green-800 text-white rounded-lg hover:from-green-700 hover:to-green-900 transition-all duration-300 shadow-md disabled:bg-green-400 disabled:cursor-not-allowed flex items-center"
-                        disabled={saving}
-                    >
-                        {saving ? (
-                            <div className="flex items-center">
-                                <svg
-                                    className="animate-spin h-5 w-5 text-white mr-2"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
+                    <div className="flex space-x-4">
+                        <button
+                            onClick={handleUpdateItinerary}
+                            className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-md flex items-center"
+                        >
+                            <svg
+                                className="w-5 h-5 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                                />
+                            </svg>
+                            Cập nhật lịch trình
+                        </button>
+                        <button
+                            onClick={handleSaveAsTour}
+                            className="px-5 py-2 bg-gradient-to-r from-green-600 to-green-800 text-white rounded-lg hover:from-green-700 hover:to-green-900 transition-all duration-300 shadow-md disabled:bg-green-400 disabled:cursor-not-allowed flex items-center"
+                            disabled={saving}
+                        >
+                            {saving ? (
+                                <div className="flex items-center">
+                                    <svg
+                                        className="animate-spin h-5 w-5 text-white mr-2"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                    </svg>
+                                    Đang lưu...
+                                </div>
+                            ) : (
+                                <>
+                                    <svg
+                                        className="w-5 h-5 mr-2"
+                                        fill="none"
                                         stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
-                                Đang lưu...
-                            </div>
-                        ) : (
-                            <>
-                                <svg
-                                    className="w-5 h-5 mr-2"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2 2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-                                    />
-                                </svg>
-                                Lưu thành tour
-                            </>
-                        )}
-                    </button>
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002 2v9a2 2 0 00-2 2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                                        />
+                                    </svg>
+                                    Lưu thành tour
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-white p-6 rounded-xl shadow-md">
@@ -129,7 +210,7 @@ function ItineraryDisplay() {
                         <div className="space-y-3">
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">📅</span>
-                                <strong>Ngày đi:&nbsp;</strong>
+                                <strong>Ngày đi: </strong>
                                 {itineraryData.travelDate
                                     ? new Date(
                                           itineraryData.travelDate
@@ -138,12 +219,12 @@ function ItineraryDisplay() {
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">⏳</span>
-                                <strong>Số ngày:&nbsp;</strong>
+                                <strong>Số ngày: </strong>
                                 {itineraryData.days || 'Không xác định'}
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">💸</span>
-                                <strong>Tổng chi phí ước tính:&nbsp;</strong>
+                                <strong>Tổng chi phí ước tính: </strong>
                                 <span className="text-blue-600">
                                     {formatCurrency(
                                         itineraryData.totalEstimatedCost
@@ -159,7 +240,7 @@ function ItineraryDisplay() {
                         <div className="space-y-3">
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">🌟</span>
-                                <strong>Sở thích:&nbsp;</strong>
+                                <strong>Sở thích: </strong>
                                 {itineraryData.preferences
                                     ? itineraryData.preferences
                                           .split(', ')
@@ -175,7 +256,7 @@ function ItineraryDisplay() {
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">🍽️</span>
-                                <strong>Phong cách ăn uống:&nbsp;</strong>
+                                <strong>Phong cách ăn uống: </strong>
                                 {itineraryData.diningStyle
                                     ? itineraryData.diningStyle
                                           .split(', ')
@@ -191,24 +272,24 @@ function ItineraryDisplay() {
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">🚗</span>
-                                <strong>Phương tiện:&nbsp;</strong>
+                                <strong>Phương tiện: </strong>
                                 {itineraryData.transportation ||
                                     'Không xác định'}
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">👥</span>
-                                <strong>Nhóm:&nbsp;</strong>
+                                <strong>Nhóm: </strong>
                                 {itineraryData.groupType || 'Không xác định'}
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">🏨</span>
-                                <strong>Chỗ ở:&nbsp;</strong>
+                                <strong>Chỗ ở: </strong>
                                 {itineraryData.accommodation ||
                                     'Không xác định'}
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">🗺️</span>
-                                <strong>Đề xuất chỗ ở:&nbsp;</strong>
+                                <strong>Đề xuất chỗ ở: </strong>
                                 {itineraryData.suggestedAccommodation ? (
                                     <a
                                         href={
@@ -271,12 +352,35 @@ function ItineraryDisplay() {
                                 </button>
                                 {openDays[day.dayNumber] && (
                                     <div className="p-6 animate-fade-in">
-                                        <p className="text-gray-700 mb-4">
-                                            <strong>Chi phí ngày:</strong>{' '}
-                                            <span className="text-blue-600">
-                                                {formatCurrency(day.dailyCost)}
-                                            </span>
-                                        </p>
+                                        <div className="mb-4 space-y-2">
+                                            <p className="text-gray-700">
+                                                <strong>Chi phí ngày: </strong>
+                                                <span className="text-blue-600">
+                                                    {formatCurrency(
+                                                        day.dailyCost
+                                                    )}
+                                                </span>
+                                            </p>
+                                            <p className="text-gray-700">
+                                                <strong>Thời tiết: </strong>
+                                                {translateWeatherDescription(
+                                                    day.weatherDescription
+                                                )}
+                                            </p>
+                                            <p className="text-gray-700">
+                                                <strong>Nhiệt độ: </strong>
+                                                {day.temperatureCelsius
+                                                    ? `${day.temperatureCelsius}°C`
+                                                    : 'Không xác định'}
+                                            </p>
+                                            <p className="text-gray-700">
+                                                <strong>
+                                                    Ghi chú thời tiết:{' '}
+                                                </strong>
+                                                {day.weatherNote ||
+                                                    'Không có ghi chú'}
+                                            </p>
+                                        </div>
                                         <ul className="relative space-y-6">
                                             {day.activities &&
                                             day.activities.length > 0 ? (
@@ -309,8 +413,8 @@ function ItineraryDisplay() {
                                                                 <p className="text-gray-700">
                                                                     <strong>
                                                                         Thời
-                                                                        gian:
-                                                                    </strong>{' '}
+                                                                        gian:{' '}
+                                                                    </strong>
                                                                     {activity.starttime &&
                                                                     activity.endtime
                                                                         ? `${activity.starttime} - ${activity.endtime}`
@@ -319,8 +423,8 @@ function ItineraryDisplay() {
                                                                 <p className="text-gray-700">
                                                                     <strong>
                                                                         Hoạt
-                                                                        động:
-                                                                    </strong>{' '}
+                                                                        động:{' '}
+                                                                    </strong>
                                                                     {activity.description ||
                                                                         'Không xác định'}
                                                                 </p>
@@ -328,8 +432,8 @@ function ItineraryDisplay() {
                                                                     <strong>
                                                                         Chi phí
                                                                         ước
-                                                                        tính:
-                                                                    </strong>{' '}
+                                                                        tính:{' '}
+                                                                    </strong>
                                                                     <span className="text-blue-600">
                                                                         {formatCurrency(
                                                                             activity.estimatedCost
@@ -339,8 +443,8 @@ function ItineraryDisplay() {
                                                                 <p className="text-gray-700">
                                                                     <strong>
                                                                         Phương
-                                                                        tiện:
-                                                                    </strong>{' '}
+                                                                        tiện:{' '}
+                                                                    </strong>
                                                                     {activity.transportation ||
                                                                         'Không xác định'}
                                                                 </p>
@@ -348,8 +452,8 @@ function ItineraryDisplay() {
                                                                     <p className="text-gray-700">
                                                                         <strong>
                                                                             Địa
-                                                                            chỉ:
-                                                                        </strong>{' '}
+                                                                            chỉ:{' '}
+                                                                        </strong>
                                                                         <a
                                                                             href={
                                                                                 activity.mapUrl ||
@@ -368,8 +472,8 @@ function ItineraryDisplay() {
                                                                 <p className="text-gray-700">
                                                                     <strong>
                                                                         Chi
-                                                                        tiết:
-                                                                    </strong>{' '}
+                                                                        tiết:{' '}
+                                                                    </strong>
                                                                     {activity.placeDetail ||
                                                                         'Không xác định'}
                                                                 </p>

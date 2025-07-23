@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
 import { authAPI } from '@/apis'
 import { useAuth } from '@/AuthContext'
 import { jwtDecode } from 'jwt-decode'
@@ -26,7 +26,13 @@ function OtpVerification() {
             !confirmPassword ||
             !signupRequestId
         ) {
-            toast.error('Dữ liệu đăng ký không hợp lệ. Vui lòng thử lại.')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Dữ liệu đăng ký không hợp lệ. Vui lòng thử lại.',
+                showConfirmButton: false,
+                timer: 500
+            })
             navigate('/register')
         }
         // Focus the first input on mount
@@ -66,7 +72,12 @@ function OtpVerification() {
     const handleVerifyOtp = async () => {
         const otp = otpDigits.join('')
         if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
-            toast.error('Vui lòng nhập mã OTP 6 số!')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng nhập mã OTP 6 số!',
+                confirmButtonColor: '#2563eb'
+            })
             return
         }
         setIsLoading(true)
@@ -80,7 +91,13 @@ function OtpVerification() {
             }
             const response = await authAPI.verifyOtp(otp, userSignupData)
             if (response.status === 200 || response.status === 201) {
-                toast.success('Đăng ký thành công!')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Đăng ký thành công!',
+                    showConfirmButton: false,
+                    timer: 500
+                })
                 const { accessToken, refreshToken, userId } = response.data
                 if (accessToken && refreshToken) {
                     localStorage.setItem('accessToken', accessToken)
@@ -100,12 +117,22 @@ function OtpVerification() {
                     navigate('/')
                 }
             } else {
-                toast.error(response.data.message || 'Xác minh OTP thất bại.')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: response.data.message || 'Xác minh OTP thất bại.',
+                    showConfirmButton: false,
+                    timer: 500
+                })
             }
         } catch (error) {
-            toast.error(
-                error.response?.data?.message || 'Xác minh OTP thất bại.'
-            )
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: error.response?.data?.message || 'Xác minh OTP thất bại.',
+                showConfirmButton: false,
+                timer: 500
+            })
         } finally {
             setIsLoading(false)
         }
@@ -113,7 +140,13 @@ function OtpVerification() {
 
     const handleResendOtp = async () => {
         if (!signupRequestId) {
-            toast.error('Không thể gửi lại OTP. Vui lòng thử đăng ký lại.')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Không thể gửi lại OTP. Vui lòng thử đăng ký lại.',
+                showConfirmButton: false,
+                timer: 500
+            })
             return
         }
         setIsLoading(true)
@@ -127,21 +160,41 @@ function OtpVerification() {
             )
             if (response.status === 200 || response.status === 201) {
                 if (response.data.invalidFields?.length > 0) {
-                    toast.error(
-                        'Không thể gửi lại OTP do email hoặc username đã tồn tại.'
-                    )
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Không thể gửi lại OTP do email hoặc username đã tồn tại.',
+                        showConfirmButton: false,
+                        timer: 500
+                    })
                     navigate('/register')
                 } else {
-                    toast.success('Mã OTP mới đã được gửi đến email của bạn!')
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: 'Mã OTP mới đã được gửi đến email của bạn!',
+                        showConfirmButton: false,
+                        timer: 500
+                    })
                     setOtpDigits(['', '', '', '', '', '']) // Reset OTP inputs
                 }
             } else {
-                toast.error(response.data.message || 'Gửi lại OTP thất bại.')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: response.data.message || 'Gửi lại OTP thất bại.',
+                    showConfirmButton: false,
+                    timer: 500
+                })
             }
         } catch (error) {
-            toast.error(
-                error.response?.data?.message || 'Gửi lại OTP thất bại.'
-            )
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: error.response?.data?.message || 'Gửi lại OTP thất bại.',
+                showConfirmButton: false,
+                timer: 500
+            })
         } finally {
             setIsLoading(false)
         }

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import React, { useState, useEffect } from 'react'
-import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
 import { v4 as uuidv4 } from 'uuid'
 import beachSunset from '@/assets/images/background.png'
 import { authAPI } from '@/apis'
@@ -38,11 +38,23 @@ function Register() {
 
     const validateForm = () => {
         if (!email || !username || !password || !confirmPassword) {
-            toast.error('Vui lòng điền đầy đủ tất cả các trường!')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng điền đầy đủ tất cả các trường!',
+                showConfirmButton: false,
+                timer: 500
+            })
             return false
         }
         if (password !== confirmPassword) {
-            toast.error('Mật khẩu không khớp!')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Mật khẩu không khớp!',
+                showConfirmButton: false,
+                timer: 500
+            })
             return false
         }
         return true
@@ -63,9 +75,21 @@ function Register() {
             if (response.status === 200) {
                 if (response.data.invalidFields?.length > 0) {
                     const fields = response.data.invalidFields.join(', ')
-                    toast.error(`Lỗi: ${fields} đã tồn tại!`)
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: `Lỗi: ${fields} đã tồn tại!`,
+                        showConfirmButton: false,
+                        timer: 500
+                    })
                 } else {
-                    toast.success('Vui lòng kiểm tra email để lấy mã OTP!')
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: 'Vui lòng kiểm tra email để lấy mã OTP!',
+                        showConfirmButton: false,
+                        timer: 500
+                    })
                     navigate('/otp-verification', {
                         state: {
                             email,
@@ -77,7 +101,13 @@ function Register() {
                     })
                 }
             } else {
-                toast.error(response.data.message || 'Đăng ký thất bại.')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: response.data.message || 'Đăng ký thất bại.',
+                    showConfirmButton: false,
+                    timer: 500
+                })
             }
         } catch (error) {
             // Phân tích lỗi chi tiết
@@ -85,18 +115,48 @@ function Register() {
                 // Server trả về lỗi với status code
                 const { status, data } = error.response
                 if (status === 400) {
-                    toast.error(data.message || 'Dữ liệu không hợp lệ.')
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: data.message || 'Dữ liệu không hợp lệ.',
+                        showConfirmButton: false,
+                        timer: 500
+                    })
                 } else if (status === 500) {
-                    toast.error('Lỗi server. Vui lòng thử lại sau.')
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Lỗi server. Vui lòng thử lại sau.',
+                        showConfirmButton: false,
+                        timer: 500
+                    })
                 } else {
-                    toast.error(data.message || 'Đăng ký thất bại.')
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: data.message || 'Đăng ký thất bại.',
+                        showConfirmButton: false,
+                        timer: 500
+                    })
                 }
             } else if (error.request) {
                 // Không nhận được phản hồi từ server
-                toast.error('Không thể kết nối đến server.')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không thể kết nối đến server.',
+                    showConfirmButton: false,
+                    timer: 500
+                })
             } else {
                 // Lỗi khác
-                toast.error('Đã xảy ra lỗi. Vui lòng thử lại.')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Đã xảy ra lỗi. Vui lòng thử lại.',
+                    showConfirmButton: false,
+                    timer: 500
+                })
             }
         } finally {
             setIsLoading(false)

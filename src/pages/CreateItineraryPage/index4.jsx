@@ -126,7 +126,8 @@ function CreateItinerary() {
                 icon: 'error',
                 title: 'Lỗi',
                 text: 'Vui lòng đăng nhập để tạo lịch trình.',
-                confirmButtonColor: '#2563eb'
+                showConfirmButton: false,
+                timer: 500
             })
             localStorage.removeItem('userId')
             setLoading(false)
@@ -182,7 +183,8 @@ function CreateItinerary() {
                     icon: 'success',
                     title: 'Thành công',
                     text: 'Tạo lịch trình thành công!',
-                    confirmButtonColor: '#2563eb'
+                    showConfirmButton: false,
+                    timer: 500
                 })
                 navigate('/itinerary', {
                     state: {
@@ -203,7 +205,8 @@ function CreateItinerary() {
                 icon: 'error',
                 title: 'Lỗi',
                 text: errorMessage,
-                confirmButtonColor: '#2563eb'
+                showConfirmButton: false,
+                timer: 500
             })
             if (
                 err.response?.status === 401 ||
@@ -216,7 +219,8 @@ function CreateItinerary() {
                     icon: 'error',
                     title: 'Lỗi',
                     text: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
-                    confirmButtonColor: '#2563eb'
+                    showConfirmButton: false,
+                    timer: 500
                 })
             }
         } finally {

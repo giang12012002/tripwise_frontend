@@ -39,6 +39,26 @@ const saveTourFromGenerated = async (generatePlanId) => {
     return response
 }
 
+const updateItinerary = async (generatePlanId, message) => {
+    try {
+        console.log('Payload gửi đi:', { Message: message, generatePlanId })
+        const response = await authorizedAxios.post(
+            `api/AIGeneratePlan/UpdateItinerary/${generatePlanId}`,
+            { Message: message }
+        )
+        return response
+    } catch (err) {
+        console.error('API Error (updateItinerary):', {
+            message: err.message,
+            response: err.response?.data,
+            status: err.response?.status,
+            errors: err.response?.data?.errors || 'Không có chi tiết lỗi',
+            payload: { Message: message, generatePlanId }
+        })
+        throw err
+    }
+}
+
 const getToursByUserId = async (userId) => {
     return await authorizedAxios.get(
         `api/AIGeneratePlan/GetToursByUserId?userId=${userId}`
@@ -66,6 +86,7 @@ const getTourDetailById = async (id) => {
         throw err
     }
 }
+
 const getHistory = async () => {
     try {
         const response = await authorizedAxios.get(
@@ -101,6 +122,7 @@ const getHistoryDetail = async (id) => {
 export default {
     createItinerary,
     saveTourFromGenerated,
+    updateItinerary,
     getToursByUserId,
     deleteTour,
     getTourDetailById,

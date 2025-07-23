@@ -3,7 +3,8 @@ import RegisterPage from '@/pages/RegisterPage/index2.jsx'
 import OtpVerification from '@/pages/RegisterPage/OtpVerification'
 import SignInPage from '@/pages/SignInPage/index3.jsx'
 import HomePage from '@/pages/HomePage/HomePage'
-import ItineraryPage from '@/pages/ItineraryPage'
+import ItineraryPage from '@/pages/ItineraryPage/index.jsx'
+import ChatbotUpdate from '@/pages/ItineraryPage/ChatbotUpdate'
 import CreateItineraryPage from '@/pages/CreateItineraryPage/index4.jsx'
 import BlogList from '@/pages/BlogsPage'
 import BlogDetail from '@/pages/BlogsPage/id'
@@ -38,6 +39,7 @@ function Index() {
                         element={<CreateItineraryPage />}
                     />
                     <Route path="/itinerary" element={<ItineraryPage />} />
+                    <Route path="/chatbot-update" element={<ChatbotUpdate />} />
                     <Route
                         path="/HistoryItinerary"
                         element={<ItineraryDisplayHistory />}
