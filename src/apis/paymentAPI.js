@@ -1,17 +1,25 @@
 import authorizedAxios from './authorizedAxios'
 
 const paymentAPI = {
-    sendRequest: async ({ planId, paymentMethod }) => {
+    sendPlanRequest: async ({ planId, paymentMethod }) => {
         const response = await authorizedAxios.post('/api/payment/buy-plan', {
             planId,
             paymentMethod
         })
         return response
     },
-    callback: async (planId) => {
-        const response = await authorizedAxios.post(
-            `/api/plan/upgrade/${planId}`
-        )
+    sendBookingRequest: async ({
+        tourId,
+        numberOfPeople,
+        numberOfDays,
+        paymentMethod
+    }) => {
+        const response = await authorizedAxios.post('/api/payment/booking', {
+            tourId,
+            numberOfPeople,
+            numberOfDays,
+            paymentMethod
+        })
         return response
     }
 }

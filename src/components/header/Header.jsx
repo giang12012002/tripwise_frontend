@@ -14,9 +14,7 @@ function Header() {
     const remainingRequests = useSelector(
         (state) => state.plan.remainingRequests
     )
-    console.log('remainingRequests:', remainingRequests)
     const userId = localStorage.getItem('userId')
-    console.log('userId:', userId)
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
     const toggleProfileDropdown = () =>
@@ -24,7 +22,6 @@ function Header() {
 
     useEffect(() => {
         if (isLoggedIn && userId) {
-            console.log('Dispatching fetchRemainingRequests with:', userId)
             dispatch(fetchRemainingRequests(userId))
         }
     }, [isLoggedIn])

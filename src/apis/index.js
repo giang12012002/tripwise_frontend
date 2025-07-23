@@ -5,6 +5,7 @@ import planAPI from './planAPI'
 import paymentAPI from './paymentAPI'
 import planAdminAPI from './planAdminAPI'
 import appSettingAPI from './appSettingAPI'
+import reviewAPI from './reviewAPI'
 
 export {
     authAPI,
@@ -13,5 +14,6 @@ export {
     planAPI,
     paymentAPI,
     planAdminAPI,
-    appSettingAPI
+    appSettingAPI,
+    reviewAPI
 }

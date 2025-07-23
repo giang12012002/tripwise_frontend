@@ -16,6 +16,8 @@ import TourDetail from '@/pages/MyTourPage/TourDetail'
 import PlanList from '@/pages/PlanPage'
 import VNPayCallback from '@/components/callbacks/VNPayCallback'
 import PlanAdminList from '@/pages/Admin/Plans'
+import Bookings from '@/pages/Bookings'
+import TourReview from '@/pages/Reviews/Tour'
 import { AuthProvider } from '@/AuthContext'
 
 function Index() {
@@ -55,6 +57,8 @@ function Index() {
                     <Route path="/plans" element={<PlanList />} />
                     <Route path="/vnpay-callback" element={<VNPayCallback />} />
                     <Route path="/admin/plans" element={<PlanAdminList />} />
+                    <Route path="/bookings" element={<Bookings />} />
+                    <Route path="/review-tour" element={<TourReview />} />
                 </Routes>
             </AuthProvider>
         </Router>

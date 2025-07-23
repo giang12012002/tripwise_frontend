@@ -39,10 +39,11 @@ function Index() {
     const handleCheckout = async ({ plan, method }) => {
         // TODO: cần sửa lại chỗ này
         if (method === 'vnpay') {
-            const res = await paymentAPI.sendRequest({
+            const res = await paymentAPI.sendPlanRequest({
                 planId: plan.planId,
                 paymentMethod: method
             })
+            localStorage.setItem('vnpay-redirect', '/plans')
             window.location.href = res.data.url
         } else if (method === 'qr') {
             console.log('qr')
