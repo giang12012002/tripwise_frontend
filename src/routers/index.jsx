@@ -37,6 +37,7 @@ import AdminTourDetail from '@/pages/Admin/ManagerTour/AdminTourDetail.jsx'
 import PlanAdminList from '@/pages/Admin/Plans'
 import PartnershipPage from '@/pages/PartnershipPage'
 import ForgotPassword from '@/pages/ForgotPasswordPage'
+import PaymentHistory from '@/pages/PaymentHistory'
 import { AuthProvider } from '@/AuthContext'
 
 function Index() {
@@ -116,6 +117,10 @@ function Index() {
                     <Route
                         path="/forgot-password"
                         element={<ForgotPassword />}
+                    />
+                    <Route
+                        path="/payment-history"
+                        element={<PaymentHistory />}
                     />
                 </Routes>
             </AuthProvider>
