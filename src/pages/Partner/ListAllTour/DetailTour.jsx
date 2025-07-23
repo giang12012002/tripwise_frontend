@@ -505,7 +505,7 @@ const DetailTour = () => {
                                                                     .imageUrls
                                                                     .length >
                                                                     0 && (
-                                                                    <div className="mt-4 grid grid-cols-2 gap-4">
+                                                                    <div>
                                                                         {activity.imageUrls.map(
                                                                             (
                                                                                 url,
@@ -526,7 +526,7 @@ const DetailTour = () => {
                                                                                             url
                                                                                         }
                                                                                         alt={`Activity ${index + 1} image ${imgIndex}`}
-                                                                                        className="w-full h-48 object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-300"
+                                                                                        className="w-full h-full object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-300"
                                                                                         onError={() =>
                                                                                             console.error(
                                                                                                 `Failed to load activity image: ${url}`

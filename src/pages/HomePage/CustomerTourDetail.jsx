@@ -410,9 +410,9 @@ const CustomerTourDetail = () => {
                                                         {index <
                                                             day.activities
                                                                 .length -
-                                                            1 && (
-                                                                <span className="absolute left-4 top-8 w-0.5 h-full bg-indigo-200"></span>
-                                                            )}
+                                                                1 && (
+                                                            <span className="absolute left-4 top-8 w-0.5 h-full bg-indigo-200"></span>
+                                                        )}
                                                         <div className="bg-white p-6 rounded-lg shadow-md">
                                                             <p className="text-gray-800 mb-2 flex items-center">
                                                                 <strong className="text-gray-900 font-semibold mr-2">
@@ -478,8 +478,8 @@ const CustomerTourDetail = () => {
                                                                 activity
                                                                     .imageUrls
                                                                     .length >
-                                                                0 && (
-                                                                    <div className="mt-4 grid grid-cols-2 gap-4">
+                                                                    0 && (
+                                                                    <div>
                                                                         {activity.imageUrls.map(
                                                                             (
                                                                                 url,
@@ -490,7 +490,7 @@ const CustomerTourDetail = () => {
                                                                                         activity
                                                                                             .imageIds[
                                                                                             imgIndex
-                                                                                            ] ||
+                                                                                        ] ||
                                                                                         imgIndex
                                                                                     }
                                                                                     className="relative"
@@ -500,7 +500,7 @@ const CustomerTourDetail = () => {
                                                                                             url
                                                                                         }
                                                                                         alt={`Activity ${index + 1} image ${imgIndex}`}
-                                                                                        className="w-full h-48 object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-300"
+                                                                                        className="w-full h-full object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-300"
                                                                                         onError={() =>
                                                                                             console.error(
                                                                                                 `Failed to load activity image: ${url}`
@@ -753,7 +753,7 @@ const CustomerTourDetail = () => {
                                 </button>
                                 {openSections[
                                     'luu-y-ve-chuyen-hoac-huy-tour'
-                                    ] && (
+                                ] && (
                                     <div className="p-6 bg-gray-50">
                                         <p className="text-gray-800">
                                             Nội dung lưu ý về chuyến hoặc hủy
@@ -797,7 +797,7 @@ const CustomerTourDetail = () => {
                                 </button>
                                 {openSections[
                                     'cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'
-                                    ] && (
+                                ] && (
                                     <div className="p-6 bg-gray-50">
                                         <p className="text-gray-800">
                                             Nội dung điều kiện hủy tour với ngày
@@ -839,7 +839,7 @@ const CustomerTourDetail = () => {
                                 </button>
                                 {openSections[
                                     'cac-dieu-kien-huy-tour-doi-voi-ngay-le-tet'
-                                    ] && (
+                                ] && (
                                     <div className="p-6 bg-gray-50">
                                         <p className="text-gray-800">
                                             Nội dung điều kiện hủy tour với ngày
