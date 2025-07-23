@@ -7,7 +7,7 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 
 function MyTours() {
-    const { userId, isLoggedIn } = useAuth()
+    const { userId, isLoggedIn, isAuthLoading } = useAuth() // Thêm isAuthLoading
     const [tours, setTours] = useState([])
     const [loading, setLoading] = useState(true)
     const [currentPage, setCurrentPage] = useState(1)
@@ -18,17 +18,17 @@ function MyTours() {
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (!isLoggedIn) {
+        if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem danh sách tour.',
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 1800
             })
             navigate('/')
         }
-    }, [isLoggedIn, navigate])
+    }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
         const fetchTours = async () => {
@@ -212,7 +212,8 @@ function MyTours() {
         }
     }
 
-    if (loading) {
+    if (loading || isAuthLoading) {
+        // Thêm isAuthLoading vào loading
         return (
             <div className="min-h-screen flex flex-col">
                 <Header />

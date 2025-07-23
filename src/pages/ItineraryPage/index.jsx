@@ -1,16 +1,31 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Swal from 'sweetalert2'
 import { travelFormAPI } from '@/apis'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
+import { useAuth } from '@/AuthContext'
 
 function ItineraryDisplay() {
     const location = useLocation()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const navigate = useNavigate()
     const itineraryData = location.state?.itineraryData || null
     const [openDays, setOpenDays] = useState({})
     const [saving, setSaving] = useState(false)
+
+    useEffect(() => {
+        if (!isAuthLoading && !isLoggedIn) {
+            Swal.fire({
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
+            })
+            navigate('/')
+        }
+    }, [isLoggedIn, isAuthLoading, navigate])
 
     const weatherTranslations = {
         'clear sky': 'trời quang đãng',

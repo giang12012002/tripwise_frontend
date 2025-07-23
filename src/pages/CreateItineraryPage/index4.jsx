@@ -4,9 +4,11 @@ import { travelFormAPI } from '@/apis'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import Swal from 'sweetalert2'
+import { useAuth } from '@/AuthContext'
 
 function CreateItinerary() {
     const navigate = useNavigate()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const today = new Date().toISOString().split('T')[0]
     const [formData, setFormData] = useState({
         destination: '',
@@ -19,6 +21,7 @@ function CreateItinerary() {
         groupType: '',
         accommodation: ''
     })
+
     const [loading, setLoading] = useState(false)
     const [errors, setErrors] = useState({})
     const [shouldScroll, setShouldScroll] = useState(false) // Flag để kiểm soát cuộn
@@ -272,6 +275,11 @@ function CreateItinerary() {
                     icon: '🏛️'
                 },
                 { label: 'Thiên nhiên', value: 'Thiên nhiên', icon: '🌳' },
+                {
+                    label: 'Đồ ăn đường phố',
+                    value: 'Đồ ăn đường phố',
+                    icon: '🥘'
+                },
                 { label: 'Nghỉ ngơi', value: 'Nghỉ ngơi', icon: '💆‍♀️' },
                 { label: 'Phiêu lưu', value: 'Phiêu lưu', icon: '🏄' },
                 {
@@ -283,7 +291,7 @@ function CreateItinerary() {
                 {
                     label: 'Trải nghiệm ẩm thực',
                     value: 'Trải nghiệm ẩm thực',
-                    icon: '🥘'
+                    icon: '🍛'
                 },
                 { label: 'Mua sắm', value: 'Mua sắm', icon: '🛍️' },
                 {
@@ -324,9 +332,17 @@ function CreateItinerary() {
                     value: 'Giao thông công cộng',
                     icon: '🚌'
                 },
+                {
+                    label: 'Xe máy ',
+                    value: 'Xe máy',
+                    icon: '🏍️'
+                },
                 { label: 'Đi bộ', value: 'Đi bộ', icon: '🚶' },
-                { label: 'Taxi or Uber', value: 'Taxi or Uber', icon: '🚕' },
-                { label: 'Xe thuê', value: 'Xe thuê', icon: '🚗' }
+                {
+                    label: 'Xe dịch vụ hoặc Taxi',
+                    value: 'Xe dịch vụ hoặc Taxi',
+                    icon: '🚗'
+                }
             ]
         },
         {
@@ -340,6 +356,11 @@ function CreateItinerary() {
                     label: 'Ẩm thực cân bằng',
                     value: 'Ẩm thực cân bằng',
                     icon: '🥗'
+                },
+                {
+                    label: 'Ẩm thực cao cấp',
+                    value: 'Ẩm thực cao cấp',
+                    icon: '🍝'
                 },
                 { label: 'Hải sản', value: 'Hải sản', icon: '🦐' },
                 {
@@ -398,6 +419,19 @@ function CreateItinerary() {
             ]
         }
     ]
+
+    useEffect(() => {
+        if (!isAuthLoading && !isLoggedIn) {
+            Swal.fire({
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
+            })
+            navigate('/')
+        }
+    }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
         if (shouldScroll && Object.keys(errors).length > 0) {

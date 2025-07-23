@@ -5,10 +5,12 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
+import { useAuth } from '@/AuthContext'
 
 function HistoryDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const [historyDetail, setHistoryDetail] = useState(null)
     const [loading, setLoading] = useState(true)
     const [openDays, setOpenDays] = useState({})
@@ -16,6 +18,18 @@ function HistoryDetail() {
     const toggleDay = (dayNumber) => {
         setOpenDays((prev) => ({ ...prev, [dayNumber]: !prev[dayNumber] }))
     }
+    useEffect(() => {
+        if (!isAuthLoading && !isLoggedIn) {
+            Swal.fire({
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
+            })
+            navigate('/')
+        }
+    }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
         const fetchHistoryDetail = async () => {
@@ -319,9 +333,7 @@ function HistoryDetail() {
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">💸</span>
-                                        <strong>
-                                            Tổng chi phí ước tính:
-                                        </strong>
+                                        <strong>Tổng chi phí ước tính:</strong>
                                         <span className="text-blue-600">
                                             {formatCurrency(
                                                 historyDetail.TotalEstimatedCost
@@ -337,7 +349,7 @@ function HistoryDetail() {
                                 <div className="space-y-3">
                                     {historyDetail.Preferences &&
                                         historyDetail.Preferences !==
-                                        'Chưa xác định' && (
+                                            'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">🌟</span>
                                                 <strong>Sở thích: </strong>
@@ -355,7 +367,7 @@ function HistoryDetail() {
                                         )}
                                     {historyDetail.DiningStyle &&
                                         historyDetail.DiningStyle !==
-                                        'Chưa xác định' && (
+                                            'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">🍽️</span>
                                                 <strong>
@@ -375,7 +387,7 @@ function HistoryDetail() {
                                         )}
                                     {historyDetail.Transportation &&
                                         historyDetail.Transportation !==
-                                        'Chưa xác định' && (
+                                            'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">🚗</span>
                                                 <strong>Phương tiện: </strong>
@@ -384,7 +396,7 @@ function HistoryDetail() {
                                         )}
                                     {historyDetail.GroupType &&
                                         historyDetail.GroupType !==
-                                        'Chưa xác định' && (
+                                            'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">👥</span>
                                                 <strong>Nhóm: </strong>
@@ -393,7 +405,7 @@ function HistoryDetail() {
                                         )}
                                     {historyDetail.Accommodation &&
                                         historyDetail.Accommodation !==
-                                        'Chưa xác định' && (
+                                            'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">🏨</span>
                                                 <strong>Chỗ ở: </strong>
@@ -402,12 +414,10 @@ function HistoryDetail() {
                                         )}
                                     {historyDetail.SuggestedAccommodation &&
                                         historyDetail.SuggestedAccommodation !==
-                                        'Chưa xác định' && (
+                                            'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">🗺️</span>
-                                                <strong>
-                                                    Đề xuất chỗ ở:
-                                                </strong>
+                                                <strong>Đề xuất chỗ ở:</strong>
                                                 <a
                                                     href={
                                                         historyDetail.SuggestedAccommodation
@@ -492,9 +502,9 @@ function HistoryDetail() {
                                                                         day
                                                                             .Activities
                                                                             .length -
-                                                                        1 && (
-                                                                            <span className="absolute left-3 top-6 w-0.5 h-full bg-blue-200"></span>
-                                                                        )}
+                                                                            1 && (
+                                                                        <span className="absolute left-3 top-6 w-0.5 h-full bg-blue-200"></span>
+                                                                    )}
                                                                     <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
                                                                         {activity.Image && (
                                                                             <img

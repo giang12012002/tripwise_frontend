@@ -4,10 +4,12 @@ import { travelFormAPI } from '@/apis'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
+import { useAuth } from '@/AuthContext'
 
 function ChatbotUpdate() {
     const location = useLocation()
     const navigate = useNavigate()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const itineraryData = location.state?.itineraryData || null
     const [messages, setMessages] = useState([
         {
@@ -24,6 +26,18 @@ function ChatbotUpdate() {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
+    useEffect(() => {
+        if (!isAuthLoading && !isLoggedIn) {
+            Swal.fire({
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
+            })
+            navigate('/')
+        }
+    }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
         scrollToBottom()

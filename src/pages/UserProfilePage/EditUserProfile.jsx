@@ -5,9 +5,11 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import Swal from 'sweetalert2'
 import avatarImage from '@/assets/images/maleAvatar.png' // Import ảnh avatar
+import { useAuth } from '@/AuthContext'
 
 function EditUserProfile() {
     const navigate = useNavigate()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const [profile, setProfile] = useState(null)
     const [formData, setFormData] = useState({
         userName: '',
@@ -19,6 +21,19 @@ function EditUserProfile() {
         streetAddress: ''
     })
     const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        if (!isAuthLoading && !isLoggedIn) {
+            Swal.fire({
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
+            })
+            navigate('/')
+        }
+    }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
         const fetchProfile = async () => {

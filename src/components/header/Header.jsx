@@ -77,18 +77,20 @@ function Header() {
                             Trang chủ
                         </Link>
                     </li>
+                    {isLoggedIn && (
+                        <li>
+                            <Link
+                                to="/mytour"
+                                className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                Yêu thích
+                            </Link>
+                        </li>
+                    )}
                     <li>
                         <Link
-                            to="/mytour"
-                            className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Yêu thích
-                        </Link>
-                    </li>
-                    <li>
-                        <Link
-                            to="/collaborate"
+                            to="/connect"
                             className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
                             onClick={() => setIsMenuOpen(false)}
                         >

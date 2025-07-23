@@ -1,5 +1,5 @@
 import authAPI from './authAPI'
-import travelFormAPI from './travelFormAPI'
+import travelFormAPI from './customersToursAI_API.js'
 import blogAPI from './blogAPI'
 import planAPI from './planAPI'
 

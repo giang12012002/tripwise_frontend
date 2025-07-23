@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [username, setUsername] = useState('')
     const [userId, setUserId] = useState(null)
+    const [isAuthLoading, setIsAuthLoading] = useState(true)
 
     useEffect(() => {
         // Kiểm tra dữ liệu auth trong localStorage khi component mount
@@ -40,6 +41,7 @@ export const AuthProvider = ({ children }) => {
                 setUsername('')
                 setUserId(null)
             }
+            setIsAuthLoading(false) // Load xong
         }
 
         initializeAuth()
@@ -75,6 +77,7 @@ export const AuthProvider = ({ children }) => {
             // Gọi API logout với deviceId
             const response = await authAPI.logout(deviceId)
             if (response.status === 200) {
+                clearAuthData()
             } else {
                 toast.error(response.data?.message || 'Đăng xuất thất bại.')
             }
@@ -103,7 +106,14 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ isLoggedIn, username, userId, login, logout }}
+            value={{
+                isLoggedIn,
+                username,
+                userId,
+                login,
+                logout,
+                isAuthLoading
+            }}
         >
             {children}
         </AuthContext.Provider>

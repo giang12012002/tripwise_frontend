@@ -4,12 +4,49 @@ import userProfileAPI from '@/apis/userProfileAPI.js'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import Swal from 'sweetalert2'
+import { useAuth } from '@/AuthContext'
 import avatarImage from '@/assets/images/maleAvatar.png' // Import ảnh avatar
 
 function ViewUserProfile() {
     const navigate = useNavigate()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const [profile, setProfile] = useState(null)
     const [loading, setLoading] = useState(true)
+
+    // Lưu và khôi phục vị trí cuộn
+    useEffect(() => {
+        // Khôi phục vị trí cuộn khi component mount
+        const savedScrollPosition = localStorage.getItem('scrollPosition')
+        if (savedScrollPosition) {
+            window.scrollTo(0, parseInt(savedScrollPosition, 10))
+        }
+
+        // Lưu vị trí cuộn khi trước khi trang unload (F5, đóng tab)
+        const handleBeforeUnload = () => {
+            localStorage.setItem('scrollPosition', window.scrollY)
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload)
+
+        // Cleanup event listener
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload)
+        }
+    }, [])
+
+    // Kiểm tra trạng thái đăng nhập
+    useEffect(() => {
+        if (!isAuthLoading && !isLoggedIn) {
+            Swal.fire({
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
+            })
+            navigate('/')
+        }
+    }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -170,7 +207,6 @@ function ViewUserProfile() {
                                         {profile.phoneNumber || 'Chưa cập nhật'}
                                     </span>
                                 </div>
-
                                 <div className="flex items-center space-x-3">
                                     <span className="font-medium text-gray-700">
                                         Thành phố:

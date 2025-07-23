@@ -10,7 +10,7 @@ import { useAuth } from '@/AuthContext'
 function TourDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const { isLoggedIn } = useAuth()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const [tourDetail, setTourDetail] = useState(null)
     const [loading, setLoading] = useState(true)
     const [openDays, setOpenDays] = useState({})
@@ -20,12 +20,13 @@ function TourDetail() {
     }
 
     useEffect(() => {
-        if (!isLoggedIn) {
+        if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem chi tiết tour.',
-                confirmButtonColor: '#2563eb'
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
             })
             navigate('/')
             return
@@ -489,10 +490,10 @@ function TourDetail() {
                                                                                 </a>
                                                                             </p>
                                                                         )}
-                                                                        {activity.ImageUrl && (
+                                                                        {activity.imageUrls && (
                                                                             <img
                                                                                 src={
-                                                                                    activity.ImageUrl
+                                                                                    activity.imageUrls
                                                                                 }
                                                                                 alt={
                                                                                     activity.TourAttractionsName ||

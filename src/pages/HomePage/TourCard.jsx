@@ -1,16 +1,16 @@
 import { useState } from 'react'
 
-function TourCard({ tour }) {
+function TourCard({ tour, onViewDetail }) {
     const [isLiked, setIsLiked] = useState(false)
 
     return (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-lg">
             <img
                 src={tour.image}
                 alt={tour.name}
-                className="w-full h-40 object-cover"
+                className="w-full h-48 object-cover"
             />
-            <div className="p-4">
+            <div className="p-5">
                 <p className="text-lg font-semibold text-orange-500">
                     {tour.price}
                 </p>
@@ -18,15 +18,15 @@ function TourCard({ tour }) {
                     <span className="text-yellow-500">★★★★★</span>
                     <span className="ml-2 text-gray-600">4.6</span>
                 </div>
-                <h3 className="text-lg font-bold">{tour.name}</h3>
-                <p className="text-gray-600">{tour.address}</p>
+                <h3 className="text-lg font-bold text-gray-800">{tour.name}</h3>
+                <p className="text-gray-600 text-sm">{tour.address}</p>
                 <div className="flex justify-between mt-4">
                     <button
-                        className={`flex items-center ${isLiked ? 'text-red-500' : 'text-grey'}`}
+                        className={`flex items-center ${isLiked ? 'text-red-500' : 'text-gray-400'}`}
                         onClick={() => setIsLiked(!isLiked)}
                     >
                         <svg
-                            className="w-4 h-4 mr-1"
+                            className="w-5 h-5 mr-1"
                             fill={isLiked ? 'currentColor' : 'none'}
                             stroke={isLiked ? 'none' : 'currentColor'}
                             strokeWidth="2"
@@ -36,9 +36,12 @@ function TourCard({ tour }) {
                         </svg>
                         Yêu thích
                     </button>
-                    <a href="#" className="text-blue-600 font-semibold">
+                    <button
+                        className="text-blue-600 font-semibold hover:underline hover:text-blue-800 transition-colors"
+                        onClick={() => onViewDetail(tour.id)}
+                    >
                         Xem chi tiết
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
