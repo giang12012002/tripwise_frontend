@@ -192,6 +192,20 @@ function Header() {
                                             </Link>
                                         </li>
                                         <li>
+                                            <Link
+                                                to="/payment-history"
+                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                onClick={() => {
+                                                    setIsMenuOpen(false)
+                                                    setIsProfileDropdownOpen(
+                                                        false
+                                                    )
+                                                }}
+                                            >
+                                                Lịch sử thanh toán
+                                            </Link>
+                                        </li>
+                                        <li>
                                             <button
                                                 className="block w-full text-left hover:bg-blue-800 px-4 py-2 rounded text-base"
                                                 onClick={handleLogout}
