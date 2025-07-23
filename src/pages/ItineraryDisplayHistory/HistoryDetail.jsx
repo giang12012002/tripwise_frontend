@@ -5,10 +5,12 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
+import { useAuth } from '@/AuthContext'
 
 function HistoryDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const [historyDetail, setHistoryDetail] = useState(null)
     const [loading, setLoading] = useState(true)
     const [openDays, setOpenDays] = useState({})
@@ -16,6 +18,18 @@ function HistoryDetail() {
     const toggleDay = (dayNumber) => {
         setOpenDays((prev) => ({ ...prev, [dayNumber]: !prev[dayNumber] }))
     }
+    useEffect(() => {
+        if (!isAuthLoading && !isLoggedIn) {
+            Swal.fire({
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
+            })
+            navigate('/')
+        }
+    }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
         const fetchHistoryDetail = async () => {
@@ -309,19 +323,17 @@ function HistoryDetail() {
                                 <div className="space-y-3">
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">📅</span>
-                                        <strong>Ngày đi:&nbsp;</strong>
+                                        <strong>Ngày đi: </strong>
                                         {formatDate(historyDetail.TravelDate)}
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">⏳</span>
-                                        <strong>Số ngày:&nbsp;</strong>
+                                        <strong>Số ngày: </strong>
                                         {historyDetail.Days || 'Không xác định'}
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">💸</span>
-                                        <strong>
-                                            Tổng chi phí ước tính:&nbsp;
-                                        </strong>
+                                        <strong>Tổng chi phí ước tính:</strong>
                                         <span className="text-blue-600">
                                             {formatCurrency(
                                                 historyDetail.TotalEstimatedCost
@@ -335,76 +347,89 @@ function HistoryDetail() {
                                     Sở thích & Chi tiết
                                 </h3>
                                 <div className="space-y-3">
-                                    <p className="flex items-center text-gray-700">
-                                        <span className="mr-2">🌟</span>
-                                        <strong>Sở thích:&nbsp;</strong>
-                                        {historyDetail.Preferences
-                                            ? historyDetail.Preferences.split(
-                                                  ', '
-                                              ).map((pref, index) => (
-                                                  <span
-                                                      key={`${pref}-${index}`}
-                                                      className="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full mr-2"
-                                                  >
-                                                      {pref}
-                                                  </span>
-                                              ))
-                                            : 'Không xác định'}
-                                    </p>
-                                    <p className="flex items-center text-gray-700">
-                                        <span className="mr-2">🍽️</span>
-                                        <strong>
-                                            Phong cách ăn uống:&nbsp;
-                                        </strong>
-                                        {historyDetail.DiningStyle
-                                            ? historyDetail.DiningStyle.split(
-                                                  ', '
-                                              ).map((style, index) => (
-                                                  <span
-                                                      key={`${style}-${index}`}
-                                                      className="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full mr-2"
-                                                  >
-                                                      {style}
-                                                  </span>
-                                              ))
-                                            : 'Không xác định'}
-                                    </p>
-                                    <p className="flex items-center text-gray-700">
-                                        <span className="mr-2">🚗</span>
-                                        <strong>Phương tiện:&nbsp;</strong>
-                                        {historyDetail.Transportation ||
-                                            'Không xác định'}
-                                    </p>
-                                    <p className="flex items-center text-gray-700">
-                                        <span className="mr-2">👥</span>
-                                        <strong>Nhóm:&nbsp;</strong>
-                                        {historyDetail.GroupType ||
-                                            'Không xác định'}
-                                    </p>
-                                    <p className="flex items-center text-gray-700">
-                                        <span className="mr-2">🏨</span>
-                                        <strong>Chỗ ở:&nbsp;</strong>
-                                        {historyDetail.Accommodation ||
-                                            'Không xác định'}
-                                    </p>
-                                    <p className="flex items-center text-gray-700">
-                                        <span className="mr-2">🗺️</span>
-                                        <strong>Đề xuất chỗ ở:&nbsp;</strong>
-                                        {historyDetail.SuggestedAccommodation ? (
-                                            <a
-                                                href={
-                                                    historyDetail.SuggestedAccommodation
-                                                }
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-600 hover:underline hover:text-blue-800 transition-colors"
-                                            >
-                                                Tìm trên Google Maps
-                                            </a>
-                                        ) : (
-                                            'Không xác định'
+                                    {historyDetail.Preferences &&
+                                        historyDetail.Preferences !==
+                                            'Chưa xác định' && (
+                                            <p className="flex items-center text-gray-700">
+                                                <span className="mr-2">🌟</span>
+                                                <strong>Sở thích: </strong>
+                                                {historyDetail.Preferences.split(
+                                                    ', '
+                                                ).map((pref, index) => (
+                                                    <span
+                                                        key={`${pref}-${index}`}
+                                                        className="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full mr-2"
+                                                    >
+                                                        {pref}
+                                                    </span>
+                                                ))}
+                                            </p>
                                         )}
-                                    </p>
+                                    {historyDetail.DiningStyle &&
+                                        historyDetail.DiningStyle !==
+                                            'Chưa xác định' && (
+                                            <p className="flex items-center text-gray-700">
+                                                <span className="mr-2">🍽️</span>
+                                                <strong>
+                                                    Phong cách ăn uống:
+                                                </strong>
+                                                {historyDetail.DiningStyle.split(
+                                                    ', '
+                                                ).map((style, index) => (
+                                                    <span
+                                                        key={`${style}-${index}`}
+                                                        className="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full mr-2"
+                                                    >
+                                                        {style}
+                                                    </span>
+                                                ))}
+                                            </p>
+                                        )}
+                                    {historyDetail.Transportation &&
+                                        historyDetail.Transportation !==
+                                            'Chưa xác định' && (
+                                            <p className="flex items-center text-gray-700">
+                                                <span className="mr-2">🚗</span>
+                                                <strong>Phương tiện: </strong>
+                                                {historyDetail.Transportation}
+                                            </p>
+                                        )}
+                                    {historyDetail.GroupType &&
+                                        historyDetail.GroupType !==
+                                            'Chưa xác định' && (
+                                            <p className="flex items-center text-gray-700">
+                                                <span className="mr-2">👥</span>
+                                                <strong>Nhóm: </strong>
+                                                {historyDetail.GroupType}
+                                            </p>
+                                        )}
+                                    {historyDetail.Accommodation &&
+                                        historyDetail.Accommodation !==
+                                            'Chưa xác định' && (
+                                            <p className="flex items-center text-gray-700">
+                                                <span className="mr-2">🏨</span>
+                                                <strong>Chỗ ở: </strong>
+                                                {historyDetail.Accommodation}
+                                            </p>
+                                        )}
+                                    {historyDetail.SuggestedAccommodation &&
+                                        historyDetail.SuggestedAccommodation !==
+                                            'Chưa xác định' && (
+                                            <p className="flex items-center text-gray-700">
+                                                <span className="mr-2">🗺️</span>
+                                                <strong>Đề xuất chỗ ở:</strong>
+                                                <a
+                                                    href={
+                                                        historyDetail.SuggestedAccommodation
+                                                    }
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline hover:text-blue-800 transition-colors"
+                                                >
+                                                    Tìm trên Google Maps
+                                                </a>
+                                            </p>
+                                        )}
                                 </div>
                             </div>
                         </div>

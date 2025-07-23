@@ -8,7 +8,7 @@ import { useAuth } from '@/AuthContext'
 
 function History() {
     const navigate = useNavigate()
-    const { isLoggedIn } = useAuth()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const [histories, setHistories] = useState([])
     const [loading, setLoading] = useState(true)
     const [currentPage, setCurrentPage] = useState(1)
@@ -19,17 +19,17 @@ function History() {
 
     // Kiểm tra trạng thái đăng nhập
     useEffect(() => {
-        if (!isLoggedIn) {
+        if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem lịch sử lịch trình.',
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 1800
             })
             navigate('/')
         }
-    }, [isLoggedIn, navigate])
+    }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -349,7 +349,7 @@ function History() {
                                                             d="M15 12c0-1.5-1.5-3-3-3s-3 1.5-3 3 1.5 3 3 3 3-1.5 3-3zm6 0c0 4.5-4.5 9-9 9s-9-4.5-9-9 4.5-9 9-9 9 4.5 9 9z"
                                                         />
                                                     </svg>
-                                                    <span>Xem chi tiết</span>
+                                                    {/*<span>Xem chi tiết</span>*/}
                                                 </button>
                                             </div>
                                         </div>

@@ -2,6 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import { toast } from 'react-toastify'
+import HomeImage from '@/assets/images/Home1.jpeg'
 
 function AiTourCreateButton() {
     const { isLoggedIn } = useAuth()
@@ -20,11 +21,9 @@ function AiTourCreateButton() {
         <div className="min-h-screen flex flex-col items-center">
             <section
                 className="relative bg-cover max-w-7xl bg-center h-96 w-full"
-                style={{
-                    backgroundImage: `url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80')`
-                }}
+                style={{ backgroundImage: `url(${HomeImage})` }}
             >
-                <div className="absolute inset-0 bg-black opacity-50"></div>
+                <div className="absolute inset-0  opacity-50"></div>
             </section>
             <div className="p-7xl md:px-10 w-full py-10 bg-white bg-opacity-90 rounded-lg mx-6 my-10 md:max-w-3xl text-center">
                 <h1 className="text-2xl md:text-3xl font-bold text-blue-800 mb-4">

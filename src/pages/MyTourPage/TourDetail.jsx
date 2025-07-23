@@ -11,7 +11,7 @@ import { useAuth } from '@/AuthContext'
 function TourDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const { isLoggedIn } = useAuth()
+    const { isLoggedIn, isAuthLoading } = useAuth()
     const [tourDetail, setTourDetail] = useState(null)
     const [loading, setLoading] = useState(true)
     const [openDays, setOpenDays] = useState({})
@@ -21,12 +21,13 @@ function TourDetail() {
     }
 
     useEffect(() => {
-        if (!isLoggedIn) {
+        if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem chi tiết tour.',
-                confirmButtonColor: '#2563eb'
+                icon: 'success',
+                // title: 'Thành công',
+                text: 'Đăng xuất thành công!',
+                showConfirmButton: false,
+                timer: 1800
             })
             navigate('/')
             return
@@ -318,11 +319,7 @@ function TourDetail() {
                                         <strong>Sở thích:&nbsp; </strong>
                                         {formatPreferences(tourDetail.Category)}
                                     </p>
-                                    {/*<p className="flex items-center text-gray-700">*/}
-                                    {/*    <span className="mr-2">📝</span>*/}
-                                    {/*    <strong>Mô tả:&nbsp; </strong>*/}
-                                    {/*    {tourDetail.Description}*/}
-                                    {/*</p>*/}
+
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">📌</span>
                                         <strong>Đề xuất chỗ ở:&nbsp; </strong>
@@ -339,12 +336,17 @@ function TourDetail() {
                                             'Không xác định'
                                         )}
                                     </p>
-
                                     {/*<p className="flex items-center text-gray-700">*/}
-                                    {/*    <span className="mr-2">🏨</span>*/}
-                                    {/*    <strong>Ghi Chú:&nbsp; </strong>*/}
-                                    {/*    {tourDetail.TourInfo}*/}
+                                    {/*    <span className="mr-2">📝</span>*/}
+                                    {/*    <strong>Mô tả:&nbsp; </strong>*/}
+                                    {/*    {tourDetail.Description}*/}
                                     {/*</p>*/}
+
+                                    {/*  <p className="flex items-center text-gray-700">
+                                        <span className="mr-2">🏨</span>
+                                        <strong>Ghi Chú:&nbsp; </strong>
+                                        {tourDetail.TourInfo}
+                                    </p>*/}
                                 </div>
                             </div>
                         </div>
@@ -447,7 +449,9 @@ function TourDetail() {
                                                                         <p className="text-gray-700">
                                                                             <strong>
                                                                                 Chi
-                                                                                phí:{' '}
+                                                                                phí
+                                                                                ước
+                                                                                tính:{' '}
                                                                             </strong>
                                                                             <span className="text-blue-600">
                                                                                 {formatCurrency(
@@ -485,10 +489,10 @@ function TourDetail() {
                                                                                 </a>
                                                                             </p>
                                                                         )}
-                                                                        {activity.ImageUrl && (
+                                                                        {activity.imageUrls && (
                                                                             <img
                                                                                 src={
-                                                                                    activity.ImageUrl
+                                                                                    activity.imageUrls
                                                                                 }
                                                                                 alt={
                                                                                     activity.TourAttractionsName ||
