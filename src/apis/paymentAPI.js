@@ -21,6 +21,12 @@ const paymentAPI = {
             paymentMethod
         })
         return response
+    },
+    fetchPaymentHistory: async ({ status }) => {
+        const response = await authorizedAxios.get(
+            '/api/payment/payment-history?status=' + status
+        )
+        return response
     }
 }
 

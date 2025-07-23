@@ -1,17 +1,14 @@
 import React, { useState } from 'react'
 import BookingConfirmDialog from './BookingConfirmDialog'
-import { tours } from './data'
 import { paymentAPI } from '@/apis'
 import { toast } from 'react-toastify'
 
-function Index() {
+function Index({ tour }) {
     const [peopleNum, setPeopleNum] = useState(1)
     const [dayNum, setDayNum] = useState(1)
 
     const [showBookingConfirmDialog, setShowBookingConfirmDialog] =
         useState(false)
-
-    const tour = tours[0] // giả sử đang chọn tour đầu tiên
 
     const handlePeopleNumChange = (e) => {
         const value = parseInt(e.target.value)
@@ -33,7 +30,7 @@ function Index() {
                 paymentMethod: 'vnpay'
             })
             if (response.status === 200) {
-                localStorage.setItem('vnpay-redirect', '/bookings')
+                localStorage.setItem('vnpay-redirect', '/tour-detail/' + tourId)
                 window.location.href = response.data.url
             }
         } catch (err) {

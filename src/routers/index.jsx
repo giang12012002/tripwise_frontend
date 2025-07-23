@@ -35,8 +35,8 @@ import AdminManagerUser from '@/pages/Admin/Users/UserManager.jsx'
 import AdminTourList from '@/pages/Admin/ManagerTour/AdminTourList.jsx'
 import AdminTourDetail from '@/pages/Admin/ManagerTour/AdminTourDetail.jsx'
 import PlanAdminList from '@/pages/Admin/Plans'
-import Bookings from '@/pages/Bookings'
 import PartnershipPage from '@/pages/PartnershipPage'
+import ForgotPassword from '@/pages/ForgotPasswordPage'
 import { AuthProvider } from '@/AuthContext'
 
 function Index() {
@@ -112,8 +112,11 @@ function Index() {
                         <Route path="users" element={<AdminManagerUser />} />
                     </Route>
                     <Route path="/admin/plans" element={<PlanAdminList />} />
-                    <Route path="/bookings" element={<Bookings />} />
-                    <Route path="/collaborate" element={<PartnershipPage />} />
+                    <Route path="/connect" element={<PartnershipPage />} />
+                    <Route
+                        path="/forgot-password"
+                        element={<ForgotPassword />}
+                    />
                 </Routes>
             </AuthProvider>
         </Router>

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import tourUserAPI from '@/apis/TourUserAPI'
 import Swal from 'sweetalert2'
+import ReviewTour from './ReviewTour'
+import Bookings from './Bookings'
 import { useAuth } from '@/AuthContext'
 
 const CustomerTourDetail = () => {
@@ -226,6 +228,13 @@ const CustomerTourDetail = () => {
                         {error}
                     </p>
                 )}
+                <div className="flex justify-end mb-2">
+                    <ReviewTour
+                        tourId={tourId}
+                        travelDate={tour.travelDate}
+                        days={tour.days}
+                    />
+                </div>
                 {tour.imageUrls && tour.imageUrls.length > 0 && (
                     <div className="flex flex-col md:flex-row bg-white p-6 rounded-2xl shadow-2xl mb-8 border border-blue-100">
                         <div className="relative md:w-1/2">
@@ -523,6 +532,11 @@ const CustomerTourDetail = () => {
                         )
                     })}
                 </div>
+
+                <div className="mt-12">
+                    <Bookings tour={tour} />
+                </div>
+
                 <div className="mt-12">
                     <h3 className="text-3xl font-extrabold text-center mb-8 uppercase text-indigo-700 tracking-wide">
                         Những Thông Tin Cần Lưu Ý
