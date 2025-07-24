@@ -90,15 +90,19 @@ function Index() {
         setContextMenu(null)
     }
 
-    const handleAdd = async (data) => {
-        console.log('Index handleAdd data:', data)
+    const handleAdd = async ({ documentId, documentContent }) => {
+        console.log('handleAdd: ', { documentContent, documentId })
         try {
-            const response = await blogAPI.createBlog(data)
+            const response = await blogAPI.createBlog2({
+                documentId,
+                documentContent
+            })
             if (response.status === 200 || response.status === 201)
                 toast.success(response.data.message)
             else toast.error(response.data.message || 'Tạo bài viết thất bại!')
         } catch (error) {
             toast.error(error.message || 'Tạo blog thất bại!')
+            console.log('handleAdd error: ', error)
         } finally {
             fetchBlogs()
         }

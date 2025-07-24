@@ -14,7 +14,7 @@ const blogAPI = {
     createBlog: async ({ blogName, blogContent, images, imageLinks }) => {
         const formData = new FormData()
         formData.append('BlogName', blogName)
-        formData.append('BlogContent', blogContent)
+        formData.append('BlogContent', encodeURIComponent(blogContent))
         images.forEach((file) => {
             formData.append('Images', file)
         })
@@ -31,6 +31,13 @@ const blogAPI = {
                 }
             }
         )
+        return response
+    },
+    createBlog2: async ({ documentId, documentContent }) => {
+        const response = await authorizedAxios.post('/api/Blog/CreateBlog', {
+            blogName: documentId,
+            blogContent: documentContent
+        })
         return response
     },
     updateBlog: async (id, blogData) => {
