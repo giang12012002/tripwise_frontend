@@ -13,6 +13,20 @@ const AdminTourList = () => {
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
 
+    const statusTranslations = {
+        Draft: 'Bản Nháp',
+        PendingApproval: 'Chờ duyệt',
+        Approved: 'Đã duyệt',
+        Rejected: 'Bị từ chối'
+    }
+
+    const statusColors = {
+        Draft: 'bg-yellow-100 text-yellow-800',
+        PendingApproval: 'bg-blue-100 text-blue-800',
+        Approved: 'bg-green-100 text-green-800',
+        Rejected: 'bg-red-100 text-red-800'
+    }
+
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
@@ -30,7 +44,6 @@ const AdminTourList = () => {
         const fetchTours = async () => {
             try {
                 const response = await AdminManagerTourAPI.getPendingTours()
-                console.log('Pending tours fetched:', response.data)
                 const validTours = response.data
                     .filter(
                         (tour) =>
@@ -61,7 +74,6 @@ const AdminTourList = () => {
     const handleViewDetail = async (tourId) => {
         try {
             await AdminManagerTourAPI.getTourDetail(tourId)
-            console.log('Navigating to tour with ID:', tourId)
             navigate(`/admin/tourDetail/${tourId}`)
         } catch (err) {
             console.error('Error checking tour:', err)
@@ -146,7 +158,6 @@ const AdminTourList = () => {
         }
     }
 
-    // Filter tours based on search term
     const filteredTours = tours.filter(
         (tour) =>
             tour.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -154,7 +165,6 @@ const AdminTourList = () => {
             false
     )
 
-    // Pagination logic
     const totalPages = Math.ceil(filteredTours.length / toursPerPage)
     const indexOfLastTour = currentPage * toursPerPage
     const indexOfFirstTour = indexOfLastTour - toursPerPage
@@ -176,6 +186,14 @@ const AdminTourList = () => {
         }
     }
 
+    const formatCurrency = (value) => {
+        if (!value || isNaN(value)) return '0 đ'
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(value)
+    }
+
     return (
         <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
             {error && (
@@ -195,9 +213,9 @@ const AdminTourList = () => {
                     className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mt-4"
                 />
             </div>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentTours.length === 0 ? (
-                    <div className="text-center bg-white p-8 rounded-xl shadow-lg w-full">
+                    <div className="col-span-full text-center bg-white p-8 rounded-xl shadow-lg">
                         <p className="text-lg text-gray-600">
                             {searchTerm
                                 ? 'Không tìm thấy tour phù hợp với địa điểm hoặc tên.'
@@ -208,111 +226,173 @@ const AdminTourList = () => {
                     currentTours.map((tour, index) => (
                         <div
                             key={tour.tourId}
-                            className="bg-white rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl w-full"
+                            className="bg-white rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-2xl flex flex-col"
                         >
-                            <div className="p-6">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div className="flex items-center space-x-3">
-                                        <span className="text-lg font-bold text-indigo-600">
-                                            #{indexOfFirstTour + index + 1}.
+                            <div className="relative h-48">
+                                {tour.imageUrls && tour.imageUrls.length > 0 ? (
+                                    <img
+                                        src={tour.imageUrls[0]}
+                                        alt={tour.tourName}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                        <span className="text-gray-500">
+                                            No Image
                                         </span>
-                                        <h3 className="text-xl font-semibold text-gray-800 truncate">
-                                            {tour.tourName}
-                                        </h3>
                                     </div>
-                                    <div className="flex space-x-2">
-                                        <button
-                                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
-                                            onClick={() =>
-                                                handleViewDetail(tour.tourId)
-                                            }
+                                )}
+                                <div className="absolute top-2 right-2 bg-white bg-opacity-80 px-2 py-1 rounded-full text-xs font-semibold text-gray-800">
+                                    #{indexOfFirstTour + index + 1}
+                                </div>
+                            </div>
+                            <div className="p-4 flex-grow">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2 break-words">
+                                    {tour.tourName}
+                                </h3>
+                                <div className="space-y-2 text-sm text-gray-600">
+                                    <div className="flex items-center">
+                                        <svg
+                                            className="w-4 h-4 mr-2 text-indigo-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
                                         >
-                                            <svg
-                                                className="w-4 h-4"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M15 12c0-1.5-1.5-3-3-3s-3 1.5-3 3 1.5 3 3 3 3-1.5 3-3zm6 0c0 4.5-4.5 9-9 9s-9-4.5-9-9 4.5-9 9-9 9 4.5 9 9z"
-                                                />
-                                            </svg>
-                                            <span>Xem chi tiết</span>
-                                        </button>
-                                        <button
-                                            className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
-                                            onClick={() =>
-                                                handleApproveTour(tour.tourId)
-                                            }
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                            />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                            />
+                                        </svg>
+                                        {tour.location || 'N/A'}
+                                    </div>
+                                    <div className="flex items-center">
+                                        <svg
+                                            className="w-4 h-4 mr-2 text-indigo-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
                                         >
-                                            <svg
-                                                className="w-4 h-4"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                />
-                                            </svg>
-                                            <span>Phê duyệt</span>
-                                        </button>
-                                        <button
-                                            className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
-                                            onClick={() =>
-                                                handleRejectTour(tour.tourId)
-                                            }
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M5 13l4 4L19 7"
+                                            />
+                                        </svg>
+                                        <span
+                                            className={`px-2 py-1 rounded text-xs font-medium ${statusColors[tour.status] || 'bg-gray-100 text-gray-800'}`}
                                         >
-                                            <svg
-                                                className="w-4 h-4"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M6 18L18 6M6 6l12 12"
-                                                />
-                                            </svg>
-                                            <span>Từ chối</span>
-                                        </button>
+                                            {statusTranslations[tour.status] ||
+                                                tour.status ||
+                                                'N/A'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <svg
+                                            className="w-4 h-4 mr-2 text-indigo-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                            />
+                                        </svg>
+                                        {new Date(
+                                            tour.createdDate
+                                        ).toLocaleDateString('vi-VN')}
                                     </div>
                                 </div>
-                                <div className="space-y-3 text-sm text-gray-600">
-                                    <div className="flex items-center">
-                                        <span className="font-medium w-24">
-                                            Địa điểm:
-                                        </span>
-                                        <span>{tour.location || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <span className="font-medium w-24">
-                                            Mô tả:
-                                        </span>
-                                        <span>{tour.description || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <span className="font-medium w-24">
-                                            Ngày tạo:
-                                        </span>
-                                        <span>
-                                            {new Date(
-                                                tour.createdDate
-                                            ).toLocaleDateString('vi-VN')}
-                                        </span>
-                                    </div>
-                                </div>
+                            </div>
+                            <div className="p-6 pt-0 flex justify-end">
+                                <span className="text-2xl font-bold text-blue-700">
+                                    {formatCurrency(tour.price)}
+                                </span>
+                            </div>
+                            <div className="p-6 pt-0 flex space-x-2">
+                                <button
+                                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition duration-200 flex items-center justify-center space-x-1"
+                                    onClick={() =>
+                                        handleViewDetail(tour.tourId)
+                                    }
+                                >
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                        />
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                        />
+                                    </svg>
+                                    <span>Xem</span>
+                                </button>
+                                <button
+                                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-1"
+                                    onClick={() =>
+                                        handleApproveTour(tour.tourId)
+                                    }
+                                >
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    <span>Phê duyệt</span>
+                                </button>
+                                <button
+                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition duration-200 flex items-center justify-center space-x-1"
+                                    onClick={() =>
+                                        handleRejectTour(tour.tourId)
+                                    }
+                                >
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                    <span>Từ chối</span>
+                                </button>
                             </div>
                         </div>
                     ))

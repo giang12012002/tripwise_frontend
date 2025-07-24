@@ -526,7 +526,7 @@ const DetailTour = () => {
                                                                                             url
                                                                                         }
                                                                                         alt={`Activity ${index + 1} image ${imgIndex}`}
-                                                                                        className="w-full h-full object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-300"
+                                                                                        className="w-full h-full object-cover rounded-lg shadow-md scale-90 hover:scale-100 transition-transform duration-300"
                                                                                         onError={() =>
                                                                                             console.error(
                                                                                                 `Failed to load activity image: ${url}`
