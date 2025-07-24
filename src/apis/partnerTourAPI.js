@@ -49,9 +49,13 @@ const createActivity = async (itineraryId, dto) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             }
         )
+        console.log(
+            'Phản hồi createActivity:',
+            JSON.stringify(response.data, null, 2)
+        ) // Ghi log toàn bộ phản hồi
         return response
     } catch (err) {
-        console.error('API Error (createActivity):', {
+        console.error('Lỗi API (createActivity):', {
             message: err.message,
             response: err.response?.data,
             status: err.response?.status,
@@ -71,9 +75,13 @@ const updateActivity = async (activityId, dto) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             }
         )
+        console.log(
+            'Phản hồi updateActivity:',
+            JSON.stringify(response.data, null, 2)
+        ) // Ghi log toàn bộ phản hồi
         return response
     } catch (err) {
-        console.error('API Error (updateActivity):', {
+        console.error('Lỗi API (updateActivity):', {
             message: err.message,
             response: err.response?.data,
             status: err.response?.status,
@@ -83,7 +91,6 @@ const updateActivity = async (activityId, dto) => {
         throw err
     }
 }
-
 const submitTour = async (tourId) => {
     try {
         const response = await authorizedAxios.post(
@@ -132,9 +139,13 @@ const updateTour = async (tourId, dto) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             }
         )
+        console.log(
+            'Phản hồi updateTour:',
+            JSON.stringify(response.data, null, 2)
+        ) // Ghi log toàn bộ phản hồi
         return response
     } catch (err) {
-        console.error('API Error (updateTour):', {
+        console.error('Lỗi API (updateTour):', {
             message: err.message,
             response: err.response?.data,
             status: err.response?.status,

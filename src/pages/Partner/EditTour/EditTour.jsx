@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import partnerTourAPI from '@/apis/partnerTourAPI'
@@ -7,18 +7,26 @@ import Swal from 'sweetalert2'
 const EditTour = () => {
     const { tourId } = useParams()
     const [tour, setTour] = useState(null)
-    const [tourImageList, setTourImageList] = useState([])
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(true)
     const [openDays, setOpenDays] = useState({})
-    const [imagePreviews, setImagePreviews] = useState([])
-    const [activityPreviews, setActivityPreviews] = useState({})
-    const [newImageUrls, setNewImageUrls] = useState([])
-    const [newActivityImageUrls, setNewActivityImageUrls] = useState({})
-    const [selectedTourImageIds, setSelectedTourImageIds] = useState([])
-    const [selectedActivityImageIds, setSelectedActivityImageIds] = useState({})
+    const [tourImages, setTourImages] = useState([])
+    const [activityImages, setActivityImages] = useState({})
+    const [tempUrlInput, setTempUrlInput] = useState({ tour: '' })
+    const tourFileInputRef = useRef(null)
+    const activityFileInputRefs = useRef({})
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
+    const MAX_IMAGES = 20
+
+    const isValidImage = (url) => {
+        return new Promise((resolve) => {
+            const img = new Image()
+            img.src = url
+            img.onload = () => resolve(true)
+            img.onerror = () => resolve(false)
+        })
+    }
 
     const toggleDay = (dayIndex) => {
         setOpenDays((prev) => ({ ...prev, [dayIndex]: !prev[dayIndex] }))
@@ -52,9 +60,19 @@ const EditTour = () => {
         }
 
         window.addEventListener('beforeunload', handleBeforeUnload)
-        return () =>
+        return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload)
-    }, [])
+            tourImages.forEach(
+                (img) => img.type === 'new' && URL.revokeObjectURL(img.preview)
+            )
+            Object.values(activityImages)
+                .flat()
+                .forEach(
+                    (img) =>
+                        img.type === 'new' && URL.revokeObjectURL(img.preview)
+                )
+        }
+    }, [tourImages, activityImages])
 
     useEffect(() => {
         const fetchTour = async () => {
@@ -69,17 +87,37 @@ const EditTour = () => {
                 const tourData = response.data
                 console.log('Fetch tour response:', tourData)
 
-                // ✅ Gộp imageUrls + imageIds thành tourImageList
                 const imageUrls = tourData.imageUrls || []
                 const imageIds = tourData.imageIds || []
-                const imageList = imageUrls.map((url, index) => ({
-                    url,
-                    id: imageIds[index] || null
-                }))
-                setTourImageList(imageList) // <-- Thêm dòng này
-                setImagePreviews(imageUrls) // Nếu bạn còn dùng cho preview khác
+                setTourImages(
+                    imageUrls.map((url, index) => ({
+                        preview: url,
+                        type: 'existing',
+                        id: imageIds[index] || null
+                    }))
+                )
 
-                // ✅ Set tour dữ liệu
+                setActivityImages(
+                    tourData.itinerary?.reduce(
+                        (acc, day, dayIndex) => ({
+                            ...acc,
+                            ...day.activities.reduce(
+                                (actAcc, act, actIndex) => ({
+                                    ...actAcc,
+                                    [`${dayIndex}-${actIndex}`]:
+                                        act.imageUrls.map((url, i) => ({
+                                            preview: url,
+                                            type: 'existing',
+                                            id: act.imageIds[i] || null
+                                        }))
+                                }),
+                                {}
+                            )
+                        }),
+                        {}
+                    ) || {}
+                )
+
                 setTour({
                     tourName: tourData.tourName || '',
                     description: tourData.description || '',
@@ -93,9 +131,9 @@ const EditTour = () => {
                     tourInfo: tourData.tourInfo || '',
                     status: tourData.status || 'Draft',
                     rejectReason: tourData.rejectReason || '',
-                    imageUrls,
-                    imageIds,
                     imageFiles: [],
+                    imageUrls: imageUrls,
+                    imageIds: imageIds,
                     itinerary:
                         tourData.itinerary?.map((day) => ({
                             itineraryId: day.itineraryId || null,
@@ -112,30 +150,12 @@ const EditTour = () => {
                                     endTime: act.endTime || '',
                                     mapUrl: act.mapUrl || '',
                                     category: act.category || '',
+                                    imageFiles: [],
                                     imageUrls: act.imageUrls || [],
-                                    imageIds: act.imageIds || [],
-                                    imageFiles: []
+                                    imageIds: act.imageIds || []
                                 })) || []
                         })) || []
                 })
-
-                // ✅ Hoạt động preview
-                setActivityPreviews(
-                    tourData.itinerary?.reduce(
-                        (acc, day, dayIndex) => ({
-                            ...acc,
-                            ...day.activities.reduce(
-                                (actAcc, act, actIndex) => ({
-                                    ...actAcc,
-                                    [`${dayIndex}-${actIndex}`]:
-                                        act.imageUrls || []
-                                }),
-                                {}
-                            )
-                        }),
-                        {}
-                    ) || {}
-                )
             } catch (err) {
                 setError('Không thể tải tour. Vui lòng thử lại.')
                 console.error('API Error (fetchTour):', {
@@ -153,73 +173,152 @@ const EditTour = () => {
     }, [tourId])
 
     const handleTourChange = (e) => {
-        const { name, value, files } = e.target
-        if (name === 'imageFiles') {
-            // Loại bỏ tệp trùng lặp dựa trên tên tệp
-            const uniqueFiles = Array.from(files).filter(
-                (file, index, self) =>
-                    file.type.startsWith('image/') &&
-                    file.size <= 10 * 1024 * 1024 && // Giới hạn 10MB
-                    self.findIndex((f) => f.name === file.name) === index
-            )
-            if (uniqueFiles.length !== files.length) {
-                setError(
-                    'Chỉ chấp nhận tệp hình ảnh không trùng lặp và dưới 10MB.'
-                )
-            }
-            setTour({
-                ...tour,
-                imageFiles: uniqueFiles,
-                imageUrls: tour.imageUrls // Giữ lại các URL hiện có
-            })
-            const previews = uniqueFiles.map((file) =>
-                URL.createObjectURL(file)
-            )
-            setImagePreviews([...tour.imageUrls, ...previews])
-            setNewImageUrls([]) // Xóa các URL mới khi chọn file
-            console.log(
-                'Tour imageFiles selected:',
-                uniqueFiles.map((f) => ({ name: f.name, size: f.size }))
-            )
-        } else if (name === 'imageUrls') {
-            const urls = value
-                .split(',')
-                .map((url) => url.trim())
-                .filter((url, index, self) => {
-                    try {
-                        new URL(url)
-                        return (
-                            !tour.imageUrls.includes(url) &&
-                            self.indexOf(url) === index // Loại bỏ URL trùng lặp
-                        )
-                    } catch {
-                        return false
-                    }
-                })
-            if (
-                urls.length !==
-                value.split(',').filter((url) => url.trim()).length
-            ) {
-                setError('Một số URL hình ảnh không hợp lệ hoặc trùng lặp.')
-            }
-            setTour({
-                ...tour,
-                imageFiles: [], // Xóa các file khi thêm URL
-                imageUrls: tour.imageUrls // Giữ lại các URL hiện có
-            })
-            setNewImageUrls(urls)
-            setImagePreviews([...tour.imageUrls, ...urls])
-            console.log('Tour newImageUrls entered:', urls)
-        } else {
-            const newValue =
-                name === 'price' ||
-                name === 'maxGroupSize' ||
-                name === 'pricePerDay'
-                    ? parseFloat(value) || 0
-                    : value
-            setTour({ ...tour, [name]: newValue })
-            console.log(`Tour field updated: ${name} = ${newValue}`)
+        const { name, value } = e.target
+        const newValue =
+            name === 'price' ||
+            name === 'maxGroupSize' ||
+            name === 'pricePerDay'
+                ? parseFloat(value) || 0
+                : value
+        setTour({ ...tour, [name]: newValue })
+        console.log(`Tour field updated: ${name} = ${newValue}`)
+    }
+
+    const handleAddTourImageFromFile = () => {
+        tourFileInputRef.current.click()
+    }
+
+    const handleTourImageFiles = (e) => {
+        const files = e.target.files
+        const validFiles = Array.from(files).filter(
+            (file) =>
+                ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type) &&
+                file.size <= 10 * 1024 * 1024
+        )
+        if (validFiles.length !== files.length) {
+            setError('Chỉ chấp nhận tệp hình ảnh (jpg, jpeg, png) dưới 10MB.')
+            return
         }
+        if (tourImages.length + validFiles.length > MAX_IMAGES) {
+            setError(`Tổng số ảnh không được vượt quá ${MAX_IMAGES}.`)
+            return
+        }
+        const newFiles = validFiles.map((file) => ({
+            preview: URL.createObjectURL(file),
+            type: 'new',
+            file
+        }))
+        setTourImages([...tourImages, ...newFiles])
+        setTour({
+            ...tour,
+            imageFiles: [...tour.imageFiles, ...validFiles],
+            imageUrls: tourImages
+                .filter((img) => img.type === 'existing')
+                .map((img) => img.preview),
+            imageIds: tourImages
+                .filter((img) => img.type === 'existing')
+                .map((img) => img.id)
+        })
+        console.log(
+            'Tour imageFiles added:',
+            validFiles.map((f) => ({ name: f.name, size: f.size }))
+        )
+    }
+
+    const handleAddTourUrl = async () => {
+        const value = tempUrlInput.tour
+        const urls = value
+            .split(',')
+            .map((url) => url.trim())
+            .filter((url) => url)
+        if (tourImages.length + urls.length > MAX_IMAGES) {
+            setError(`Tổng số ảnh không được vượt quá ${MAX_IMAGES}.`)
+            return
+        }
+        if (
+            urls.length !== value.split(',').filter((url) => url.trim()).length
+        ) {
+            setError('Một số URL hình ảnh không hợp lệ.')
+            return
+        }
+        const validUrls = []
+        for (const url of urls) {
+            try {
+                new URL(url)
+                if (await isValidImage(url)) {
+                    validUrls.push(url)
+                } else {
+                    setError(`URL không phải là hình ảnh hợp lệ: ${url}`)
+                    return
+                }
+            } catch {
+                setError('Một số URL hình ảnh không hợp lệ.')
+                return
+            }
+        }
+        const newUrls = validUrls.map((url) => ({ preview: url, type: 'url' }))
+        setTourImages([...tourImages, ...newUrls])
+        setTour({
+            ...tour,
+            imageUrls: [...tour.imageUrls, ...validUrls],
+            imageIds: tourImages
+                .filter((img) => img.type === 'existing')
+                .map((img) => img.id)
+        })
+        setTempUrlInput({ ...tempUrlInput, tour: '' })
+        console.log('Tour imageUrls added:', validUrls)
+    }
+
+    const removeTourImage = (index) => {
+        const removedImage = tourImages[index]
+        setTourImages(tourImages.filter((_, i) => i !== index))
+        if (removedImage.type === 'new') {
+            URL.revokeObjectURL(removedImage.preview)
+            setTour({
+                ...tour,
+                imageFiles: tour.imageFiles.filter(
+                    (_, i) =>
+                        i !==
+                        tourImages
+                            .filter((img) => img.type === 'new')
+                            .indexOf(removedImage)
+                )
+            })
+        } else if (removedImage.type === 'existing') {
+            setTour({
+                ...tour,
+                imageUrls: tour.imageUrls.filter(
+                    (_, i) =>
+                        i !==
+                        tourImages
+                            .filter((img) => img.type === 'existing')
+                            .indexOf(removedImage)
+                ),
+                imageIds: tour.imageIds.filter((id) => id !== removedImage.id)
+            })
+        } else {
+            setTour({
+                ...tour,
+                imageUrls: tour.imageUrls.filter(
+                    (_, i) =>
+                        i !==
+                        tourImages
+                            .filter((img) => img.type === 'url')
+                            .indexOf(removedImage)
+                )
+            })
+        }
+        console.log(`Removed tour image at index ${index}`)
+    }
+
+    const clearTourImages = () => {
+        tourImages.forEach(
+            (img) => img.type === 'new' && URL.revokeObjectURL(img.preview)
+        )
+        setTourImages([])
+        setTour({ ...tour, imageFiles: [], imageUrls: [], imageIds: [] })
+        setTempUrlInput({ ...tempUrlInput, tour: '' })
+        console.log('Cleared all tour images')
     }
 
     const handleDayChange = (dayIndex, field, value) => {
@@ -232,84 +331,47 @@ const EditTour = () => {
     const handleActivityChange = (dayIndex, activityIndex, field, value) => {
         const newItinerary = [...tour.itinerary]
         if (field === 'imageFiles') {
-            // Loại bỏ tệp trùng lặp dựa trên tên tệp
-            const uniqueFiles = Array.from(value.files).filter(
-                (file, index, self) =>
-                    file.type.startsWith('image/') &&
-                    file.size <= 10 * 1024 * 1024 &&
-                    self.findIndex((f) => f.name === file.name) === index
+            const files = value.files
+            const validFiles = Array.from(files).filter(
+                (file) =>
+                    ['image/jpeg', 'image/png', 'image/jpg'].includes(
+                        file.type
+                    ) && file.size <= 10 * 1024 * 1024
             )
-            console.log(
-                `Selected image files for day ${dayIndex + 1}, activity ${activityIndex + 1}:`,
-                uniqueFiles.map((f) => ({ name: f.name, size: f.size }))
-            )
-            if (uniqueFiles.length !== value.files.length) {
+            if (validFiles.length !== files.length) {
                 setError(
-                    'Chỉ chấp nhận tệp hình ảnh không trùng lặp và dưới 10MB cho hoạt động.'
+                    'Chỉ chấp nhận tệp hình ảnh (jpg, jpeg, png) dưới 10MB.'
                 )
+                return
             }
-            newItinerary[dayIndex].activities[activityIndex].imageFiles =
-                uniqueFiles
-
-            setTour({ ...tour, itinerary: newItinerary })
-            const previews = uniqueFiles.map((file) =>
-                URL.createObjectURL(file)
-            )
-            setActivityPreviews((prev) => ({
-                ...prev,
-                [`${dayIndex}-${activityIndex}`]: [
-                    ...newItinerary[dayIndex].activities[activityIndex]
-                        .imageUrls,
-                    ...previews
-                ]
-            }))
-            setNewActivityImageUrls((prev) => ({
-                ...prev,
-                [`${dayIndex}-${activityIndex}`]: []
-            }))
-        } else if (field === 'imageUrls') {
-            const urls = value
-                .split(',')
-                .map((url) => url.trim())
-                .filter((url, index, self) => {
-                    try {
-                        new URL(url)
-                        return (
-                            !newItinerary[dayIndex].activities[
-                                activityIndex
-                            ].imageUrls.includes(url) &&
-                            self.indexOf(url) === index // Loại bỏ URL trùng lặp
-                        )
-                    } catch {
-                        return false
-                    }
-                })
-            console.log(
-                `Entered image URLs for day ${dayIndex + 1}, activity ${activityIndex + 1}:`,
-                urls
-            )
+            const key = `${dayIndex}-${activityIndex}`
             if (
-                urls.length !==
-                value.split(',').filter((url) => url.trim()).length
+                (activityImages[key]?.length || 0) + validFiles.length >
+                MAX_IMAGES
             ) {
                 setError(
-                    `Một số URL hình ảnh không hợp lệ hoặc trùng lặp cho hoạt động ngày ${dayIndex + 1}.`
+                    `Tổng số ảnh không được vượt quá ${MAX_IMAGES} cho hoạt động.`
                 )
+                return
             }
-            newItinerary[dayIndex].activities[activityIndex].imageFiles = []
+            const newFiles = validFiles.map((file) => ({
+                preview: URL.createObjectURL(file),
+                type: 'new',
+                file
+            }))
+            setActivityImages({
+                ...activityImages,
+                [key]: [...(activityImages[key] || []), ...newFiles]
+            })
+            newItinerary[dayIndex].activities[activityIndex].imageFiles = [
+                ...newItinerary[dayIndex].activities[activityIndex].imageFiles,
+                ...validFiles
+            ]
             setTour({ ...tour, itinerary: newItinerary })
-            setNewActivityImageUrls((prev) => ({
-                ...prev,
-                [`${dayIndex}-${activityIndex}`]: urls
-            }))
-            setActivityPreviews((prev) => ({
-                ...prev,
-                [`${dayIndex}-${activityIndex}`]: [
-                    ...newItinerary[dayIndex].activities[activityIndex]
-                        .imageUrls,
-                    ...urls
-                ]
-            }))
+            console.log(
+                `Activity ${activityIndex + 1} (Day ${dayIndex + 1}) imageFiles added:`,
+                validFiles.map((f) => ({ name: f.name, size: f.size }))
+            )
         } else {
             const newValue =
                 field === 'estimatedCost' ? parseFloat(value) || 0 : value
@@ -319,6 +381,143 @@ const EditTour = () => {
                 `Activity ${activityIndex + 1} (Day ${dayIndex + 1}) updated: ${field} = ${newValue}`
             )
         }
+    }
+
+    const handleAddActivityImageFromFile = (dayIndex, activityIndex) => {
+        const key = `${dayIndex}-${activityIndex}`
+        if (!activityFileInputRefs.current[key]) {
+            activityFileInputRefs.current[key] = React.createRef()
+        }
+        activityFileInputRefs.current[key].current.click()
+        console.log(
+            `Opening file input for activity ${activityIndex + 1} (Day ${dayIndex + 1})`
+        )
+    }
+
+    const handleAddActivityUrl = async (dayIndex, activityIndex) => {
+        const key = `${dayIndex}-${activityIndex}`
+        const value = tempUrlInput[key] || ''
+        const urls = value
+            .split(',')
+            .map((url) => url.trim())
+            .filter((url) => url)
+        if ((activityImages[key]?.length || 0) + urls.length > MAX_IMAGES) {
+            setError(
+                `Tổng số ảnh không được vượt quá ${MAX_IMAGES} cho hoạt động.`
+            )
+            return
+        }
+        if (
+            urls.length !== value.split(',').filter((url) => url.trim()).length
+        ) {
+            setError(
+                `Một số URL hình ảnh không hợp lệ cho hoạt động ngày ${dayIndex + 1}.`
+            )
+            return
+        }
+        const validUrls = []
+        for (const url of urls) {
+            try {
+                new URL(url)
+                if (await isValidImage(url)) {
+                    validUrls.push(url)
+                } else {
+                    setError(`URL không phải là hình ảnh hợp lệ: ${url}`)
+                    return
+                }
+            } catch {
+                setError(
+                    `Một số URL hình ảnh không hợp lệ cho hoạt động ngày ${dayIndex + 1}.`
+                )
+                return
+            }
+        }
+        const newUrls = validUrls.map((url) => ({ preview: url, type: 'url' }))
+        setActivityImages({
+            ...activityImages,
+            [key]: [...(activityImages[key] || []), ...newUrls]
+        })
+        const newItinerary = [...tour.itinerary]
+        newItinerary[dayIndex].activities[activityIndex].imageUrls = [
+            ...newItinerary[dayIndex].activities[activityIndex].imageUrls,
+            ...validUrls
+        ]
+        setTour({ ...tour, itinerary: newItinerary })
+        setTempUrlInput({ ...tempUrlInput, [key]: '' })
+        console.log(
+            `Activity ${activityIndex + 1} (Day ${dayIndex + 1}) imageUrls added:`,
+            validUrls
+        )
+    }
+
+    const removeActivityImage = (dayIndex, activityIndex, index) => {
+        const key = `${dayIndex}-${activityIndex}`
+        const removedImage = activityImages[key][index]
+        setActivityImages({
+            ...activityImages,
+            [key]: activityImages[key].filter((_, i) => i !== index)
+        })
+        const newItinerary = [...tour.itinerary]
+        if (removedImage.type === 'new') {
+            URL.revokeObjectURL(removedImage.preview)
+            newItinerary[dayIndex].activities[activityIndex].imageFiles =
+                newItinerary[dayIndex].activities[
+                    activityIndex
+                ].imageFiles.filter(
+                    (_, i) =>
+                        i !==
+                        activityImages[key]
+                            .filter((img) => img.type === 'new')
+                            .indexOf(removedImage)
+                )
+        } else if (removedImage.type === 'existing') {
+            newItinerary[dayIndex].activities[activityIndex].imageUrls =
+                newItinerary[dayIndex].activities[
+                    activityIndex
+                ].imageUrls.filter(
+                    (_, i) =>
+                        i !==
+                        activityImages[key]
+                            .filter((img) => img.type === 'existing')
+                            .indexOf(removedImage)
+                )
+            newItinerary[dayIndex].activities[activityIndex].imageIds =
+                newItinerary[dayIndex].activities[
+                    activityIndex
+                ].imageIds.filter((id) => id !== removedImage.id)
+        } else {
+            newItinerary[dayIndex].activities[activityIndex].imageUrls =
+                newItinerary[dayIndex].activities[
+                    activityIndex
+                ].imageUrls.filter(
+                    (_, i) =>
+                        i !==
+                        activityImages[key]
+                            .filter((img) => img.type === 'url')
+                            .indexOf(removedImage)
+                )
+        }
+        setTour({ ...tour, itinerary: newItinerary })
+        console.log(
+            `Removed activity image at index ${index} for day ${dayIndex + 1}, activity ${activityIndex + 1}`
+        )
+    }
+
+    const clearActivityImages = (dayIndex, activityIndex) => {
+        const key = `${dayIndex}-${activityIndex}`
+        activityImages[key]?.forEach(
+            (img) => img.type === 'new' && URL.revokeObjectURL(img.preview)
+        )
+        setActivityImages({ ...activityImages, [key]: [] })
+        const newItinerary = [...tour.itinerary]
+        newItinerary[dayIndex].activities[activityIndex].imageFiles = []
+        newItinerary[dayIndex].activities[activityIndex].imageUrls = []
+        newItinerary[dayIndex].activities[activityIndex].imageIds = []
+        setTour({ ...tour, itinerary: newItinerary })
+        setTempUrlInput({ ...tempUrlInput, [key]: '' })
+        console.log(
+            `Cleared all images for day ${dayIndex + 1}, activity ${activityIndex + 1}`
+        )
     }
 
     const addDay = () => {
@@ -347,10 +546,7 @@ const EditTour = () => {
             }
         ]
         setTour({ ...tour, itinerary: newItinerary })
-        setActivityPreviews((prev) => ({
-            ...prev,
-            [`${newItinerary.length - 1}-0`]: []
-        }))
+        setOpenDays({ ...openDays, [tour.itinerary.length]: true })
         console.log('Added new day:', tour.itinerary.length + 1)
     }
 
@@ -395,14 +591,19 @@ const EditTour = () => {
             day.dayNumber = index + 1
         })
         setTour({ ...tour, itinerary: newItinerary })
-        setActivityPreviews((prev) => {
-            const updatedPreviews = { ...prev }
-            Object.keys(updatedPreviews).forEach((key) => {
-                if (key.startsWith(`${dayIndex}-`)) {
-                    delete updatedPreviews[key]
-                }
+        setActivityImages((prev) => {
+            const newImages = { ...prev }
+            Object.keys(newImages).forEach((key) => {
+                if (key.startsWith(`${dayIndex}-`)) delete newImages[key]
             })
-            return updatedPreviews
+            return newImages
+        })
+        setTempUrlInput((prev) => {
+            const newTemp = { ...prev }
+            Object.keys(newTemp).forEach((key) => {
+                if (key.startsWith(`${dayIndex}-`)) delete newTemp[key]
+            })
+            return newTemp
         })
         console.log(`Removed day ${dayIndex + 1}`)
     }
@@ -424,10 +625,6 @@ const EditTour = () => {
             imageIds: []
         })
         setTour({ ...tour, itinerary: newItinerary })
-        setActivityPreviews((prev) => ({
-            ...prev,
-            [`${dayIndex}-${newItinerary[dayIndex].activities.length - 1}`]: []
-        }))
         console.log(`Added new activity to day ${dayIndex + 1}`)
     }
 
@@ -460,131 +657,19 @@ const EditTour = () => {
             dayIndex
         ].activities.filter((_, index) => index !== activityIndex)
         setTour({ ...tour, itinerary: newItinerary })
-        setActivityPreviews((prev) => {
-            const updatedPreviews = { ...prev }
-            delete updatedPreviews[`${dayIndex}-${activityIndex}`]
-            return updatedPreviews
+        setActivityImages((prev) => {
+            const newImages = { ...prev }
+            delete newImages[`${dayIndex}-${activityIndex}`]
+            return newImages
+        })
+        setTempUrlInput((prev) => {
+            const newTemp = { ...prev }
+            delete newTemp[`${dayIndex}-${activityIndex}`]
+            return newTemp
         })
         console.log(
             `Removed activity ${activityIndex + 1} from day ${dayIndex + 1}`
         )
-    }
-
-    const handleSelectTourImage = (imageId) => {
-        setSelectedTourImageIds((prev) =>
-            prev.includes(imageId)
-                ? prev.filter((id) => id !== imageId)
-                : [...prev, imageId]
-        )
-    }
-
-    const handleSelectActivityImage = (dayIndex, activityIndex, imageId) => {
-        setSelectedActivityImageIds((prev) => {
-            const key = `${dayIndex}-${activityIndex}`
-            const current = prev[key] || []
-            return {
-                ...prev,
-                [key]: current.includes(imageId)
-                    ? current.filter((id) => id !== imageId)
-                    : [...current, imageId]
-            }
-        })
-    }
-
-    const deleteMultipleTourImages = async () => {
-        if (selectedTourImageIds.length === 0) {
-            setError('Vui lòng chọn ít nhất một hình ảnh để xóa.')
-            return
-        }
-        try {
-            console.log(
-                `Deleting multiple tour images with IDs: ${selectedTourImageIds.join(', ')}`
-            )
-            await partnerTourAPI.deleteMultipleTourImages(selectedTourImageIds)
-            const newImageUrls = tour.imageUrls.filter(
-                (_, index) =>
-                    !selectedTourImageIds.includes(tour.imageIds[index])
-            )
-            const newImageIds = tour.imageIds.filter(
-                (id) => !selectedTourImageIds.includes(id)
-            )
-            setTour({
-                ...tour,
-                imageUrls: newImageUrls,
-                imageIds: newImageIds
-            })
-            setImagePreviews(newImageUrls)
-            setSelectedTourImageIds([])
-            Swal.fire({
-                icon: 'success',
-                text: 'Xóa các hình ảnh tour thành công!',
-                showConfirmButton: false,
-                timer: 1800
-            })
-        } catch (err) {
-            setError('Không thể xóa các hình ảnh. Vui lòng thử lại.')
-            console.error('API Error (deleteMultipleTourImages):', {
-                message: err.message,
-                response: err.response?.data,
-                status: err.response?.status,
-                errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
-            })
-        }
-    }
-
-    const deleteMultipleActivityImages = async (dayIndex, activityIndex) => {
-        const key = `${dayIndex}-${activityIndex}`
-        const imageIds = selectedActivityImageIds[key] || []
-        if (imageIds.length === 0) {
-            setError('Vui lòng chọn ít nhất một hình ảnh hoạt động để xóa.')
-            return
-        }
-        try {
-            console.log(
-                `Deleting multiple activity images with IDs: ${imageIds.join(', ')}`
-            )
-            await partnerTourAPI.deleteMultipleActivityImages(imageIds)
-            const newItinerary = [...tour.itinerary]
-            const newImageUrls = newItinerary[dayIndex].activities[
-                activityIndex
-            ].imageUrls.filter(
-                (_, index) =>
-                    !imageIds.includes(
-                        newItinerary[dayIndex].activities[activityIndex]
-                            .imageIds[index]
-                    )
-            )
-            const newImageIds = newItinerary[dayIndex].activities[
-                activityIndex
-            ].imageIds.filter((id) => !imageIds.includes(id))
-            newItinerary[dayIndex].activities[activityIndex].imageUrls =
-                newImageUrls
-            newItinerary[dayIndex].activities[activityIndex].imageIds =
-                newImageIds
-            setTour({ ...tour, itinerary: newItinerary })
-            setActivityPreviews((prev) => ({
-                ...prev,
-                [key]: newImageUrls
-            }))
-            setSelectedActivityImageIds((prev) => ({
-                ...prev,
-                [key]: []
-            }))
-            Swal.fire({
-                icon: 'success',
-                text: 'Xóa các hình ảnh hoạt động thành công!',
-                showConfirmButton: false,
-                timer: 1800
-            })
-        } catch (err) {
-            setError('Không thể xóa các hình ảnh hoạt động. Vui lòng thử lại.')
-            console.error('API Error (deleteMultipleActivityImages):', {
-                message: err.message,
-                response: err.response?.data,
-                status: err.response?.status,
-                errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
-            })
-        }
     }
 
     const validateForm = () => {
@@ -605,6 +690,8 @@ const EditTour = () => {
             return 'Giá mỗi ngày không được âm.'
         if (isNaN(tour.maxGroupSize) || tour.maxGroupSize <= 0)
             return 'Số người tối đa phải lớn hơn 0.'
+        if (tourImages.length === 0)
+            return 'Phải cung cấp ít nhất một hình ảnh cho tour.'
         for (let day of tour.itinerary) {
             if (!day.title.trim())
                 return `Tiêu đề ngày ${day.dayNumber} là bắt buộc.`
@@ -617,6 +704,12 @@ const EditTour = () => {
                     return `Chi tiết địa điểm trong ngày ${day.dayNumber} là bắt buộc.`
                 if (isNaN(activity.estimatedCost) || activity.estimatedCost < 0)
                     return `Chi phí dự kiến trong ngày ${day.dayNumber} không được âm.`
+                if (
+                    (activityImages[
+                        `${tour.itinerary.indexOf(day)}-${day.activities.indexOf(activity)}`
+                    ]?.length || 0) === 0
+                )
+                    return `Phải cung cấp ít nhất một hình ảnh cho hoạt động trong ngày ${day.dayNumber}.`
             }
         }
         return ''
@@ -626,11 +719,12 @@ const EditTour = () => {
         const validationError = validateForm()
         if (validationError) {
             setError(validationError)
-            console.error('Validation error:', validationError)
+            console.error('Lỗi xác thực:', validationError)
             return
         }
 
         try {
+            // Cập nhật thông tin tour
             const formData = new FormData()
             formData.append('TourName', tour.tourName)
             formData.append('Description', tour.description)
@@ -643,28 +737,13 @@ const EditTour = () => {
             formData.append('TourNote', tour.tourNote || '')
             formData.append('TourInfo', tour.tourInfo || '')
 
-            if (tour.imageFiles.length > 0) {
-                tour.imageFiles.forEach((file, index) => {
-                    formData.append(`imageFiles[${index}]`, file)
-                })
-                console.log(
-                    'Sending imageFiles:',
-                    tour.imageFiles.map((f) => f.name)
-                )
-            } else {
-                console.log('No imageFiles to send')
-            }
-            if (newImageUrls.length > 0) {
-                newImageUrls.forEach((url, index) => {
-                    formData.append(`imageUrls[${index}]`, url)
-                })
-                console.log('Sending imageUrls:', newImageUrls)
-            } else {
-                console.log('No imageUrls to send')
-            }
+            tour.imageFiles.forEach((file) =>
+                formData.append('ImageFile', file)
+            )
+            tour.imageUrls.forEach((url) => formData.append('Image', url))
 
             console.log(
-                'Tour FormData for update:',
+                'Tour FormData cho cập nhật:',
                 Array.from(formData.entries())
             )
 
@@ -672,8 +751,9 @@ const EditTour = () => {
                 tourId,
                 formData
             )
-            console.log('Update tour response:', updateTourResponse.data)
+            console.log('Phản hồi cập nhật tour:', updateTourResponse.data)
 
+            // Cập nhật lịch trình và hoạt động
             const newItinerary = [...tour.itinerary]
             for (
                 let dayIndex = 0;
@@ -685,23 +765,24 @@ const EditTour = () => {
                     DayNumber: day.dayNumber,
                     Title: day.title || `Ngày ${day.dayNumber}`
                 }
-                if (day.itineraryId) {
+                let itineraryId = day.itineraryId
+                if (itineraryId) {
                     console.log(
-                        `Updating itinerary with ID: ${day.itineraryId}`,
+                        `Cập nhật lịch trình với ID: ${itineraryId}`,
                         itineraryPayload
                     )
                     const updateItineraryResponse =
                         await partnerTourAPI.updateItinerary(
-                            day.itineraryId,
+                            itineraryId,
                             itineraryPayload
                         )
                     console.log(
-                        `Update itinerary response for day ${day.dayNumber}:`,
+                        `Phản hồi cập nhật lịch trình cho ngày ${day.dayNumber}:`,
                         updateItineraryResponse.data
                     )
                 } else {
                     console.log(
-                        `Creating new itinerary for day ${day.dayNumber}:`,
+                        `Tạo lịch trình mới cho ngày ${day.dayNumber}:`,
                         itineraryPayload
                     )
                     const createItineraryResponse =
@@ -710,11 +791,11 @@ const EditTour = () => {
                             itineraryPayload
                         )
                     console.log(
-                        `Create itinerary response for day ${day.dayNumber}:`,
+                        `Phản hồi tạo lịch trình cho ngày ${day.dayNumber}:`,
                         createItineraryResponse.data
                     )
-                    newItinerary[dayIndex].itineraryId =
-                        createItineraryResponse.data.data
+                    itineraryId = createItineraryResponse.data.data
+                    newItinerary[dayIndex].itineraryId = itineraryId
                 }
 
                 for (
@@ -745,131 +826,213 @@ const EditTour = () => {
                     activityFormData.append('MapUrl', activity.mapUrl || '')
                     activityFormData.append('Category', activity.category || '')
 
-                    if (activity.imageFiles.length > 0) {
-                        activity.imageFiles.forEach((file, index) => {
-                            activityFormData.append(
-                                `imageFiles[${index}]`,
-                                file
+                    const activityKey = `${dayIndex}-${activityIndex}`
+                    const currentActivityImages =
+                        activityImages[activityKey] || []
+                    console.log(
+                        `Dữ liệu gửi lên cho hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
+                        {
+                            imageFiles: activity.imageFiles.map((f) => ({
+                                name: f.name,
+                                size: f.size
+                            })),
+                            imageUrls: activity.imageUrls,
+                            imageIds: activity.imageIds,
+                            activityImages: currentActivityImages.map(
+                                (img) => ({
+                                    preview: img.preview,
+                                    type: img.type,
+                                    id: img.id
+                                })
                             )
-                        })
-                        console.log(
-                            `Sending imageFiles for activity ${activityIndex + 1} (Day ${day.dayNumber}):`,
-                            activity.imageFiles.map((f) => f.name)
+                        }
+                    )
+
+                    const newImageFiles = currentActivityImages
+                        .filter((img) => img.type === 'new')
+                        .map((img) => img.file)
+                        .filter(Boolean)
+                    const existingImageUrls = currentActivityImages
+                        .filter(
+                            (img) =>
+                                img.type === 'url' || img.type === 'existing'
                         )
-                    } else {
-                        console.log(
-                            `No imageFiles for activity ${activityIndex + 1} (Day ${day.dayNumber})`
-                        )
-                    }
-                    if (
-                        newActivityImageUrls[`${dayIndex}-${activityIndex}`]
-                            ?.length > 0
-                    ) {
-                        newActivityImageUrls[
-                            `${dayIndex}-${activityIndex}`
-                        ].forEach((url, index) => {
-                            activityFormData.append(`imageUrls[${index}]`, url)
-                        })
-                        console.log(
-                            `Sending imageUrls for activity ${activityIndex + 1} (Day ${day.dayNumber}):`,
-                            newActivityImageUrls[`${dayIndex}-${activityIndex}`]
-                        )
-                    } else {
-                        console.log(
-                            `No imageUrls for activity ${activityIndex + 1} (Day ${day.dayNumber})`
-                        )
-                    }
+                        .map((img) => img.preview)
+                        .filter(Boolean)
+                    const existingImageIds = currentActivityImages
+                        .filter((img) => img.type === 'existing' && img.id)
+                        .map((img) => img.id)
+                        .filter(Boolean)
+
+                    newImageFiles.forEach((file) =>
+                        activityFormData.append('ImageFile', file)
+                    )
+                    existingImageUrls.forEach((url) =>
+                        activityFormData.append('Image', url)
+                    )
+                    existingImageIds.forEach((id) =>
+                        activityFormData.append('ImageIds', id)
+                    )
 
                     console.log(
-                        `Activity FormData for day ${day.dayNumber}, activity ${activityIndex + 1}:`,
+                        `Activity FormData cho ngày ${day.dayNumber}, hoạt động ${activityIndex + 1}:`,
                         Array.from(activityFormData.entries())
                     )
 
-                    if (activity.attractionId) {
-                        console.log(
-                            `Updating activity with ID: ${activity.attractionId}`
-                        )
-                        const updateActivityResponse =
-                            await partnerTourAPI.updateActivity(
-                                activity.attractionId,
-                                activityFormData
+                    let activityResponse
+                    try {
+                        if (activity.attractionId) {
+                            console.log(
+                                `Cập nhật hoạt động với ID: ${activity.attractionId}`
                             )
-                        console.log(
-                            `Update activity response for day ${day.dayNumber}, activity ${activityIndex + 1}:`,
-                            updateActivityResponse.data
-                        )
-                        newItinerary[dayIndex].activities[
-                            activityIndex
-                        ].imageUrls =
-                            updateActivityResponse.data.imageUrls ||
-                            newItinerary[dayIndex].activities[activityIndex]
-                                .imageUrls ||
-                            []
-                        newItinerary[dayIndex].activities[
-                            activityIndex
-                        ].imageIds =
-                            updateActivityResponse.data.imageIds ||
-                            newItinerary[dayIndex].activities[activityIndex]
-                                .imageIds ||
-                            []
-                    } else {
-                        console.log(
-                            `Creating new activity for day ${day.dayNumber}, activity ${activityIndex + 1}`
-                        )
-                        const createActivityResponse =
-                            await partnerTourAPI.createActivity(
-                                newItinerary[dayIndex].itineraryId,
-                                activityFormData
+                            activityResponse =
+                                await partnerTourAPI.updateActivity(
+                                    activity.attractionId,
+                                    activityFormData
+                                )
+                            console.log(
+                                `Phản hồi cập nhật hoạt động cho ngày ${day.dayNumber}, hoạt động ${activityIndex + 1}:`,
+                                activityResponse.data
                             )
-                        console.log(
-                            `Create activity response for day ${day.dayNumber}, activity ${activityIndex + 1}:`,
-                            createActivityResponse.data
+                        } else {
+                            console.log(
+                                `Tạo hoạt động mới cho ngày ${day.dayNumber}, hoạt động ${activityIndex + 1}`
+                            )
+                            activityResponse =
+                                await partnerTourAPI.createActivity(
+                                    itineraryId,
+                                    activityFormData
+                                )
+                            console.log(
+                                `Phản hồi tạo hoạt động cho ngày ${day.dayNumber}, hoạt động ${activityIndex + 1}:`,
+                                activityResponse.data
+                            )
+                            newItinerary[dayIndex].activities[
+                                activityIndex
+                            ].attractionId = activityResponse.data.data
+                        }
+
+                        const receivedImageUrls = Array.isArray(
+                            activityResponse.data.imageUrls
                         )
+                            ? activityResponse.data.imageUrls
+                            : []
+                        const receivedImageIds = Array.isArray(
+                            activityResponse.data.imageIds
+                        )
+                            ? activityResponse.data.imageIds
+                            : []
                         newItinerary[dayIndex].activities[
                             activityIndex
-                        ].attractionId = createActivityResponse.data.data
+                        ].imageUrls = [
+                            ...existingImageUrls,
+                            ...receivedImageUrls
+                        ]
                         newItinerary[dayIndex].activities[
                             activityIndex
-                        ].imageUrls =
-                            createActivityResponse.data.imageUrls ||
-                            newItinerary[dayIndex].activities[activityIndex]
-                                .imageUrls ||
-                            []
-                        newItinerary[dayIndex].activities[
-                            activityIndex
-                        ].imageIds =
-                            createActivityResponse.data.imageIds ||
-                            newItinerary[dayIndex].activities[activityIndex]
-                                .imageIds ||
-                            []
+                        ].imageIds = receivedImageIds
+
+                        console.log(
+                            `Phản hồi API cho hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
+                            {
+                                imageUrls: receivedImageUrls,
+                                imageIds: receivedImageIds
+                            }
+                        )
+                    } catch (err) {
+                        console.error(
+                            `Lỗi API cho hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
+                            {
+                                message: err.message,
+                                response: err.response?.data,
+                                status: err.response?.status,
+                                errors:
+                                    err.response?.data?.errors ||
+                                    'Không có chi tiết lỗi'
+                            }
+                        )
+                        setError(
+                            `Không thể cập nhật/tạo hoạt động trong ngày ${day.dayNumber}. Vui lòng thử lại.`
+                        )
+                        return
                     }
                 }
             }
 
-            // Làm mới dữ liệu từ API để đồng bộ
+            // Làm mới dữ liệu tour sau khi cập nhật
             const updatedTourResponse =
                 await partnerTourAPI.getTourDetail(tourId)
-            console.log('Refreshed tour data:', updatedTourResponse.data)
+            console.log(
+                'Dữ liệu tour được làm mới:',
+                JSON.stringify(updatedTourResponse.data, null, 2)
+            )
             const updatedTourData = updatedTourResponse.data
-            if (
-                !updatedTourData.imageUrls ||
-                updatedTourData.imageUrls.length === 0
-            ) {
-                console.warn('No imageUrls returned from getTourDetail API')
-                setError(
-                    'Không tìm thấy ảnh sau khi cập nhật. Vui lòng kiểm tra lại.'
+
+            if (!updatedTourData.imageIds) {
+                console.warn(
+                    'imageIds không được trả về trong dữ liệu tour cập nhật'
                 )
             }
-            if (
-                !updatedTourData.imageIds ||
-                updatedTourData.imageIds.length === 0
-            ) {
-                console.warn('No imageIds returned from getTourDetail API')
-            }
+
+            // Kiểm tra và log ảnh hoạt động sau khi cập nhật
+            updatedTourData.itinerary?.forEach((day, dayIndex) => {
+                day.activities?.forEach((act, actIndex) => {
+                    const activityKey = `${dayIndex}-${actIndex}`
+                    const sentImageUrls =
+                        newItinerary[dayIndex].activities[actIndex].imageUrls ||
+                        []
+                    const receivedImageUrls = act.imageUrls || []
+                    console.log(
+                        `So sánh ảnh hoạt động (Ngày ${day.dayNumber}, Hoạt động ${actIndex + 1}):`,
+                        {
+                            sentImageUrls,
+                            receivedImageUrls,
+                            receivedImageIds: act.imageIds || []
+                        }
+                    )
+                    if (
+                        sentImageUrls.length > 0 &&
+                        receivedImageUrls.length === 0
+                    ) {
+                        console.error(
+                            `Lỗi: Tất cả ảnh hoạt động bị mất (Ngày ${day.dayNumber}, Hoạt động ${actIndex + 1})`,
+                            { sentImageUrls }
+                        )
+                    } else {
+                        const filteredSentUrls = sentImageUrls.filter(
+                            (url) => !url.startsWith('blob:')
+                        )
+                        const missingImages = filteredSentUrls.filter(
+                            (url) => !receivedImageUrls.includes(url)
+                        )
+
+                        if (missingImages.length > 0) {
+                            console.error(
+                                `Lỗi: Một số ảnh hoạt động bị mất (Ngày ${day.dayNumber}, Hoạt động ${actIndex + 1})`,
+                                { missingImages }
+                            )
+                        }
+                    }
+                })
+            })
+
+            // Cập nhật trạng thái tour
             setTour({
-                ...tour,
+                tourName: updatedTourData.tourName || '',
+                description: updatedTourData.description || '',
+                duration: updatedTourData.days?.toString() || '1',
+                price: updatedTourData.totalEstimatedCost || 0,
+                pricePerDay: updatedTourData.pricePerDay || 0,
+                location: updatedTourData.location || '',
+                maxGroupSize: updatedTourData.maxGroupSize || 1,
+                category: updatedTourData.preferences || '',
+                tourNote: updatedTourData.tourNote || '',
+                tourInfo: updatedTourData.tourInfo || '',
+                status: updatedTourData.status || 'Draft',
+                rejectReason: updatedTourData.rejectReason || '',
+                imageFiles: [],
                 imageUrls: updatedTourData.imageUrls || [],
-                imageIds: updatedTourData.imageIds || [], // Xử lý imageIds undefined
+                imageIds: updatedTourData.imageIds || [],
                 itinerary:
                     updatedTourData.itinerary?.map((day) => ({
                         itineraryId: day.itineraryId || null,
@@ -886,32 +1049,76 @@ const EditTour = () => {
                                 endTime: act.endTime || '',
                                 mapUrl: act.mapUrl || '',
                                 category: act.category || '',
+                                imageFiles: [],
                                 imageUrls: act.imageUrls || [],
-                                imageIds: act.imageIds || [], // Xử lý imageIds undefined
-                                imageFiles: []
+                                imageIds: act.imageIds || []
                             })) || []
                     })) || []
             })
-            setImagePreviews(updatedTourData.imageUrls || [])
-            setActivityPreviews(
+
+            // Cập nhật tourImages
+            setTourImages(
+                updatedTourData.imageUrls.map((url, index) => ({
+                    preview: url,
+                    type: 'existing',
+                    id: updatedTourData.imageIds[index] || null
+                }))
+            )
+
+            // Cập nhật activityImages từ dữ liệu API
+            const newActivityImages =
                 updatedTourData.itinerary?.reduce(
                     (acc, day, dayIndex) => ({
                         ...acc,
                         ...day.activities.reduce(
                             (actAcc, act, actIndex) => ({
                                 ...actAcc,
-                                [`${dayIndex}-${actIndex}`]: act.imageUrls || []
+                                [`${dayIndex}-${actIndex}`]: act.imageUrls.map(
+                                    (url, i) => ({
+                                        preview: url,
+                                        type: 'existing',
+                                        id: act.imageIds[i] || null
+                                    })
+                                )
                             }),
                             {}
                         )
                     }),
                     {}
                 ) || {}
-            )
-            setNewImageUrls([])
-            setNewActivityImageUrls({})
-            setSelectedTourImageIds([])
-            setSelectedActivityImageIds({})
+            setActivityImages(newActivityImages)
+
+            // Log nếu activityImages bị thay đổi không mong muốn
+            Object.keys(newActivityImages).forEach((key) => {
+                const [dayIndex, actIndex] = key.split('-').map(Number)
+                const oldImages = activityImages[key] || []
+                const newImages = newActivityImages[key] || []
+                if (oldImages.length > 0 && newImages.length === 0) {
+                    console.error(
+                        `Lỗi: Tất cả ảnh hoạt động bị mất sau khi cập nhật (Ngày ${dayIndex + 1}, Hoạt động ${actIndex + 1})`,
+                        { oldImages: oldImages.map((img) => img.preview) }
+                    )
+                } else if (oldImages.length !== newImages.length) {
+                    const missingImages = oldImages
+                        .filter(
+                            (oldImg) =>
+                                !newImages.some(
+                                    (newImg) =>
+                                        newImg.preview === oldImg.preview
+                                )
+                        )
+                        .map((img) => img.preview)
+                    if (missingImages.length > 0) {
+                        console.error(
+                            `Lỗi: Một số ảnh hoạt động bị mất sau khi cập nhật (Ngày ${dayIndex + 1}, Hoạt động ${actIndex + 1})`,
+                            { missingImages }
+                        )
+                    }
+                }
+            })
+
+            // Đặt lại tempUrlInput
+            setTempUrlInput({ tour: '' })
 
             Swal.fire({
                 icon: 'success',
@@ -919,9 +1126,9 @@ const EditTour = () => {
                 showConfirmButton: false,
                 timer: 1800
             })
-            navigate('/partner/listTour')
+            // navigate('/partner/listTour');
         } catch (err) {
-            console.error('API Error (updateTour):', {
+            console.error('Lỗi API (updateTour):', {
                 message: err.message,
                 response: err.response?.data,
                 status: err.response?.status,
@@ -1105,67 +1312,80 @@ const EditTour = () => {
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Hình Ảnh Tour
+                            Hình Ảnh (Có thể chọn nhiều)
                         </label>
+                        <button
+                            className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            onClick={handleAddTourImageFromFile}
+                        >
+                            Chọn ảnh
+                        </button>
                         <input
                             type="file"
                             name="imageFiles"
-                            accept="image/*"
+                            accept="image/jpeg,image/png,image/jpg"
                             multiple
-                            onChange={handleTourChange}
-                            className="w-full border border-gray-300 p-3 rounded-lg"
+                            onChange={handleTourImageFiles}
+                            className="hidden"
+                            ref={tourFileInputRef}
                         />
-                        {imagePreviews.length > 0 && (
-                            <div className="mt-2">
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Hình Ảnh Hiện Có và Mới
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                    {tourImageList.map((img, index) => (
-                                        <div
-                                            key={img.id || index}
-                                            className="relative"
-                                        >
-                                            {img.id && (
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedTourImageIds.includes(
-                                                        img.id
-                                                    )}
-                                                    onChange={() =>
-                                                        handleSelectTourImage(
-                                                            img.id
-                                                        )
-                                                    }
-                                                    className="absolute top-1 left-1"
-                                                />
-                                            )}
+                        <label className="block text-gray-800 font-semibold text-lg mb-2 mt-4">
+                            Link ảnh từ bên ngoài
+                        </label>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="text"
+                                value={tempUrlInput.tour}
+                                onChange={(e) =>
+                                    setTempUrlInput({
+                                        ...tempUrlInput,
+                                        tour: e.target.value
+                                    })
+                                }
+                                className="flex-grow border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="https://picsum.photos/200/300"
+                            />
+                            <button
+                                className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                onClick={handleAddTourUrl}
+                            >
+                                Thêm
+                            </button>
+                        </div>
+                        {tourImages.length > 0 && (
+                            <div className="mt-4">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-gray-700 font-medium">
+                                        Đã chọn {tourImages.length} ảnh
+                                    </span>
+                                    <button
+                                        className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                        onClick={clearTourImages}
+                                    >
+                                        Xóa Tất Cả Ảnh
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {tourImages.map((img, index) => (
+                                        <div key={index} className="relative">
                                             <img
-                                                src={img.url}
-                                                alt={`Tour Image ${index}`}
-                                                className="w-24 h-24 object-cover rounded-lg"
+                                                src={img.preview}
+                                                alt={`Tour preview ${index + 1}`}
+                                                className="w-full h-24 object-cover rounded-lg"
                                             />
+                                            <button
+                                                className="absolute top-0 right-0 bg-red-600 text-white rounded-full p-1"
+                                                onClick={() =>
+                                                    removeTourImage(index)
+                                                }
+                                            >
+                                                X
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
-                                {selectedTourImageIds.length > 0 && (
-                                    <button
-                                        className="mt-2 px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                                        onClick={deleteMultipleTourImages}
-                                    >
-                                        Xóa các hình ảnh đã chọn
-                                    </button>
-                                )}
                             </div>
                         )}
-                        <input
-                            type="text"
-                            name="imageUrls"
-                            value={newImageUrls.join(',')}
-                            onChange={handleTourChange}
-                            className="w-full border border-gray-300 p-3 rounded-lg mt-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Nhập các URL hình ảnh mới, cách nhau bằng dấu phẩy"
-                        />
                     </div>
                     <div className="md:col-span-2">
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1244,11 +1464,7 @@ const EditTour = () => {
                                     className="flex items-center mr-4"
                                 >
                                     <span
-                                        className={`transition-transform duration-300 ${
-                                            openDays[dayIndex]
-                                                ? 'rotate-180'
-                                                : ''
-                                        }`}
+                                        className={`transition-transform duration-300 ${openDays[dayIndex] ? 'rotate-180' : ''}`}
                                     >
                                         <svg
                                             className="w-6 h-6 text-blue-600"
@@ -1490,11 +1706,24 @@ const EditTour = () => {
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
-                                                        Hình Ảnh Hoạt Động
+                                                        Hình Ảnh Hoạt Động (Có
+                                                        thể chọn nhiều)
                                                     </label>
+                                                    <button
+                                                        className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                        onClick={() =>
+                                                            handleAddActivityImageFromFile(
+                                                                dayIndex,
+                                                                activityIndex
+                                                            )
+                                                        }
+                                                    >
+                                                        Chọn ảnh
+                                                    </button>
                                                     <input
                                                         type="file"
-                                                        accept="image/*"
+                                                        name="imageFiles"
+                                                        accept="image/jpeg,image/png,image/jpg"
                                                         multiple
                                                         onChange={(e) =>
                                                             handleActivityChange(
@@ -1504,22 +1733,95 @@ const EditTour = () => {
                                                                 e.target
                                                             )
                                                         }
-                                                        className="w-full border border-gray-300 p-3 rounded-lg"
+                                                        className="hidden"
+                                                        ref={(el) => {
+                                                            const key = `${dayIndex}-${activityIndex}`
+                                                            if (
+                                                                !activityFileInputRefs
+                                                                    .current[
+                                                                    key
+                                                                ]
+                                                            ) {
+                                                                activityFileInputRefs.current[
+                                                                    key
+                                                                ] =
+                                                                    React.createRef()
+                                                            }
+                                                            activityFileInputRefs.current[
+                                                                key
+                                                            ].current = el
+                                                        }}
                                                     />
-                                                    {activityPreviews[
+                                                    <label className="block text-gray-700 font-medium mb-2 mt-4">
+                                                        Link ảnh từ bên ngoài
+                                                    </label>
+                                                    <div className="flex items-center space-x-2">
+                                                        <input
+                                                            type="text"
+                                                            value={
+                                                                tempUrlInput[
+                                                                    `${dayIndex}-${activityIndex}`
+                                                                ] || ''
+                                                            }
+                                                            onChange={(e) =>
+                                                                setTempUrlInput(
+                                                                    {
+                                                                        ...tempUrlInput,
+                                                                        [`${dayIndex}-${activityIndex}`]:
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                    }
+                                                                )
+                                                            }
+                                                            className="flex-grow border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                            placeholder="https://picsum.photos/200/300"
+                                                        />
+                                                        <button
+                                                            className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                            onClick={() =>
+                                                                handleAddActivityUrl(
+                                                                    dayIndex,
+                                                                    activityIndex
+                                                                )
+                                                            }
+                                                        >
+                                                            Thêm
+                                                        </button>
+                                                    </div>
+                                                    {activityImages[
                                                         `${dayIndex}-${activityIndex}`
                                                     ]?.length > 0 && (
-                                                        <div className="mt-2">
-                                                            <label className="block text-gray-700 font-medium mb-2">
-                                                                Hình Ảnh Hiện Có
-                                                                và Mới
-                                                            </label>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {activityPreviews[
+                                                        <div className="mt-4">
+                                                            <div className="flex justify-between items-center mb-2">
+                                                                <span className="text-gray-700 font-medium">
+                                                                    Đã chọn{' '}
+                                                                    {
+                                                                        activityImages[
+                                                                            `${dayIndex}-${activityIndex}`
+                                                                        ].length
+                                                                    }{' '}
+                                                                    ảnh
+                                                                </span>
+                                                                <button
+                                                                    className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                                                    onClick={() =>
+                                                                        clearActivityImages(
+                                                                            dayIndex,
+                                                                            activityIndex
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Xóa Tất Cả
+                                                                    Ảnh
+                                                                </button>
+                                                            </div>
+                                                            <div className="grid grid-cols-3 gap-2">
+                                                                {activityImages[
                                                                     `${dayIndex}-${activityIndex}`
                                                                 ].map(
                                                                     (
-                                                                        url,
+                                                                        img,
                                                                         index
                                                                     ) => (
                                                                         <div
@@ -1528,86 +1830,31 @@ const EditTour = () => {
                                                                             }
                                                                             className="relative"
                                                                         >
-                                                                            <input
-                                                                                type="checkbox"
-                                                                                checked={selectedActivityImageIds[
-                                                                                    `${dayIndex}-${activityIndex}`
-                                                                                ]?.includes(
-                                                                                    activity
-                                                                                        .imageIds[
-                                                                                        index
-                                                                                    ]
-                                                                                )}
-                                                                                onChange={() =>
-                                                                                    handleSelectActivityImage(
-                                                                                        dayIndex,
-                                                                                        activityIndex,
-                                                                                        activity
-                                                                                            .imageIds[
-                                                                                            index
-                                                                                        ]
-                                                                                    )
-                                                                                }
-                                                                                className="absolute top-1 left-1"
-                                                                                disabled={
-                                                                                    !activity
-                                                                                        .imageIds[
-                                                                                        index
-                                                                                    ]
-                                                                                }
-                                                                            />
                                                                             <img
                                                                                 src={
-                                                                                    url
+                                                                                    img.preview
                                                                                 }
-                                                                                alt={`Activity Image ${index}`}
-                                                                                className="w-24 h-24 object-cover rounded-lg"
-                                                                                onError={() =>
-                                                                                    console.error(
-                                                                                        `Failed to load activity image preview ${index + 1}: ${url}`
+                                                                                alt={`Activity preview ${index + 1}`}
+                                                                                className="w-full h-24 object-cover rounded-lg"
+                                                                            />
+                                                                            <button
+                                                                                className="absolute top-0 right-0 bg-red-600 text-white rounded-full p-1"
+                                                                                onClick={() =>
+                                                                                    removeActivityImage(
+                                                                                        dayIndex,
+                                                                                        activityIndex,
+                                                                                        index
                                                                                     )
                                                                                 }
-                                                                            />
+                                                                            >
+                                                                                X
+                                                                            </button>
                                                                         </div>
                                                                     )
                                                                 )}
                                                             </div>
-                                                            {selectedActivityImageIds[
-                                                                `${dayIndex}-${activityIndex}`
-                                                            ]?.length > 0 && (
-                                                                <button
-                                                                    className="mt-2 px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                                                                    onClick={() =>
-                                                                        deleteMultipleActivityImages(
-                                                                            dayIndex,
-                                                                            activityIndex
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Xóa các hình
-                                                                    ảnh đã chọn
-                                                                </button>
-                                                            )}
                                                         </div>
                                                     )}
-                                                    <input
-                                                        type="text"
-                                                        value={(
-                                                            newActivityImageUrls[
-                                                                `${dayIndex}-${activityIndex}`
-                                                            ] || []
-                                                        ).join(',')}
-                                                        onChange={(e) =>
-                                                            handleActivityChange(
-                                                                dayIndex,
-                                                                activityIndex,
-                                                                'imageUrls',
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-full border border-gray-300 p-3 rounded-lg mt-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        placeholder="Nhập các URL hình ảnh mới, cách nhau bằng dấu phẩy"
-                                                    />
                                                 </div>
                                             </div>
                                         </div>

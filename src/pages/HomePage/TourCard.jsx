@@ -11,7 +11,7 @@ function TourCard({ tour, onViewDetail }) {
                 className="w-full h-48 object-cover"
             />
             <div className="p-5">
-                <p className="text-lg font-semibold text-orange-500">
+                <p className="text-lg font-semibold text-red-500">
                     {tour.price}
                 </p>
                 <div className="flex items-center my-2">
