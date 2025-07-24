@@ -18,14 +18,14 @@ const Footer = () => {
                 <div className="mb-6 md:mb-0 text-left">
                     <h3 className="font-bold text-2xl ml-6">Liên Hệ</h3>
                     <p className="ml-6 text-xs">
-                        <i className="fas fa-map-marker-alt"></i> Hòa Lạc, Hà
-                        Nội
+                        <i className="fas fa-map-marker-alt mr-2"></i> Hòa Lạc,
+                        Hà Nội
                     </p>
                     <p className="ml-6 text-xs">
-                        <i className="fas fa-phone"></i> +84 0339.805.402
+                        <i className="fas fa-phone mr-2"></i> +84 0339.805.402
                     </p>
                     <p className="ml-6 text-xs">
-                        <i className="fas fa-envelope"></i>{' '}
+                        <i className="fas fa-envelope mr-2"></i>{' '}
                         <a
                             href="mailto:Tripwise.tour@gmail.com"
                             className="underline"

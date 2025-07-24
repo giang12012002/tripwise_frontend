@@ -4,9 +4,9 @@ import {
     Route,
     Navigate
 } from 'react-router-dom'
-import RegisterPage from '@/pages/RegisterPage/index2.jsx'
+import RegisterPage from '@/pages/RegisterPage/index.jsx'
 import OtpVerification from '@/pages/RegisterPage/OtpVerification'
-import SignInPage from '@/pages/SignInPage/index3.jsx'
+import SignInPage from '@/pages/SignInPage/index.jsx'
 import HomePage from '@/pages/HomePage/HomePage'
 import CustomerTourDetail from '@/pages/HomePage/CustomerTourDetail.jsx'
 import AboutPage from '@/pages/AboutPage/index.jsx'
@@ -31,6 +31,7 @@ import EditTour from '@/pages/Partner/EditTour/EditTour.jsx'
 import AdminDashboard from '@/pages/Admin/AdminDashboard/AdminDashboard.jsx'
 import AdminBlogList from '@/pages/Admin/Blogs'
 import AdminBlogDetail from '@/pages/Admin/Blogs/id'
+import ReportDashboard from '@/pages/Admin/Report/ReportDashboard.jsx'
 import AdminManagerUser from '@/pages/Admin/Users/UserManager.jsx'
 import AdminTourList from '@/pages/Admin/ManagerTour/AdminTourList.jsx'
 import AdminTourDetail from '@/pages/Admin/ManagerTour/AdminTourDetail.jsx'
@@ -107,6 +108,33 @@ function Index() {
                             element={<AdminTourDetail />}
                         />
                         <Route path="users" element={<AdminManagerUser />} />
+                        <Route path="reports" element={<ReportDashboard />}>
+                            <Route
+                                index
+                                element={
+                                    <Navigate
+                                        to="/admin/reports/revenue"
+                                        replace
+                                    />
+                                }
+                            />
+                            <Route
+                                path="revenue"
+                                element={
+                                    <ReportDashboard activeTab="revenue" />
+                                }
+                            />
+                            <Route
+                                path="partnerPerformance"
+                                element={
+                                    <ReportDashboard activeTab="partner" />
+                                }
+                            />
+                            <Route
+                                path="tourBookingStats"
+                                element={<ReportDashboard activeTab="tour" />}
+                            />
+                        </Route>
                     </Route>
                 </Routes>
             </AuthProvider>

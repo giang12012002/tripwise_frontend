@@ -47,6 +47,12 @@ const AdminDashboard = () => {
                         Trang Chủ
                     </button>
                     <button
+                        onClick={() => navigate('/admin/reports')}
+                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
+                    >
+                        Báo cáo thống kê
+                    </button>
+                    <button
                         onClick={() => navigate('/admin/blogs')}
                         className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
                     >

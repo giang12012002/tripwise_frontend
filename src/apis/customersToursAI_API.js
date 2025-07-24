@@ -31,6 +31,26 @@ const createItinerary = async (formData) => {
     }
 }
 
+const generateItineraryChunk = async (chunkRequest) => {
+    console.log('Payload gửi đi:', chunkRequest)
+    try {
+        const response = await authorizedAxios.post(
+            'api/AIGeneratePlan/GenerateItineraryChunk',
+            chunkRequest
+        )
+        return response
+    } catch (err) {
+        console.error('API Error (generateItineraryChunk):', {
+            message: err.message,
+            response: err.response?.data,
+            status: err.response?.status,
+            errors: err.response?.data?.errors || 'Không có chi tiết lỗi',
+            payload: chunkRequest
+        })
+        throw err
+    }
+}
+
 const saveTourFromGenerated = async (generatePlanId) => {
     const response = await authorizedAxios.post(
         `api/AIGeneratePlan/SaveTourFromGenerated/${generatePlanId}`
@@ -121,6 +141,7 @@ const getHistoryDetail = async (id) => {
 
 export default {
     createItinerary,
+    generateItineraryChunk,
     saveTourFromGenerated,
     updateItinerary,
     getToursByUserId,

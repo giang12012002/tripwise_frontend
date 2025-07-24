@@ -23,7 +23,6 @@ function TourDetail() {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
                 icon: 'success',
-                // title: 'Thành công',
                 text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
                 timer: 1800
@@ -54,7 +53,7 @@ function TourDetail() {
             try {
                 const response = await travelFormAPI.getTourDetailById(id)
                 console.log(
-                    'Tour Detail API Response:',
+                    'Phản hồi API chi tiết tour:',
                     JSON.stringify(response.data, null, 2)
                 )
                 if (
@@ -107,11 +106,20 @@ function TourDetail() {
                                                     'Chưa xác định',
                                                 MapUrl: activity.mapUrl || null,
                                                 ImageUrl:
-                                                    activity.image || null,
+                                                    Array.isArray(
+                                                        activity.imageUrls
+                                                    ) &&
+                                                    activity.imageUrls.length >
+                                                        0
+                                                        ? activity.imageUrls[0]
+                                                        : null,
                                                 StartTime:
-                                                    activity.startTime || null,
+                                                    activity.startTime || null, // Thêm ánh xạ cho StartTime
                                                 EndTime:
-                                                    activity.endTime || null
+                                                    activity.endTime || null, // Thêm ánh xạ cho EndTime
+                                                Description:
+                                                    activity.description ||
+                                                    'Chưa xác định' // Thêm ánh xạ cho Description
                                             })
                                         )
                                       : []
@@ -119,7 +127,7 @@ function TourDetail() {
                             : []
                     }
                     console.log(
-                        'Normalized Tour Detail:',
+                        'Dữ liệu tour chuẩn hóa:',
                         JSON.stringify(normalizedData, null, 2)
                     )
                     setTourDetail(normalizedData)
@@ -132,7 +140,7 @@ function TourDetail() {
                     err.message ||
                     'Không thể tải chi tiết tour.'
                 console.error(
-                    'Tour Detail API Error:',
+                    'Lỗi API chi tiết tour:',
                     err.response?.data,
                     err.message
                 )
@@ -288,24 +296,24 @@ function TourDetail() {
                                 <div className="space-y-3">
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">📍</span>
-                                        <strong>Địa điểm:&nbsp; </strong>
+                                        <strong>Địa điểm: </strong>
                                         {tourDetail.Location}
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">⏳</span>
-                                        <strong>Số ngày:&nbsp; </strong>
+                                        <strong>Số ngày: </strong>
                                         {tourDetail.Duration}
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">💸</span>
-                                        <strong>Giá:&nbsp; </strong>
+                                        <strong>Giá: </strong>
                                         <span className="text-blue-600">
                                             {formatCurrency(tourDetail.Price)}
                                         </span>
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">📅</span>
-                                        <strong>Ngày bắt đầu:&nbsp; </strong>
+                                        <strong>Ngày bắt đầu: </strong>
                                         {formatDate(tourDetail.CreatedDate)}
                                     </p>
                                 </div>
@@ -317,13 +325,12 @@ function TourDetail() {
                                 <div className="space-y-3">
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">🌟</span>
-                                        <strong>Sở thích:&nbsp; </strong>
+                                        <strong>Sở thích: </strong>
                                         {formatPreferences(tourDetail.Category)}
                                     </p>
-
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">📌</span>
-                                        <strong>Đề xuất chỗ ở:&nbsp; </strong>
+                                        <strong>Đề xuất chỗ ở: </strong>
                                         {tourDetail.TourNote ? (
                                             <a
                                                 href={tourDetail.TourNote}
@@ -337,17 +344,6 @@ function TourDetail() {
                                             'Không xác định'
                                         )}
                                     </p>
-                                    {/*<p className="flex items-center text-gray-700">*/}
-                                    {/*    <span className="mr-2">📝</span>*/}
-                                    {/*    <strong>Mô tả:&nbsp; </strong>*/}
-                                    {/*    {tourDetail.Description}*/}
-                                    {/*</p>*/}
-
-                                    {/*  <p className="flex items-center text-gray-700">
-                                        <span className="mr-2">🏨</span>
-                                        <strong>Ghi Chú:&nbsp; </strong>
-                                        {tourDetail.TourInfo}
-                                    </p>*/}
                                 </div>
                             </div>
                         </div>
@@ -490,16 +486,16 @@ function TourDetail() {
                                                                                 </a>
                                                                             </p>
                                                                         )}
-                                                                        {activity.imageUrls && (
+                                                                        {activity.ImageUrl && (
                                                                             <img
                                                                                 src={
-                                                                                    activity.imageUrls
+                                                                                    activity.ImageUrl
                                                                                 }
                                                                                 alt={
                                                                                     activity.TourAttractionsName ||
-                                                                                    'Activity'
+                                                                                    'Hoạt động'
                                                                                 }
-                                                                                className="w-full h-110 object-contain rounded-lg mt-4"
+                                                                                className="w-full h-48 object-cover rounded-lg mt-4"
                                                                             />
                                                                         )}
                                                                     </div>
