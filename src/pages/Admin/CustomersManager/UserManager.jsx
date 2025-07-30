@@ -266,12 +266,21 @@ const UserManager = () => {
     )
 
     // Debugging logs
-    console.log('Filtered All Users:', filteredAllUsers.length)
-    console.log('Total Pages All Users:', totalPagesAllUsers)
-    console.log('Current All Users:', currentAllUsers.length)
-    console.log('Filtered Non-Active Users:', filteredNonActiveUsers.length)
-    console.log('Total Pages Non-Active Users:', totalPagesNonActiveUsers)
-    console.log('Current Non-Active Users:', currentNonActiveUsers.length)
+    console.log('Filtered All CustomersManager:', filteredAllUsers.length)
+    console.log('Total Pages All CustomersManager:', totalPagesAllUsers)
+    console.log('Current All CustomersManager:', currentAllUsers.length)
+    console.log(
+        'Filtered Non-Active CustomersManager:',
+        filteredNonActiveUsers.length
+    )
+    console.log(
+        'Total Pages Non-Active CustomersManager:',
+        totalPagesNonActiveUsers
+    )
+    console.log(
+        'Current Non-Active CustomersManager:',
+        currentNonActiveUsers.length
+    )
     console.log('Current Page:', currentPage)
 
     const handlePageChange = (page) => {
@@ -303,7 +312,7 @@ const UserManager = () => {
     return (
         <div className="container mx-auto p-6 bg-gray-100 min-h-screen">
             <h1 className="text-3xl font-bold text-gray-800 mb-6">
-                Quản lý người dùng
+                Quản lý khách hàng
             </h1>
             <div className="mb-5 flex flex-col sm:flex-row gap-4">
                 <input
@@ -320,13 +329,13 @@ const UserManager = () => {
                         className="px-4 py-2 text-gray-600 font-semibold cursor-pointer hover:bg-gray-200 rounded-t-md focus:outline-none"
                         selectedClassName="bg-white border-b-2 border-blue-600 text-blue-600"
                     >
-                        Tất cả người dùng
+                        Tất cả khách hàng
                     </Tab>
                     <Tab
                         className="px-4 py-2 text-gray-600 font-semibold cursor-pointer hover:bg-gray-200 rounded-t-md focus:outline-none"
                         selectedClassName="bg-white border-b-2 border-blue-600 text-blue-600"
                     >
-                        Người dùng đã xóa
+                        Khách hàng đã xóa
                     </Tab>
                 </TabList>
 
