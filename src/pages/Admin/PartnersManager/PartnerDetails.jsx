@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
-const UserDetails = ({
-    user,
+const PartnerDetails = ({
+    partner,
     updateForm,
     setUpdateForm,
     onUpdate,
@@ -26,23 +26,23 @@ const UserDetails = ({
 
     return (
         <>
-            {/* User Details Popup */}
+            {/* Partner Details Popup */}
             <div
                 className="fixed inset-0 flex justify-center items-center z-50 transition-opacity duration-300"
                 onClick={onClose}
                 role="dialog"
                 aria-modal="true"
-                aria-labelledby="user-details-modal-title"
+                aria-labelledby="partner-details-modal-title"
             >
                 <div
                     className="bg-white p-8 rounded-xl shadow-2xl border border-gray-200 max-w-3xl w-full m-4 transform transition-all duration-300 scale-100 ring-2 ring-blue-200 ring-opacity-50"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <h2
-                        id="user-details-modal-title"
+                        id="partner-details-modal-title"
                         className="text-2xl font-bold text-gray-800 mb-6 tracking-tight"
                     >
-                        Chi tiết người dùng
+                        Chi tiết đối tác
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div className="space-y-4">
@@ -50,148 +50,118 @@ const UserDetails = ({
                                 <strong className="text-gray-600 font-semibold">
                                     ID:
                                 </strong>{' '}
-                                {user.userId}
+                                {partner.partnerId}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Tên người dùng:
                                 </strong>{' '}
-                                {user.userName}
+                                {partner.userName}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Email:
                                 </strong>{' '}
-                                {user.email}
+                                {partner.email}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
-                                    Họ:
+                                    Tên công ty:
                                 </strong>{' '}
-                                {user.firstName}
-                            </p>
-                            <p className="text-sm">
-                                <strong className="text-gray-600 font-semibold">
-                                    Tên:
-                                </strong>{' '}
-                                {user.lastName}
+                                {partner.companyName}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Số điện thoại:
                                 </strong>{' '}
-                                {user.phoneNumber || 'Không có'}
-                            </p>
-                            <p className="text-sm">
-                                <strong className="text-gray-600 font-semibold">
-                                    Quốc gia:
-                                </strong>{' '}
-                                {user.country || 'Không có'}
-                            </p>
-                            <p className="text-sm">
-                                <strong className="text-gray-600 font-semibold">
-                                    Thành phố:
-                                </strong>{' '}
-                                {user.city || 'Không có'}
-                            </p>
-                        </div>
-                        <div className="space-y-4">
-                            <p className="text-sm">
-                                <strong className="text-gray-600 font-semibold">
-                                    Phường:
-                                </strong>{' '}
-                                {user.ward || 'Không có'}
-                            </p>
-                            <p className="text-sm">
-                                <strong className="text-gray-600 font-semibold">
-                                    Quận:
-                                </strong>{' '}
-                                {user.district || 'Không có'}
+                                {partner.phoneNumber || 'Không có'}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Địa chỉ:
                                 </strong>{' '}
-                                {user.streetAddress || 'Không có'}
+                                {partner.address || 'Không có'}
                             </p>
+                            <p className="text-sm">
+                                <strong className="text-gray-600 font-semibold">
+                                    Website:
+                                </strong>{' '}
+                                {partner.website || 'Không có'}
+                            </p>
+                        </div>
+                        <div className="space-y-4">
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Trạng thái:
                                 </strong>{' '}
                                 <span
                                     className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${
-                                        user.isActive
+                                        partner.isActive
                                             ? 'bg-green-100 text-green-800'
                                             : 'bg-red-100 text-red-800'
                                     }`}
                                 >
-                                    {user.isActive
+                                    {partner.isActive
                                         ? 'Hoạt động'
                                         : 'Không hoạt động'}
                                 </span>
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
-                                    Gói hiện tại:
-                                </strong>{' '}
-                                {user.currentPlanName || 'Không có'}
-                            </p>
-                            <p className="text-sm">
-                                <strong className="text-gray-600 font-semibold">
                                     Ngày tạo:
                                 </strong>{' '}
-                                {formatDate(user.createdDate)}
+                                {formatDate(partner.createdDate)}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Tạo bởi:
                                 </strong>{' '}
-                                {user.createdByName ||
-                                    user.createdBy ||
+                                {partner.createdByName ||
+                                    partner.createdBy ||
                                     'Không có'}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Ngày sửa:
                                 </strong>{' '}
-                                {formatDate(user.modifiedDate)}
+                                {formatDate(partner.modifiedDate)}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Sửa bởi:
                                 </strong>{' '}
-                                {user.modifiedByName ||
-                                    user.modifiedBy ||
+                                {partner.modifiedByName ||
+                                    partner.modifiedBy ||
                                     'Không có'}
                             </p>
                         </div>
                     </div>
-                    {!user.isActive && (
+                    {!partner.isActive && (
                         <div className="mb-6 space-y-4">
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Ngày xóa:
                                 </strong>{' '}
-                                {formatDate(user.removedDate)}
+                                {formatDate(partner.removedDate)}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Xóa bởi:
                                 </strong>{' '}
-                                {user.removedByName ||
-                                    user.removedBy ||
+                                {partner.removedByName ||
+                                    partner.removedBy ||
                                     'Không có'}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
                                     Lý do xóa:
                                 </strong>{' '}
-                                {user.removedReason || 'Không có'}
+                                {partner.removedReason || 'Không có'}
                             </p>
                         </div>
                     )}
                     <div className="flex justify-end space-x-4">
-                        {user.isActive && (
+                        {partner.isActive && (
                             <button
                                 onClick={() => setIsUpdatePopupOpen(true)}
                                 className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md font-semibold"
@@ -211,58 +181,26 @@ const UserDetails = ({
             </div>
 
             {/* Update Form Popup */}
-            {isUpdatePopupOpen && user.isActive && (
+            {isUpdatePopupOpen && partner.isActive && (
                 <div
                     className="fixed inset-0 flex justify-center items-center z-[60] transition-opacity duration-300"
                     onClick={() => setIsUpdatePopupOpen(false)}
                     role="dialog"
                     aria-modal="true"
-                    aria-labelledby="update-user-modal-title"
+                    aria-labelledby="update-partner-modal-title"
                 >
                     <div
                         className="bg-white p-8 rounded-xl shadow-2xl border border-gray-200 max-w-3xl w-full m-4 max-h-[80vh] overflow-y-auto transform transition-all duration-300 scale-100 ring-2 ring-blue-200 ring-opacity-50"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <h3
-                            id="update-user-modal-title"
+                            id="update-partner-modal-title"
                             className="text-2xl font-bold text-gray-800 mb-6 tracking-tight"
                         >
-                            Cập nhật thông tin
+                            Cập nhật thông tin đối tác
                         </h3>
                         <form onSubmit={onUpdate} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block mb-1 text-sm font-semibold text-gray-700">
-                                        Họ
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={updateForm.firstName}
-                                        onChange={(e) =>
-                                            setUpdateForm({
-                                                ...updateForm,
-                                                firstName: e.target.value
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-semibold text-gray-700">
-                                        Tên
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={updateForm.lastName}
-                                        onChange={(e) =>
-                                            setUpdateForm({
-                                                ...updateForm,
-                                                lastName: e.target.value
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                                    />
-                                </div>
                                 <div>
                                     <label className="block mb-1 text-sm font-semibold text-gray-700">
                                         Tên người dùng
@@ -297,6 +235,22 @@ const UserDetails = ({
                                 </div>
                                 <div>
                                     <label className="block mb-1 text-sm font-semibold text-gray-700">
+                                        Tên công ty
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={updateForm.companyName}
+                                        onChange={(e) =>
+                                            setUpdateForm({
+                                                ...updateForm,
+                                                companyName: e.target.value
+                                            })
+                                        }
+                                        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block mb-1 text-sm font-semibold text-gray-700">
                                         Số điện thoại
                                     </label>
                                     <input
@@ -313,79 +267,31 @@ const UserDetails = ({
                                 </div>
                                 <div>
                                     <label className="block mb-1 text-sm font-semibold text-gray-700">
-                                        Quốc gia
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={updateForm.country}
-                                        onChange={(e) =>
-                                            setUpdateForm({
-                                                ...updateForm,
-                                                country: e.target.value
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-semibold text-gray-700">
-                                        Thành phố
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={updateForm.city}
-                                        onChange={(e) =>
-                                            setUpdateForm({
-                                                ...updateForm,
-                                                city: e.target.value
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-semibold text-gray-700">
-                                        Phường
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={updateForm.ward}
-                                        onChange={(e) =>
-                                            setUpdateForm({
-                                                ...updateForm,
-                                                ward: e.target.value
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-semibold text-gray-700">
-                                        Quận
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={updateForm.district}
-                                        onChange={(e) =>
-                                            setUpdateForm({
-                                                ...updateForm,
-                                                district: e.target.value
-                                            })
-                                        }
-                                        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block mb-1 text-sm font-semibold text-gray-700">
                                         Địa chỉ
                                     </label>
                                     <input
                                         type="text"
-                                        value={updateForm.streetAddress}
+                                        value={updateForm.address}
                                         onChange={(e) =>
                                             setUpdateForm({
                                                 ...updateForm,
-                                                streetAddress: e.target.value
+                                                address: e.target.value
+                                            })
+                                        }
+                                        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block mb-1 text-sm font-semibold text-gray-700">
+                                        Website
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={updateForm.website}
+                                        onChange={(e) =>
+                                            setUpdateForm({
+                                                ...updateForm,
+                                                website: e.target.value
                                             })
                                         }
                                         className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
@@ -415,4 +321,4 @@ const UserDetails = ({
     )
 }
 
-export default UserDetails
+export default PartnerDetails
