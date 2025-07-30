@@ -41,7 +41,7 @@ const AdminDashboard = () => {
                 </h2>
                 <nav className="space-y-2">
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate('/admin')}
                         className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
                     >
                         Trang Chủ
