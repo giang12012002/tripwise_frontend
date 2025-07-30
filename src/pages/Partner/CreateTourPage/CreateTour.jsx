@@ -35,7 +35,7 @@ const CreateTour = () => {
                         endTime: '',
                         mapUrl: '',
                         category: '',
-
+                        imageFiles: [],
                         imageUrls: [],
                         imageIds: [],
                         attractionId: null
@@ -44,28 +44,18 @@ const CreateTour = () => {
             }
         ]
     })
-    const [error, setError] = useState('')
-    const [openDays, setOpenDays] = useState({ 0: true }) // Mở ngày đầu tiên mặc định
+    const [openDays, setOpenDays] = useState({ 0: true }) // Open the first day by default
     const [imagePreviews, setImagePreviews] = useState([])
     const [activityPreviews, setActivityPreviews] = useState({})
-    const [tempUrlInput, setTempUrlInput] = useState({ tour: '' }) // Khởi tạo với tour: ''
+    const [tempUrlInput, setTempUrlInput] = useState({ tour: '' }) // Initialize with tour: ''
     const tourFileInputRef = useRef(null)
     const activityFileInputRefs = useRef({})
 
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
 
-    // Giới hạn số lượng ảnh tối đa
+    // Maximum number of images allowed
     const MAX_IMAGES = 20
-
-    const isValidImage = (url) => {
-        return new Promise((resolve) => {
-            const img = new Image()
-            img.src = url
-            img.onload = () => resolve(true)
-            img.onerror = () => resolve(false)
-        })
-    }
 
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
@@ -93,7 +83,7 @@ const CreateTour = () => {
         window.addEventListener('beforeunload', handleBeforeUnload)
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload)
-            // Thu hồi URL previews để tránh rò rỉ bộ nhớ
+            // Revoke URL previews to prevent memory leaks
             imagePreviews.forEach((url) => URL.revokeObjectURL(url))
             Object.values(activityPreviews)
                 .flat()
@@ -108,7 +98,13 @@ const CreateTour = () => {
                 ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)
             )
             if (validFiles.length !== files.length) {
-                setError('Chỉ chấp nhận tệp hình ảnh (jpg, jpeg, png).')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Chỉ chấp nhận tệp hình ảnh (jpg, jpeg, png).',
+                    showConfirmButton: false,
+                    timer: 1800
+                })
                 return
             }
             if (
@@ -117,9 +113,13 @@ const CreateTour = () => {
                     tour.imageUrls.length >
                 MAX_IMAGES
             ) {
-                setError(
-                    `Tổng số ảnh (file và URL) không được vượt quá ${MAX_IMAGES}.`
-                )
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: `Tổng số ảnh (file và URL) không được vượt quá ${MAX_IMAGES}.`,
+                    showConfirmButton: false,
+                    timer: 1800
+                })
                 return
             }
             setTour((prev) => ({
@@ -145,53 +145,33 @@ const CreateTour = () => {
         }
     }
 
-    const handleAddTourUrl = async () => {
+    const handleAddTourUrl = () => {
         const value = tempUrlInput.tour
         const urls = value
             .split(',')
             .map((url) => url.trim())
             .filter((url) => url && url.length > 0)
-            .filter((url) => {
-                try {
-                    new URL(url)
-                    return true
-                } catch {
-                    return false
-                }
-            })
         if (
             tour.imageFiles.length + tour.imageUrls.length + urls.length >
             MAX_IMAGES
         ) {
-            setError(
-                `Tổng số ảnh (file và URL) không được vượt quá ${MAX_IMAGES}.`
-            )
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: `Tổng số ảnh (file và URL) không được vượt quá ${MAX_IMAGES}.`,
+                showConfirmButton: false,
+                timer: 1800
+            })
             return
-        }
-        if (
-            urls.length > 0 &&
-            urls.length !== value.split(',').filter((url) => url.trim()).length
-        ) {
-            setError('Một số URL hình ảnh không hợp lệ.')
-            return
-        }
-        const validUrls = []
-        for (const url of urls) {
-            if (await isValidImage(url)) {
-                validUrls.push(url)
-            } else {
-                setError(`URL không phải là hình ảnh hợp lệ: ${url}`)
-                return
-            }
         }
         setTour((prev) => ({
             ...prev,
-            imageUrls: [...prev.imageUrls, ...validUrls],
+            imageUrls: [...prev.imageUrls, ...urls],
             imageIds: []
         }))
-        setImagePreviews((prev) => [...prev, ...validUrls])
+        setImagePreviews((prev) => [...prev, ...urls])
         setTempUrlInput((prev) => ({ ...prev, tour: '' }))
-        console.log('Tour imageUrls added:', validUrls)
+        console.log('Tour imageUrls added:', urls)
     }
 
     const handleActivityChange = (dayIndex, activityIndex, field, value) => {
@@ -201,9 +181,13 @@ const CreateTour = () => {
                 ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)
             )
             if (validFiles.length !== value.files.length) {
-                setError(
-                    'Chỉ chấp nhận tệp hình ảnh (jpg, jpeg, png) cho hoạt động.'
-                )
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Chỉ chấp nhận tệp hình ảnh (jpg, jpeg, png) cho hoạt động.',
+                    showConfirmButton: false,
+                    timer: 1800
+                })
                 return
             }
             const currentFiles =
@@ -215,9 +199,13 @@ const CreateTour = () => {
                 currentFiles.length + validFiles.length + currentUrls.length >
                 MAX_IMAGES
             ) {
-                setError(
-                    `Tổng số ảnh (file và URL) không được vượt quá ${MAX_IMAGES} cho hoạt động.`
-                )
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: `Tổng số ảnh (file và URL) không được vượt quá ${MAX_IMAGES} cho hoạt động.`,
+                    showConfirmButton: false,
+                    timer: 1800
+                })
                 return
             }
             newItinerary[dayIndex].activities[activityIndex].imageFiles = [
@@ -252,72 +240,58 @@ const CreateTour = () => {
         }
     }
 
-    const handleAddActivityUrl = async (dayIndex, activityIndex) => {
-        const value = tempUrlInput[`${dayIndex}-${activityIndex}`] || ''
+    const handleAddActivityUrl = (dayIndex, activityIndex) => {
+        const key = `${dayIndex}-${activityIndex}`
+        const value = tempUrlInput[key] || ''
         const urls = value
             .split(',')
             .map((url) => url.trim())
             .filter((url) => url && url.length > 0)
-            .filter((url) => {
-                try {
-                    new URL(url)
-                    return true
-                } catch {
-                    return false
-                }
+        if (urls.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng nhập ít nhất một URL ảnh hợp lệ.',
+                showConfirmButton: false,
+                timer: 1800
             })
+            return
+        }
         const newItinerary = [...tour.itinerary]
         const currentFiles =
-            newItinerary[dayIndex].activities[activityIndex].imageFiles
+            newItinerary[dayIndex].activities[activityIndex].imageFiles || []
         const currentUrls =
-            newItinerary[dayIndex].activities[activityIndex].imageUrls
+            newItinerary[dayIndex].activities[activityIndex].imageUrls || []
         if (
             currentFiles.length + currentUrls.length + urls.length >
             MAX_IMAGES
         ) {
-            setError(
-                `Tổng số ảnh (file và URL) không được vượt quá ${MAX_IMAGES} cho hoạt động.`
-            )
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: `Tổng số ảnh (file và URL) không được vượt quá ${MAX_IMAGES} cho hoạt động.`,
+                showConfirmButton: false,
+                timer: 1800
+            })
             return
-        }
-        if (
-            urls.length > 0 &&
-            urls.length !== value.split(',').filter((url) => url.trim()).length
-        ) {
-            setError(
-                `Một số URL hình ảnh không hợp lệ cho hoạt động ngày ${dayIndex + 1}.`
-            )
-            return
-        }
-        const validUrls = []
-        for (const url of urls) {
-            if (await isValidImage(url)) {
-                validUrls.push(url)
-            } else {
-                setError(`URL không phải là hình ảnh hợp lệ: ${url}`)
-                return
-            }
         }
         newItinerary[dayIndex].activities[activityIndex].imageUrls = [
             ...currentUrls,
-            ...validUrls
+            ...urls
         ]
         newItinerary[dayIndex].activities[activityIndex].imageIds = []
         setTour({ ...tour, itinerary: newItinerary })
         setActivityPreviews((prev) => ({
             ...prev,
-            [`${dayIndex}-${activityIndex}`]: [
-                ...(prev[`${dayIndex}-${activityIndex}`] || []),
-                ...validUrls
-            ]
+            [key]: [...(prev[key] || []), ...urls]
         }))
         setTempUrlInput((prev) => ({
             ...prev,
-            [`${dayIndex}-${activityIndex}`]: ''
+            [key]: ''
         }))
         console.log(
             `Activity ${activityIndex + 1} (Day ${dayIndex + 1}) imageUrls added:`,
-            validUrls
+            urls
         )
     }
 
@@ -402,6 +376,17 @@ const CreateTour = () => {
 
     const addDay = () => {
         const newDayIndex = tour.itinerary.length
+        const duration = parseInt(tour.duration) || 1
+        if (newDayIndex + 1 > duration) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: `Số ngày trong lịch trình không được vượt quá số ngày của tour (${duration} ngày).`,
+                showConfirmButton: false,
+                timer: 1800
+            })
+            return
+        }
         setTour({
             ...tour,
             itinerary: [
@@ -420,7 +405,7 @@ const CreateTour = () => {
                             endTime: '',
                             mapUrl: '',
                             category: '',
-
+                            imageFiles: [],
                             imageUrls: [],
                             imageIds: [],
                             attractionId: null
@@ -435,7 +420,13 @@ const CreateTour = () => {
 
     const removeDay = (dayIndex) => {
         if (tour.itinerary.length === 1) {
-            setError('Phải có ít nhất một ngày trong lịch trình.')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Phải có ít nhất một ngày trong lịch trình.',
+                showConfirmButton: false,
+                timer: 1800
+            })
             return
         }
         const newItinerary = tour.itinerary.filter(
@@ -476,7 +467,13 @@ const CreateTour = () => {
     const removeActivity = (dayIndex, activityIndex) => {
         const newItinerary = [...tour.itinerary]
         if (newItinerary[dayIndex].activities.length === 1) {
-            setError('Mỗi ngày phải có ít nhất một hoạt động.')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Mỗi ngày phải có ít nhất một hoạt động.',
+                showConfirmButton: false,
+                timer: 1800
+            })
             return
         }
         newItinerary[dayIndex].activities = newItinerary[
@@ -514,10 +511,15 @@ const CreateTour = () => {
         if (isNaN(tour.price) || tour.price < 0) return 'Giá không được âm.'
         if (isNaN(tour.pricePerDay) || tour.pricePerDay < 0)
             return 'Giá mỗi ngày không được âm.'
+        if (tour.pricePerDay > tour.price)
+            return 'Giá mỗi ngày/khách không được lớn hơn giá trọn gói của tour.'
         if (isNaN(tour.maxGroupSize) || tour.maxGroupSize <= 0)
             return 'Số người tối đa phải lớn hơn 0.'
+        if (tour.itinerary.length > parseInt(tour.duration))
+            return `Số ngày trong lịch trình (${tour.itinerary.length}) không được vượt quá thời gian tour (${tour.duration} ngày).`
         if (tour.imageFiles.length + tour.imageUrls.length === 0)
             return 'Phải cung cấp ít nhất một hình ảnh cho tour.'
+        let totalEstimatedCost = 0
         for (let day of tour.itinerary) {
             if (!day.title.trim())
                 return `Tiêu đề ngày ${day.dayNumber} là bắt buộc.`
@@ -531,11 +533,16 @@ const CreateTour = () => {
                 if (isNaN(activity.estimatedCost) || activity.estimatedCost < 0)
                     return `Chi phí dự kiến trong ngày ${day.dayNumber} không được âm.`
                 if (
-                    activity.imageFiles.length + activity.imageUrls.length ===
+                    (activity.imageFiles?.length || 0) +
+                        (activity.imageUrls?.length || 0) ===
                     0
                 )
                     return `Phải cung cấp ít nhất một hình ảnh cho hoạt động trong ngày ${day.dayNumber}.`
+                totalEstimatedCost += activity.estimatedCost || 0
             }
+        }
+        if (totalEstimatedCost > tour.price) {
+            return `Tổng chi phí dự kiến của các hoạt động (${totalEstimatedCost}) không được vượt quá giá tour (${tour.price}).`
         }
         return ''
     }
@@ -543,7 +550,13 @@ const CreateTour = () => {
     const handleSubmit = async () => {
         const validationError = validateForm()
         if (validationError) {
-            setError(validationError)
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: validationError,
+                showConfirmButton: false,
+                timer: 1800
+            })
             console.error('Validation error:', validationError)
             return
         }
@@ -703,7 +716,13 @@ const CreateTour = () => {
             } else if (err.message) {
                 errorMessage = err.message
             }
-            setError(errorMessage)
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: errorMessage,
+                showConfirmButton: false,
+                timer: 1800
+            })
             if (err.response?.status === 401) {
                 localStorage.removeItem('accessToken')
                 navigate('/signin')
@@ -745,11 +764,6 @@ const CreateTour = () => {
                     Tạo Tour
                 </h1>
             </div>
-            {error && (
-                <p className="text-red-500 mb-6 text-center font-medium text-lg">
-                    {error}
-                </p>
-            )}
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -796,7 +810,7 @@ const CreateTour = () => {
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Thời Gian (Ngày)
+                            Số ngày
                         </label>
                         <input
                             type="number"
@@ -811,32 +825,43 @@ const CreateTour = () => {
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Giá (VND)
+                            Giá Tour (VND)
                         </label>
                         <input
                             type="number"
                             name="price"
-                            value={tour.price}
+                            value={
+                                tour.price === 0 || tour.price === undefined
+                                    ? ''
+                                    : tour.price
+                            }
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                             min="0"
-                            placeholder="Giá tour"
+                            step="10000"
+                            placeholder="Nhập giá tour (VND)"
                         />
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Giá Mỗi Ngày (VND)
+                            Giá Mỗi Ngày/Khách (VND)
                         </label>
                         <input
                             type="number"
                             name="pricePerDay"
-                            value={tour.pricePerDay}
+                            value={
+                                tour.pricePerDay === 0 ||
+                                tour.pricePerDay === undefined
+                                    ? ''
+                                    : tour.pricePerDay
+                            }
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                             min="0"
-                            placeholder="Giá mỗi ngày"
+                            step="10000"
+                            placeholder="Nhập giá mỗi ngày/khách (VND)"
                         />
                     </div>
                     <div>
@@ -846,7 +871,12 @@ const CreateTour = () => {
                         <input
                             type="number"
                             name="maxGroupSize"
-                            value={tour.maxGroupSize}
+                            value={
+                                tour.maxGroupSize === 0 ||
+                                tour.maxGroupSize === undefined
+                                    ? ''
+                                    : tour.maxGroupSize
+                            }
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
@@ -887,7 +917,7 @@ const CreateTour = () => {
                                     }))
                                 }
                                 className="flex-grow border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="https://picsum.photos/200/300"
+                                placeholder="https://example.com/image.jpg"
                             />
                             <button
                                 className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -1142,7 +1172,12 @@ const CreateTour = () => {
                                                     <input
                                                         type="number"
                                                         value={
-                                                            activity.estimatedCost
+                                                            activity.estimatedCost ===
+                                                                0 ||
+                                                            activity.estimatedCost ===
+                                                                undefined
+                                                                ? ''
+                                                                : activity.estimatedCost
                                                         }
                                                         onChange={(e) =>
                                                             handleActivityChange(
@@ -1155,6 +1190,7 @@ const CreateTour = () => {
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         required
                                                         min="0"
+                                                        step="10000"
                                                         placeholder="Chi phí"
                                                     />
                                                 </div>
@@ -1309,7 +1345,7 @@ const CreateTour = () => {
                                                                 )
                                                             }
                                                             className="flex-grow border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                            placeholder="https://picsum.photos/200/300"
+                                                            placeholder="https://example.com/image.jpg"
                                                         />
                                                         <button
                                                             className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

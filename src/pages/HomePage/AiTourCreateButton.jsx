@@ -18,7 +18,7 @@ function AiTourCreateButton() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center">
+        <div className=" flex flex-col items-center">
             <section
                 className="relative bg-cover max-w-7xl bg-center h-96 w-full"
                 style={{ backgroundImage: `url(${HomeImage})` }}
