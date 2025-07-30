@@ -62,13 +62,19 @@ const AdminDashboard = () => {
                         onClick={() => navigate('/admin/tours/pending')}
                         className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
                     >
-                        Quản Lý Tour
+                        Quản Lý Tour Đối Tác
+                    </button>
+                    <button
+                        onClick={() => navigate('/admin/partners')}
+                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
+                    >
+                        Quản Lý Tài Khoản Đối Tác
                     </button>
                     <button
                         onClick={() => navigate('/admin/users')}
                         className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
                     >
-                        Quản Lý Người Dùng
+                        Quản Lý Tài Khoản Khách Hàng
                     </button>
                     <button
                         onClick={handleLogout}
