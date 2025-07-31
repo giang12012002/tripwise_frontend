@@ -1,4 +1,5 @@
 # Tripwise_fe-0.4.2
+
 1. Landing page
 2. Create tour using AI
 3. Authentication
@@ -8,6 +9,11 @@
 7. CRUD Tour
 8. CRUD initerary history
 9. Purchasing service plan (VNPay)
+10. Tour
+11. Partner page
+12. Book tour
+13. Admin page (dashboard, revenue, )
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

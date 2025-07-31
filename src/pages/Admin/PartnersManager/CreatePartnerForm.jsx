@@ -1,17 +1,22 @@
 import React, { useState } from 'react'
 
-const CreateUserForm = ({ createForm, setCreateForm, onSubmit, onClose }) => {
+const CreatePartnerForm = ({
+    createForm,
+    setCreateForm,
+    onSubmit,
+    onClose
+}) => {
     const [showPassword, setShowPassword] = useState(false)
 
     const handleCancel = () => {
         setCreateForm({
-            firstName: '',
-            lastName: '',
             userName: '',
             email: '',
-            phoneNumber: '',
             password: '',
-            role: 'USER'
+            companyName: '',
+            phoneNumber: '',
+            address: '',
+            website: ''
         })
         onClose()
     }
@@ -26,7 +31,7 @@ const CreateUserForm = ({ createForm, setCreateForm, onSubmit, onClose }) => {
             onClick={onClose}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="create-user-modal-title"
+            aria-labelledby="create-partner-modal-title"
         >
             <div
                 className="bg-white p-8 rounded-lg shadow-2xl border border-gray-200 max-w-3xl w-full m-4 max-h-[80vh] overflow-y-auto transform transition-all duration-300 scale-100"
@@ -34,10 +39,10 @@ const CreateUserForm = ({ createForm, setCreateForm, onSubmit, onClose }) => {
             >
                 <div className="flex justify-between items-center mb-6">
                     <h2
-                        id="create-user-modal-title"
+                        id="create-partner-modal-title"
                         className="text-2xl font-bold text-gray-800"
                     >
-                        Tạo người dùng mới
+                        Tạo đối tác mới
                     </h2>
                     <button
                         type="button"
@@ -50,40 +55,6 @@ const CreateUserForm = ({ createForm, setCreateForm, onSubmit, onClose }) => {
                 </div>
                 <form onSubmit={onSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                Họ
-                            </label>
-                            <input
-                                type="text"
-                                value={createForm.firstName}
-                                onChange={(e) =>
-                                    setCreateForm({
-                                        ...createForm,
-                                        firstName: e.target.value
-                                    })
-                                }
-                                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                Tên
-                            </label>
-                            <input
-                                type="text"
-                                value={createForm.lastName}
-                                onChange={(e) =>
-                                    setCreateForm({
-                                        ...createForm,
-                                        lastName: e.target.value
-                                    })
-                                }
-                                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
                         <div>
                             <label className="block mb-1 text-sm font-medium text-gray-700">
                                 Tên người dùng
@@ -116,22 +87,6 @@ const CreateUserForm = ({ createForm, setCreateForm, onSubmit, onClose }) => {
                                 }
                                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required
-                            />
-                        </div>
-                        <div>
-                            <label className="block mb-1 text-sm font-medium text-gray-700">
-                                Số điện thoại
-                            </label>
-                            <input
-                                type="text"
-                                value={createForm.phoneNumber}
-                                onChange={(e) =>
-                                    setCreateForm({
-                                        ...createForm,
-                                        phoneNumber: e.target.value
-                                    })
-                                }
-                                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
                         <div className="relative">
@@ -185,23 +140,70 @@ const CreateUserForm = ({ createForm, setCreateForm, onSubmit, onClose }) => {
                                 </svg>
                             </button>
                         </div>
-                        <div className="md:col-span-2">
+                        <div>
                             <label className="block mb-1 text-sm font-medium text-gray-700">
-                                Vai trò
+                                Tên công ty
                             </label>
-                            <select
-                                value={createForm.role}
+                            <input
+                                type="text"
+                                value={createForm.companyName}
                                 onChange={(e) =>
                                     setCreateForm({
                                         ...createForm,
-                                        role: e.target.value
+                                        companyName: e.target.value
                                     })
                                 }
                                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required
-                            >
-                                <option value="USER">Khách hàng</option>
-                            </select>
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-1 text-sm font-medium text-gray-700">
+                                Số điện thoại
+                            </label>
+                            <input
+                                type="text"
+                                value={createForm.phoneNumber}
+                                onChange={(e) =>
+                                    setCreateForm({
+                                        ...createForm,
+                                        phoneNumber: e.target.value
+                                    })
+                                }
+                                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block mb-1 text-sm font-medium text-gray-700">
+                                Địa chỉ
+                            </label>
+                            <input
+                                type="text"
+                                value={createForm.address}
+                                onChange={(e) =>
+                                    setCreateForm({
+                                        ...createForm,
+                                        address: e.target.value
+                                    })
+                                }
+                                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block mb-1 text-sm font-medium text-gray-700">
+                                Website
+                            </label>
+                            <input
+                                type="text"
+                                value={createForm.website}
+                                onChange={(e) =>
+                                    setCreateForm({
+                                        ...createForm,
+                                        website: e.target.value
+                                    })
+                                }
+                                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
                         </div>
                     </div>
                     <div className="flex justify-end space-x-3">
@@ -216,7 +218,7 @@ const CreateUserForm = ({ createForm, setCreateForm, onSubmit, onClose }) => {
                             type="submit"
                             className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-200"
                         >
-                            Tạo người dùng
+                            Tạo đối tác
                         </button>
                     </div>
                 </form>
@@ -225,4 +227,4 @@ const CreateUserForm = ({ createForm, setCreateForm, onSubmit, onClose }) => {
     )
 }
 
-export default CreateUserForm
+export default CreatePartnerForm

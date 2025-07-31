@@ -8,7 +8,6 @@ const UserDetails = ({
     onClose
 }) => {
     const [isUpdatePopupOpen, setIsUpdatePopupOpen] = useState(false)
-    const [showPassword, setShowPassword] = useState(false)
 
     // Helper function to format date to DD/MM/YYYY
     const formatDate = (dateString) => {
@@ -23,10 +22,6 @@ const UserDetails = ({
         } catch {
             return 'Không hợp lệ'
         }
-    }
-
-    const togglePasswordVisibility = () => {
-        setShowPassword((prev) => !prev)
     }
 
     return (
@@ -130,7 +125,9 @@ const UserDetails = ({
                                             : 'bg-red-100 text-red-800'
                                     }`}
                                 >
-                                    {user.isActive ? 'Active' : 'Inactive'}
+                                    {user.isActive
+                                        ? 'Hoạt động'
+                                        : 'Không hoạt động'}
                                 </span>
                             </p>
                             <p className="text-sm">
@@ -194,12 +191,14 @@ const UserDetails = ({
                         </div>
                     )}
                     <div className="flex justify-end space-x-4">
-                        <button
-                            onClick={() => setIsUpdatePopupOpen(true)}
-                            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md font-semibold"
-                        >
-                            Cập nhật thông tin
-                        </button>
+                        {user.isActive && (
+                            <button
+                                onClick={() => setIsUpdatePopupOpen(true)}
+                                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md font-semibold"
+                            >
+                                Cập nhật thông tin
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={onClose}
@@ -212,7 +211,7 @@ const UserDetails = ({
             </div>
 
             {/* Update Form Popup */}
-            {isUpdatePopupOpen && (
+            {isUpdatePopupOpen && user.isActive && (
                 <div
                     className="fixed inset-0 flex justify-center items-center z-[60] transition-opacity duration-300"
                     onClick={() => setIsUpdatePopupOpen(false)}

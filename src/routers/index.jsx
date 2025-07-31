@@ -31,8 +31,10 @@ import EditTour from '@/pages/Partner/EditTour/EditTour.jsx'
 import AdminDashboard from '@/pages/Admin/AdminDashboard/AdminDashboard.jsx'
 import AdminBlogList from '@/pages/Admin/Blogs'
 import AdminBlogDetail from '@/pages/Admin/Blogs/id'
+import PreviewBlog from '@/pages/Admin/Blogs/AddBlog/PreviewBlog'
 import ReportDashboard from '@/pages/Admin/Report/ReportDashboard.jsx'
-import AdminManagerUser from '@/pages/Admin/Users/UserManager.jsx'
+import AdminManagerUser from '@/pages/Admin/CustomersManager/UserManager.jsx'
+import AdminManagerPartner from '@/pages/Admin/PartnersManager/PartnerManager.jsx'
 import AdminTourList from '@/pages/Admin/ManagerTour/AdminTourList.jsx'
 import AdminTourDetail from '@/pages/Admin/ManagerTour/AdminTourDetail.jsx'
 import PlanAdminList from '@/pages/Admin/Plans'
@@ -101,6 +103,11 @@ function Index() {
                             index
                             element={<Navigate to="/admin/blogs" replace />}
                         />
+                        <Route
+                            path="admin/blog/preview"
+                            element={<PreviewBlog />}
+                        />
+
                         <Route path="blogs" element={<AdminBlogList />} />
                         <Route path="blogs/:id" element={<AdminBlogDetail />} />
                         <Route
@@ -110,6 +117,11 @@ function Index() {
                         <Route
                             path="tourDetail/:tourId"
                             element={<AdminTourDetail />}
+                        />
+
+                        <Route
+                            path="partners"
+                            element={<AdminManagerPartner />}
                         />
                         <Route path="users" element={<AdminManagerUser />} />
                         <Route path="reports" element={<ReportDashboard />}>
@@ -139,8 +151,9 @@ function Index() {
                                 element={<ReportDashboard activeTab="tour" />}
                             />
                         </Route>
+                        <Route path="plans" element={<PlanAdminList />} />
                     </Route>
-                    <Route path="/admin/plans" element={<PlanAdminList />} />
+
                     <Route path="/connect" element={<PartnershipPage />} />
                     <Route
                         path="/forgot-password"

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AddBlogDialog from './AddBlogDialog'
+import AddBlogDialog from './AddBlog/AddBlogDialog'
 import { blogAPI } from '@/apis'
 import { toast } from 'react-toastify'
 import { formatDate } from '@/utils/format'
@@ -14,7 +14,7 @@ function Index() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [blogs, setBlogs] = useState([])
-    const [showDialog, setShowDialog] = useState(false)
+    const [showAddBlogDialog, setShowAddBlogDialog] = useState(false)
     const [contextMenu, setContextMenu] = useState(null)
     const [selectedBlog, setSelectedBlog] = useState(null)
 
@@ -90,25 +90,6 @@ function Index() {
         setContextMenu(null)
     }
 
-    const handleAdd = async ({ documentId, documentContent }) => {
-        console.log('handleAdd: ', { documentContent, documentId })
-        try {
-            const response = await blogAPI.createBlog2({
-                documentId,
-                documentContent
-            })
-            if (response.status === 200 || response.status === 201)
-                toast.success(response.data.message)
-            else toast.error(response.data.message || 'Tạo bài viết thất bại!')
-        } catch (error) {
-            toast.error(error.message || 'Tạo blog thất bại!')
-            console.log('handleAdd error: ', error)
-        } finally {
-            fetchBlogs()
-        }
-        setShowDialog(false)
-    }
-
     return (
         <div className="min-h-screen flex flex-col bg-gray-100 font-sans relative">
             <main className="flex-grow py-10">
@@ -118,7 +99,7 @@ function Index() {
 
                 <div className="py-4 px-8 flex justify-end">
                     <button
-                        onClick={() => setShowDialog(true)}
+                        onClick={() => setShowAddBlogDialog(true)}
                         className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 hover:cursor-pointer active:scale-95 transition duration-200 ease-in-out"
                         title="Thêm blog"
                     >
@@ -201,9 +182,8 @@ function Index() {
             )}
 
             <AddBlogDialog
-                isOpen={showDialog}
-                onClose={() => setShowDialog(false)}
-                onConfirm={handleAdd}
+                isOpen={showAddBlogDialog}
+                onClose={() => setShowAddBlogDialog(false)}
             />
         </div>
     )

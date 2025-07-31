@@ -22,7 +22,6 @@ function History() {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
                 icon: 'success',
-                // title: 'Thành công',
                 text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
                 timer: 1800
@@ -74,6 +73,15 @@ function History() {
                             }
                         })
                         .filter((item) => item !== null)
+                        .sort((a, b) => {
+                            const dateA = a.CreatedAt
+                                ? new Date(a.CreatedAt)
+                                : new Date(0)
+                            const dateB = b.CreatedAt
+                                ? new Date(b.CreatedAt)
+                                : new Date(0)
+                            return dateB - dateA // Sắp xếp giảm dần (mới nhất lên đầu)
+                        })
                     setHistories(normalizedHistories)
                     if (normalizedHistories.length === 0) {
                         Swal.fire({
@@ -339,7 +347,7 @@ function History() {
                                                         className="w-4 h-4"
                                                         fill="none"
                                                         stroke="currentColor"
-                                                        viewBox="0 0 24 24"
+                                                        viewBox="0 24 24"
                                                         xmlns="http://www.w3.org/2000/svg"
                                                     >
                                                         <path
@@ -349,7 +357,6 @@ function History() {
                                                             d="M15 12c0-1.5-1.5-3-3-3s-3 1.5-3 3 1.5 3 3 3 3-1.5 3-3zm6 0c0 4.5-4.5 9-9 9s-9-4.5-9-9 4.5-9 9-9 9 4.5 9 9z"
                                                         />
                                                     </svg>
-                                                    {/*<span>Xem chi tiết</span>*/}
                                                 </button>
                                             </div>
                                         </div>

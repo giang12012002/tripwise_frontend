@@ -61,7 +61,6 @@ function ForgotPassword() {
                 toast.success(res.data.message || 'Otp hợp lệ')
             } else {
                 toast.error(res.data.message || 'Otp không hợp lệ')
-                console.log('res', res)
             }
         } catch (error) {
             console.log(error)

@@ -130,7 +130,18 @@ function ItineraryDisplay() {
             })
             return
         }
-        navigate('/chatbot-update', { state: { itineraryData } })
+        // Pass the updated itinerary including all chunks
+        const updatedItineraryData = {
+            ...itineraryData,
+            itinerary: fullItinerary, // Use fullItinerary instead of itineraryData.itinerary
+            totalEstimatedCost,
+            previousAddresses: usedPlaces,
+            hasMore,
+            nextStartDate
+        }
+        navigate('/chatbot-update', {
+            state: { itineraryData: updatedItineraryData }
+        })
     }
 
     const handleContinueItinerary = async () => {
@@ -164,7 +175,8 @@ function ItineraryDisplay() {
                 chunkSize: Math.min(itineraryData.days - chunkIndex * 3, 3),
                 chunkIndex: chunkIndex,
                 relatedKnowledge: '',
-                usedPlaces: usedPlaces
+                usedPlaces: usedPlaces,
+                planId: itineraryData.generatePlanId
             }
 
             const response =

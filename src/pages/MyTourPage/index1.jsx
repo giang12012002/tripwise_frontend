@@ -351,7 +351,7 @@ function MyTours() {
                                                             d="M15 12c0-1.5-1.5-3-3-3s-3 1.5-3 3 1.5 3 3 3 3-1.5 3-3zm6 0c0 4.5-4.5 9-9 9s-9-4.5-9-9 4.5-9 9-9 9 4.5 9 9z"
                                                         />
                                                     </svg>
-                                                    {/*<span>Xem chi tiết</span>*/}
+                                                    <span>Xem chi tiết</span>
                                                 </button>
                                                 <button
                                                     className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
