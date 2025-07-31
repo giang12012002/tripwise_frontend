@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import LoadingSpinner from '@/components/states/LoadingSpinner'
 import { toast } from 'react-toastify'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
-function AddBlogDialog({ isOpen, onClose, onConfirm }) {
+function AddBlogDialog({ isOpen, onClose }) {
+    const navigate = useNavigate()
+
     const [page, setPage] = useState('method')
     const [googleDocUrl, setGoogleDocUrl] = useState('')
     const [isVisible, setIsVisible] = useState(false)
@@ -42,7 +46,20 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
             await new Promise((resolve) => setTimeout(resolve, 1500))
 
             if (page === 'gg-docs-url') {
-                onConfirm({ googleDocUrl })
+                try {
+                    const response = await axios.post(
+                        'http://localhost:4000/export',
+                        {
+                            url: googleDocUrl
+                        }
+                    )
+                    if (response.data) {
+                        console.log(response.data)
+                        navigate(`/admin/blogs/preview`)
+                    }
+                } catch (err) {
+                    console.log(err)
+                }
             }
         } finally {
             setLoading(false)

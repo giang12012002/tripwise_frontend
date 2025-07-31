@@ -31,6 +31,7 @@ import EditTour from '@/pages/Partner/EditTour/EditTour.jsx'
 import AdminDashboard from '@/pages/Admin/AdminDashboard/AdminDashboard.jsx'
 import AdminBlogList from '@/pages/Admin/Blogs'
 import AdminBlogDetail from '@/pages/Admin/Blogs/id'
+import PreviewBlog from '@/pages/Admin/Blogs/AddBlog/PreviewBlog'
 import ReportDashboard from '@/pages/Admin/Report/ReportDashboard.jsx'
 import AdminManagerUser from '@/pages/Admin/CustomersManager/UserManager.jsx'
 import AdminManagerPartner from '@/pages/Admin/PartnersManager/PartnerManager.jsx'
@@ -102,6 +103,11 @@ function Index() {
                             index
                             element={<Navigate to="/admin/blogs" replace />}
                         />
+                        <Route
+                            path="admin/blog/preview"
+                            element={<PreviewBlog />}
+                        />
+
                         <Route path="blogs" element={<AdminBlogList />} />
                         <Route path="blogs/:id" element={<AdminBlogDetail />} />
                         <Route
