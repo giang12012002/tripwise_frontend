@@ -37,7 +37,7 @@ const CreateUserForm = ({ createForm, setCreateForm, onSubmit, onClose }) => {
                         id="create-user-modal-title"
                         className="text-2xl font-bold text-gray-800"
                     >
-                        Tạo người dùng mới
+                        Tạo khách hàng mới
                     </h2>
                     <button
                         type="button"
@@ -216,7 +216,7 @@ const CreateUserForm = ({ createForm, setCreateForm, onSubmit, onClose }) => {
                             type="submit"
                             className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-200"
                         >
-                            Tạo người dùng
+                            Tạo khách hàng
                         </button>
                     </div>
                 </form>

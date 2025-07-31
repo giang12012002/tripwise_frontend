@@ -11,13 +11,29 @@ function ChatbotUpdate() {
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
     const itineraryData = location.state?.itineraryData || null
-    const [messages, setMessages] = useState([
-        {
-            text: 'Xin chào! Bạn muốn thay đổi gì trong lịch trình du lịch? Xem lịch trình hiện tại bên trái để biết thêm chi tiết.',
-            sender: 'bot',
-            timestamp: new Date()
-        }
-    ])
+
+    const [messages, setMessages] = useState(() => {
+        // Khôi phục lịch sử tin nhắn từ local storage dựa trên generatePlanId
+        const savedMessages = localStorage.getItem(
+            `chatHistory_${itineraryData?.generatePlanId}`
+        )
+        return savedMessages
+            ? JSON.parse(savedMessages).map((msg) => ({
+                  ...msg,
+                  timestamp: new Date(msg.timestamp) // Chuyển đổi timestamp về Date
+              }))
+            : [
+                  {
+                      text: [
+                          'Xin chào! Bạn muốn thay đổi gì trong lịch trình? Xem lịch trình hiện tại bên trái.',
+                          'Để cập nhật một hoạt động cụ thể bạn cần ghi rõ thời gian và ngày của hoạt động, nhập: "ngày 1, 07:00 - 08:00 đi ăn bánh mì".'
+                          // 'Để cập nhật một số ngày cụ thể (tối đa 3 ngày), nhập như: "Cập nhật ngày 4-6: [yêu cầu của bạn]".'
+                      ],
+                      sender: 'bot',
+                      timestamp: new Date()
+                  }
+              ]
+    })
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [openDays, setOpenDays] = useState({})
@@ -26,11 +42,11 @@ function ChatbotUpdate() {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
+
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
                 icon: 'success',
-                // title: 'Thành công',
                 text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
                 timer: 1800
@@ -42,6 +58,16 @@ function ChatbotUpdate() {
     useEffect(() => {
         scrollToBottom()
     }, [messages])
+
+    useEffect(() => {
+        // Lưu messages vào local storage mỗi khi messages thay đổi
+        if (itineraryData?.generatePlanId) {
+            localStorage.setItem(
+                `chatHistory_${itineraryData.generatePlanId}`,
+                JSON.stringify(messages)
+            )
+        }
+    }, [messages, itineraryData?.generatePlanId])
 
     const formatCurrency = (value) => {
         if (!value || isNaN(value)) return 'Không xác định'
@@ -55,6 +81,23 @@ function ChatbotUpdate() {
         setOpenDays((prev) => ({ ...prev, [dayNumber]: !prev[dayNumber] }))
     }
 
+    const parseDayRange = (message) => {
+        const regex =
+            /(?:Cập nhật ngày|Ngày)\s*(\d+)(?:\s*-\s*|\s*đến\s*)(\d+)\s*:\s*(.+)/i
+        const match = message.match(regex)
+        if (match) {
+            const startDay = parseInt(match[1], 10)
+            const endDay = parseInt(match[2], 10)
+            const userMessage = match[3].trim()
+            const chunkSize = endDay - startDay + 1
+            if (chunkSize <= 0 || chunkSize > 3 || startDay <= 0) {
+                return { isChunkUpdate: false }
+            }
+            return { isChunkUpdate: true, startDay, chunkSize, userMessage }
+        }
+        return { isChunkUpdate: false, userMessage: message }
+    }
+
     const handleSendMessage = async () => {
         if (!input.trim()) {
             Swal.fire({
@@ -66,11 +109,14 @@ function ChatbotUpdate() {
             })
             return
         }
-        if (!itineraryData?.generatePlanId) {
+        if (
+            !itineraryData?.generatePlanId ||
+            isNaN(itineraryData.generatePlanId)
+        ) {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Không có lịch trình để cập nhật.',
+                text: 'ID lịch trình không hợp lệ.',
                 showConfirmButton: false,
                 timer: 1500
             })
@@ -87,38 +133,64 @@ function ChatbotUpdate() {
         setIsLoading(true)
 
         try {
-            console.log('Gửi yêu cầu cập nhật:', {
-                generatePlanId: itineraryData.generatePlanId,
-                Message: input
-            })
-            await travelFormAPI.updateItinerary(
-                itineraryData.generatePlanId,
-                input
-            )
-            const response = await travelFormAPI.getHistoryDetail(
+            const {
+                isChunkUpdate,
+                startDay,
+                chunkSize,
+                userMessage: parsedMessage
+            } = parseDayRange(input)
+            let response
+
+            if (isChunkUpdate) {
+                console.log('Gửi yêu cầu cập nhật chunk:', {
+                    generatePlanId: itineraryData.generatePlanId,
+                    userMessage: parsedMessage,
+                    startDay,
+                    chunkSize
+                })
+                response = await travelFormAPI.updateItineraryChunk(
+                    itineraryData.generatePlanId,
+                    parsedMessage,
+                    startDay,
+                    chunkSize
+                )
+            } else {
+                console.log('Gửi yêu cầu cập nhật toàn bộ:', {
+                    generatePlanId: itineraryData.generatePlanId,
+                    Message: input
+                })
+                response = await travelFormAPI.updateItinerary(
+                    itineraryData.generatePlanId,
+                    input
+                )
+            }
+
+            const historyResponse = await travelFormAPI.getHistoryDetail(
                 itineraryData.generatePlanId
             )
             console.log(
                 'Dữ liệu từ getHistoryDetail:',
-                JSON.stringify(response.data, null, 2)
+                JSON.stringify(historyResponse.data, null, 2)
             )
 
             const updatedItinerary = {
                 generatePlanId: itineraryData.generatePlanId,
-                destination: response.data.destination || 'Không xác định',
-                travelDate: response.data.travelDate || '',
-                days: response.data.days || 0,
-                preferences: response.data.preferences || '',
-                transportation: response.data.transportation || '',
-                diningStyle: response.data.diningStyle || '',
-                groupType: response.data.groupType || '',
-                accommodation: response.data.accommodation || '',
-                totalEstimatedCost: response.data.totalEstimatedCost || 0,
-                budget: response.data.budget || 0,
+                destination:
+                    historyResponse.data.destination || 'Không xác định',
+                travelDate: historyResponse.data.travelDate || '',
+                days: historyResponse.data.days || 0,
+                preferences: historyResponse.data.preferences || '',
+                transportation: historyResponse.data.transportation || '',
+                diningStyle: historyResponse.data.diningStyle || '',
+                groupType: historyResponse.data.groupType || '',
+                accommodation: historyResponse.data.accommodation || '',
+                totalEstimatedCost:
+                    historyResponse.data.totalEstimatedCost || 0,
+                budget: historyResponse.data.budget || 0,
                 suggestedAccommodation:
-                    response.data.suggestedAccommodation || '',
+                    historyResponse.data.suggestedAccommodation || '',
                 itinerary:
-                    response.data.itinerary?.map((day) => ({
+                    historyResponse.data.itinerary?.map((day) => ({
                         dayNumber: day.day || day.dayNumber || 0,
                         title:
                             day.title ||
@@ -163,7 +235,10 @@ function ChatbotUpdate() {
                                     activity.mapUrl || activity.MapUrl || '',
                                 image: activity.image || activity.Image || ''
                             })) || []
-                    })) || []
+                    })) || [],
+                hasMore: historyResponse.data.hasMore || false,
+                nextStartDate: historyResponse.data.nextStartDate || null,
+                previousAddresses: historyResponse.data.previousAddresses || []
             }
 
             console.log(
@@ -174,7 +249,9 @@ function ChatbotUpdate() {
             setMessages((prev) => [
                 ...prev,
                 {
-                    text: 'Lịch trình đã được cập nhật! Bạn có muốn xem lịch trình mới hoặc tiếp tục chỉnh sửa?',
+                    text: isChunkUpdate
+                        ? `Lịch trình từ ngày ${startDay} đến ngày ${startDay + chunkSize - 1} đã được cập nhật! Bạn có muốn xem lịch trình mới hoặc tiếp tục chỉnh sửa?`
+                        : 'Lịch trình đã được cập nhật! Bạn có muốn xem lịch trình mới hoặc tiếp tục chỉnh sửa?',
                     sender: 'bot',
                     timestamp: new Date(),
                     updatedItinerary
@@ -219,6 +296,37 @@ function ChatbotUpdate() {
         navigate('/itinerary', { state: { itineraryData: updatedItinerary } })
     }
 
+    const handleClearChatHistory = () => {
+        Swal.fire({
+            title: 'Xóa lịch sử trò chuyện?',
+            text: 'Bạn có chắc muốn xóa toàn bộ lịch sử trò chuyện cho hành trình này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setMessages([
+                    {
+                        text: 'Xin chào! Bạn muốn thay đổi gì trong lịch trình? Xem lịch trình hiện tại bên trái. Để cập nhật một số ngày cụ thể (tối đa 3 ngày), nhập như: "Cập nhật ngày 4-6: [yêu cầu của bạn]".',
+                        sender: 'bot',
+                        timestamp: new Date()
+                    }
+                ])
+                localStorage.removeItem(
+                    `chatHistory_${itineraryData.generatePlanId}`
+                )
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Đã xóa',
+                    text: 'Lịch sử trò chuyện đã được xóa.',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+            }
+        })
+    }
+
     if (!itineraryData) {
         return (
             <div className="min-h-screen flex flex-col">
@@ -243,9 +351,7 @@ function ChatbotUpdate() {
                 <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight mb-8 text-center">
                     Cập nhật lịch trình du lịch tại {itineraryData.destination}
                 </h2>
-                {/* Chia giao diện thành 2 cột */}
                 <div className="flex flex-col md:flex-row gap-8">
-                    {/* Bên trái: Lịch trình hiện tại */}
                     <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-8 h-[80vh] overflow-y-auto">
                         <h3 className="text-xl font-semibold text-blue-800 mb-4">
                             Lịch trình hiện tại
@@ -284,7 +390,6 @@ function ChatbotUpdate() {
                                     </p>
                                 </div>
                             </div>
-
                             <div>
                                 <hr className="border-t border-gray-300 mb-4" />
                                 <h4 className="text-lg font-semibold text-blue-800 mb-4">
@@ -590,12 +695,18 @@ function ChatbotUpdate() {
                             )}
                         </div>
                     </div>
-
-                    {/* Bên phải: Giao diện chatbot */}
                     <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-8 h-[80vh] flex flex-col">
                         <h3 className="text-xl font-semibold text-blue-800 mb-4 text-center">
                             Cập nhật lịch trình cùng TripWiseAl
                         </h3>
+                        <div className="flex justify-end mb-4">
+                            <button
+                                onClick={handleClearChatHistory}
+                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300"
+                            >
+                                Xóa lịch sử trò chuyện
+                            </button>
+                        </div>
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
                             {messages.map((msg, index) => (
                                 <div
@@ -647,7 +758,7 @@ function ChatbotUpdate() {
                                 onKeyPress={(e) =>
                                     e.key === 'Enter' && handleSendMessage()
                                 }
-                                placeholder="(VD: ngày 1, 08:00 - 10:00 đi chơi)..."
+                                placeholder="VD: Cập nhật ngày 4-6: Thêm hoạt động tham quan chợ đêm..."
                                 className="flex-1 p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                 disabled={isLoading}
                             />
