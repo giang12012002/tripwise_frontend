@@ -253,6 +253,7 @@ function CreateItinerary() {
             name: 'days',
             type: 'number',
             min: '1',
+
             required: true,
             icon: '⏳'
         },
