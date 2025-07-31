@@ -77,6 +77,12 @@ const AdminDashboard = () => {
                         Quản Lý Tài Khoản Khách Hàng
                     </button>
                     <button
+                        onClick={() => navigate('/admin/plans')}
+                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
+                    >
+                        Quản Lý gói đăng ký
+                    </button>
+                    <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 rounded-lg transition duration-200"
                     >

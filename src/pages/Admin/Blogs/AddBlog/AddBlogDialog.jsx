@@ -4,8 +4,7 @@ import { toast } from 'react-toastify'
 
 function AddBlogDialog({ isOpen, onClose, onConfirm }) {
     const [page, setPage] = useState('method')
-    const [documentId, setDocumentId] = useState(null)
-    const [documentContent, setDocumentContent] = useState('')
+    const [googleDocUrl, setGoogleDocUrl] = useState('')
     const [isVisible, setIsVisible] = useState(false)
     const [animationClass, setAnimationClass] = useState('fade-in')
     const [loading, setLoading] = useState(false)
@@ -24,58 +23,12 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
 
     const handleUseGoogleDocs = async () => {
         if (!userId) return alert('Chưa có userId')
-
         try {
             setLoading(true)
-
-            const response = await fetch('http://localhost:4000/create-doc', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId,
-                    userEmail: 'vietanhnguyenvu219@gmail.com'
-                })
-            })
-
-            const data = await response.json()
-
-            if (!response.ok || !data.docUrl) {
-                alert('Không thể tạo tài liệu Google Docs')
-                return
-            }
-
-            setPage('confirm')
-            setDocumentId(data.documentId)
-
-            window.open(data.docUrl, '_blank')
+            setPage('gg-docs-url')
         } catch (error) {
             console.error('Lỗi khi tạo Google Doc:', error)
             alert('Lỗi khi tạo Google Doc')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const handleUserDone = async () => {
-        if (!documentId) return toast.error('Thiếu documentId')
-
-        try {
-            setLoading(true)
-
-            const res = await fetch(
-                `http://localhost:4000/get-doc?docId=${documentId}`
-            )
-            const htmlText = await res.text()
-            if (res.ok) {
-                setDocumentContent(htmlText)
-                console.log('htmlText', htmlText)
-                setPage('preview')
-            } else {
-                toast.error('Không thể lấy nội dung từ Google Docs')
-            }
-        } catch (error) {
-            toast.error('Lỗi khi lấy nội dung tài liệu')
-            console.error(error)
         } finally {
             setLoading(false)
         }
@@ -87,10 +40,10 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
         try {
             // Giả lập delay (1.5s)
             await new Promise((resolve) => setTimeout(resolve, 1500))
-            onConfirm({
-                documentId,
-                documentContent
-            })
+
+            if (page === 'gg-docs-url') {
+                onConfirm({ googleDocUrl })
+            }
         } finally {
             setLoading(false)
             // handleClose()
@@ -100,8 +53,7 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
     const handleClose = () => {
         onClose()
         setPage('method')
-        setDocumentId(null)
-        setDocumentContent('')
+        setGoogleDocUrl('')
     }
 
     if (!isVisible) return null
@@ -135,7 +87,12 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
 
                             <div className="flex gap-4 mt-2">
                                 {/* Upload from Word */}
-                                <button className="flex-1 border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center hover:bg-gray-100 transition hover:cursor-pointer active:bg-gray-200">
+                                <button
+                                    onClick={() => {
+                                        alert('Chưa có chức năng này')
+                                    }}
+                                    className="flex-1 border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center hover:bg-gray-100 transition hover:cursor-pointer active:bg-gray-200"
+                                >
                                     <img
                                         src="/microsoft-word-icon.svg"
                                         alt="Word"
@@ -161,13 +118,32 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
                                     </span>
                                 </button>
                             </div>
+                            <div className="flex justify-end mt-4">
+                                <button
+                                    onClick={handleClose}
+                                    className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 transition hover:cursor-pointer active:bg-gray-500"
+                                >
+                                    Hủy
+                                </button>
+                            </div>
                         </div>
                     )}
 
-                    {page === 'confirm' && (
+                    {page === 'gg-docs-url' && (
                         <>
                             <div className="mb-4">
-                                <h3>Bạn đã tạo bài viết chưa ?</h3>
+                                <label className="block mb-1 font-medium text-gray-700">
+                                    Nhập link Google Doc
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Link có dạng https://docs.google.com/document/d/..."
+                                    value={googleDocUrl}
+                                    onChange={(e) =>
+                                        setGoogleDocUrl(e.target.value)
+                                    }
+                                    className="w-full p-2 border border-gray-300 rounded-lg"
+                                />
                             </div>
                             {/* Nút */}
                             <div className="flex justify-end gap-4">
@@ -178,38 +154,10 @@ function AddBlogDialog({ isOpen, onClose, onConfirm }) {
                                     Hủy
                                 </button>
                                 <button
-                                    onClick={handleUserDone}
+                                    onClick={handleSubmit}
                                     className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white transition hover:cursor-pointer active:bg-green-800"
                                 >
                                     Xem
-                                </button>
-                            </div>
-                        </>
-                    )}
-
-                    {page === 'preview' && (
-                        <>
-                            <iframe
-                                src={`https://docs.google.com/document/d/${documentId}/preview`}
-                                width="100%"
-                                height="600"
-                                className="rounded border"
-                            />
-
-                            <div className="flex justify-end gap-4">
-                                <button
-                                    onClick={handleClose}
-                                    className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 transition"
-                                >
-                                    Đóng
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        handleSubmit()
-                                    }}
-                                    className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white transition"
-                                >
-                                    Xác nhận
                                 </button>
                             </div>
                         </>

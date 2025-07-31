@@ -145,8 +145,9 @@ function Index() {
                                 element={<ReportDashboard activeTab="tour" />}
                             />
                         </Route>
+                        <Route path="plans" element={<PlanAdminList />} />
                     </Route>
-                    <Route path="/admin/plans" element={<PlanAdminList />} />
+
                     <Route path="/connect" element={<PartnershipPage />} />
                     <Route
                         path="/forgot-password"
