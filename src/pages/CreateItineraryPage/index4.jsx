@@ -178,6 +178,7 @@ function CreateItinerary() {
 
         try {
             const response = await travelFormAPI.createItinerary(submissionData)
+            console.log('Phản hồi API:', response.data) // Thêm log để kiểm tra phản hồi
             const itineraryData = response.data.data
             const generatePlanId = response.data.id
 
@@ -191,7 +192,9 @@ function CreateItinerary() {
                 })
                 navigate('/itinerary', {
                     state: {
-                        itineraryData: { ...itineraryData, generatePlanId }
+                        itineraryData: { ...itineraryData, generatePlanId },
+                        relatedTours: response.data.relatedTours || [],
+                        relatedTourMessage: response.data.relatedTourMessage
                     }
                 })
             } else {
@@ -253,7 +256,6 @@ function CreateItinerary() {
             name: 'days',
             type: 'number',
             min: '1',
-
             required: true,
             icon: '⏳'
         },
@@ -314,7 +316,6 @@ function CreateItinerary() {
                     value: '2000000-3000000',
                     icon: '💵'
                 },
-
                 {
                     label: '3,000,000 - 4,000,000 VND',
                     value: '3000000-4000000',
@@ -425,7 +426,6 @@ function CreateItinerary() {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
                 icon: 'success',
-                // title: 'Thành công',
                 text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
                 timer: 1800
@@ -682,7 +682,6 @@ function CreateItinerary() {
                     </button>
                 </div>
             </div>
-            x
             <Footer />
         </div>
     )

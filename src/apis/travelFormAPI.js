@@ -2,11 +2,11 @@ import authorizedAxios from './authorizedAxios'
 
 const createItinerary = async (formData) => {
     const payload = {
-        destination: formData.destination,
-        travelDate: formData.travelDate, // Chuỗi ISO (YYYY-MM-DD)
-        days: parseInt(formData.days, 10), // Số nguyên
+        destination: formData.destination.trim(), // Loại bỏ khoảng trắng thừa
+        travelDate: formData.travelDate,
+        days: parseInt(formData.days, 10),
         preferences: formData.preferences || 'General sightseeing',
-        budgetVND: Number(formData.budgetVND), // Số
+        budgetVND: Number(formData.budgetVND),
         transportation: formData.transportation || '',
         diningStyle: formData.diningStyle || '',
         groupType: formData.groupType || '',
@@ -18,6 +18,7 @@ const createItinerary = async (formData) => {
             'api/AIGeneratePlan/CreateItinerary',
             payload
         )
+        console.log('Phản hồi API:', response.data)
         return response
     } catch (err) {
         console.error('API Error:', {

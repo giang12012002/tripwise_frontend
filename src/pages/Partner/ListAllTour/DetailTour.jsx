@@ -290,11 +290,6 @@ const DetailTour = () => {
                                 {tour.tourName}
                             </h2>
                             <div className="flex items-center mt-3">
-                                <span className="text-xl line-through text-red-400 mr-3">
-                                    {formatCurrency(
-                                        tour.totalEstimatedCost + 600000
-                                    )}
-                                </span>
                                 <span className="text-3xl font-bold text-red-600">
                                     {formatCurrency(tour.totalEstimatedCost)}
                                 </span>

@@ -5,12 +5,16 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import { useAuth } from '@/AuthContext'
+import RelatedToursSection from './RelatedToursSection'
 
 function ItineraryDisplay() {
     const location = useLocation()
     const { isLoggedIn, isAuthLoading } = useAuth()
     const navigate = useNavigate()
     const itineraryData = location.state?.itineraryData || null
+    const relatedTours = location.state?.relatedTours || []
+    const relatedTourMessage = location.state?.relatedTourMessage || null
+
     const [openDays, setOpenDays] = useState({})
     const [saving, setSaving] = useState(false)
     const [loadingChunk, setLoadingChunk] = useState(false)
@@ -40,6 +44,13 @@ function ItineraryDisplay() {
             navigate('/')
         }
     }, [isLoggedIn, isAuthLoading, navigate])
+
+    useEffect(() => {
+        console.log('location.state:', location.state)
+        console.log('itineraryData:', itineraryData)
+        console.log('relatedTours:', relatedTours)
+        console.log('relatedTourMessage:', relatedTourMessage)
+    }, [location.state, itineraryData, relatedTours, relatedTourMessage])
 
     const weatherTranslations = {
         'clear sky': 'trời quang đãng',
@@ -130,17 +141,22 @@ function ItineraryDisplay() {
             })
             return
         }
-        // Pass the updated itinerary including all chunks
         const updatedItineraryData = {
             ...itineraryData,
-            itinerary: fullItinerary, // Use fullItinerary instead of itineraryData.itinerary
+            itinerary: fullItinerary,
             totalEstimatedCost,
             previousAddresses: usedPlaces,
             hasMore,
-            nextStartDate
+            nextStartDate,
+            relatedTours,
+            relatedTourMessage
         }
         navigate('/chatbot-update', {
-            state: { itineraryData: updatedItineraryData }
+            state: {
+                itineraryData: updatedItineraryData,
+                relatedTours,
+                relatedTourMessage
+            }
         })
     }
 
@@ -221,7 +237,7 @@ function ItineraryDisplay() {
         }
     }
 
-    if (!itineraryData) {
+    if (!location.state || !itineraryData) {
         return (
             <div className="min-h-screen flex flex-col">
                 <Header />
@@ -327,7 +343,7 @@ function ItineraryDisplay() {
                         <div className="space-y-3">
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">📅</span>
-                                <strong>Ngày đi: &nbsp; </strong>
+                                <strong>Ngày đi: </strong>
                                 {itineraryData.travelDate
                                     ? new Date(
                                           itineraryData.travelDate
@@ -336,12 +352,12 @@ function ItineraryDisplay() {
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">⏳</span>
-                                <strong>Số ngày:&nbsp; </strong>
+                                <strong>Số ngày: </strong>
                                 {itineraryData.days || 'Không xác định'}
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">💸</span>
-                                <strong>Tổng chi phí ước tính:&nbsp;</strong>
+                                <strong>Tổng chi phí ước tính: </strong>
                                 <span className="text-blue-600">
                                     {formatCurrency(totalEstimatedCost)}
                                 </span>
@@ -356,7 +372,7 @@ function ItineraryDisplay() {
                             {itineraryData.preferences && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🌟</span>
-                                    <strong>Sở thích:&nbsp;</strong>
+                                    <strong>Sở thích: </strong>
                                     {itineraryData.preferences
                                         .split(', ')
                                         .map((pref, index) => (
@@ -372,7 +388,7 @@ function ItineraryDisplay() {
                             {itineraryData.diningStyle && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🍽️</span>
-                                    <strong>Phong cách ăn uống:&nbsp;</strong>
+                                    <strong>Phong cách ăn uống: </strong>
                                     {itineraryData.diningStyle
                                         .split(', ')
                                         .map((style, index) => (
@@ -388,28 +404,28 @@ function ItineraryDisplay() {
                             {itineraryData.transportation && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🚗</span>
-                                    <strong>Phương tiện: &nbsp; </strong>
+                                    <strong>Phương tiện: </strong>
                                     {itineraryData.transportation}
                                 </p>
                             )}
                             {itineraryData.groupType && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">👥</span>
-                                    <strong>Nhóm:&nbsp; </strong>
+                                    <strong>Nhóm: </strong>
                                     {itineraryData.groupType}
                                 </p>
                             )}
                             {itineraryData.accommodation && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🏨</span>
-                                    <strong>Chỗ ở:&nbsp;</strong>
+                                    <strong>Chỗ ở: </strong>
                                     {itineraryData.accommodation}
                                 </p>
                             )}
                             {itineraryData.suggestedAccommodation && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🗺️</span>
-                                    <strong>Đề xuất chỗ ở:&nbsp;</strong>
+                                    <strong>Đề xuất chỗ ở: </strong>
                                     <a
                                         href={
                                             itineraryData.suggestedAccommodation
@@ -524,6 +540,12 @@ function ItineraryDisplay() {
                                                                             'Activity'
                                                                         }
                                                                         className="w-full h-48 object-cover rounded-lg mb-4"
+                                                                        onError={(
+                                                                            e
+                                                                        ) => {
+                                                                            e.target.src =
+                                                                                'https://via.placeholder.com/150'
+                                                                        }}
                                                                     />
                                                                 )}
                                                                 <p className="text-gray-700">
@@ -614,6 +636,7 @@ function ItineraryDisplay() {
                         </p>
                     )}
                 </div>
+
                 {hasMore && (
                     <div className="flex justify-center mt-8">
                         <button
@@ -646,12 +669,17 @@ function ItineraryDisplay() {
                                     Đang tải...
                                 </div>
                             ) : (
-                                'Tiếp tục'
+                                'Hiển thị các ngày tiếp theo'
                             )}
                         </button>
                     </div>
                 )}
             </div>
+            <RelatedToursSection
+                itineraryData={itineraryData}
+                relatedTours={relatedTours}
+                relatedTourMessage={relatedTourMessage}
+            />
             <Footer />
         </div>
     )

@@ -57,13 +57,13 @@ function SignIn() {
                 localStorage.setItem('refreshToken', refreshToken)
                 localStorage.setItem('deviceId', deviceId)
 
-                // Giải mã accessToken
                 const decodedToken = jwtDecode(accessToken)
                 const userId = decodedToken.UserId
                 const username = decodedToken.Username
+                const role = decodedToken.role || 'Customer' // Lấy role từ token, mặc định là Customer
 
                 localStorage.setItem('userId', userId)
-                login(username, userId)
+                login(username, userId, role) // Truyền role vào hàm login
                 navigate('/')
             } else {
                 Swal.fire({
@@ -107,13 +107,13 @@ function SignIn() {
                 localStorage.setItem('refreshToken', refreshToken)
                 localStorage.setItem('deviceId', deviceId)
 
-                // Giải mã accessToken
                 const decodedToken = jwtDecode(accessToken)
                 const userId = decodedToken.UserId
                 const username = decodedToken.Username
+                const role = decodedToken.role || 'Customer' // Lấy role từ token
 
                 localStorage.setItem('userId', userId)
-                login(username, userId)
+                login(username, userId, role)
                 navigate('/')
             } else {
                 Swal.fire({

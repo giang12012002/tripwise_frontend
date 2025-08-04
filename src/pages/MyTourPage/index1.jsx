@@ -256,7 +256,7 @@ function MyTours() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-10">
                         <h2 className="text-3xl font-extrabold text-indigo-700 inline-block px-6 py-2 bg-indigo-50 rounded-full shadow-sm">
-                            Tour Yêu Thích Được Tạo Bằng AI
+                            Tours Được Tạo Bằng AI
                         </h2>
                     </div>
                     <div className="mb-5 flex flex-col sm:flex-row gap-4">

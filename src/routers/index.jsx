@@ -20,6 +20,8 @@ import BlogDetail from '@/pages/BlogsPage/id'
 import ItineraryDisplayHistory from '@/pages/ItineraryDisplayHistory/History'
 import ItineraryDisplayHistoryDetail from '@/pages/ItineraryDisplayHistory/HistoryDetail'
 import MyTourPage from '@/pages/MyTourPage/index1.jsx'
+import FavoriteTours from '@/pages/FavoriteTours/FavoriteTours.jsx'
+import AllToursPage from '@/pages/AllToursPage/AllToursPage.jsx'
 import TourDetail from '@/pages/MyTourPage/TourDetail'
 import PlanList from '@/pages/PlanPage'
 import VNPayCallback from '@/components/callbacks/VNPayCallback'
@@ -58,6 +60,9 @@ function Index() {
                     <Route path="/view-Profile" element={<ViewProfilePage />} />
                     <Route path="/edit-Profile" element={<EditProfilePage />} />
                     <Route path="/about" element={<AboutPage />} />
+                    AllToursPage
+                    <Route path="/alltour" element={<AllToursPage />} />
+                    <Route path="/favoritetour" element={<FavoriteTours />} />
                     <Route
                         path="/CreateItinerary"
                         element={<CreateItineraryPage />}
@@ -96,7 +101,6 @@ function Index() {
                         />
                         <Route path="edit/:tourId" element={<EditTour />} />
                     </Route>
-
                     {/* Khu vực quản lý admin */}
                     <Route path="/admin" element={<AdminDashboard />}>
                         <Route
@@ -153,7 +157,6 @@ function Index() {
                         </Route>
                         <Route path="plans" element={<PlanAdminList />} />
                     </Route>
-
                     <Route path="/connect" element={<PartnershipPage />} />
                     <Route
                         path="/forgot-password"

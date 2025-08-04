@@ -84,10 +84,28 @@ function Header() {
                                 className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
                                 onClick={() => setIsMenuOpen(false)}
                             >
-                                Yêu thích
+                                Tour AI của bạn
                             </Link>
                         </li>
                     )}
+                    {/*<li>*/}
+                    {/*    <Link*/}
+                    {/*        to="/favoritetour"*/}
+                    {/*        className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"*/}
+                    {/*        onClick={() => setIsMenuOpen(false)}*/}
+                    {/*    >*/}
+                    {/*        Tour Yêu thích*/}
+                    {/*    </Link>*/}
+                    {/*</li>*/}
+                    <li>
+                        <Link
+                            to="/alltour"
+                            className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            Tour du lịch
+                        </Link>
+                    </li>
                     <li>
                         <Link
                             to="/connect"
@@ -95,15 +113,6 @@ function Header() {
                             onClick={() => setIsMenuOpen(false)}
                         >
                             Hợp tác với chúng tôi
-                        </Link>
-                    </li>
-                    <li>
-                        <Link
-                            to="/support"
-                            className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Hỗ trợ
                         </Link>
                     </li>
 
@@ -175,6 +184,20 @@ function Header() {
                                                 }}
                                             >
                                                 Thông tin tài khoản
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                to="/favoritetour"
+                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                onClick={() => {
+                                                    setIsMenuOpen(false)
+                                                    setIsProfileDropdownOpen(
+                                                        false
+                                                    )
+                                                }}
+                                            >
+                                                Tour yêu thích
                                             </Link>
                                         </li>
                                         <li>
