@@ -92,7 +92,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Nội dung chính */}
-            <div className="flex-1 p-6 ml-64">
+            <div className="flex-1 ml-64">
                 <Outlet />
             </div>
         </div>

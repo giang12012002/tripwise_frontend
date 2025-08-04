@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import BookingConfirmDialog from './BookingConfirmDialog'
+import NumberInput from './NumberInput'
+import EstimatedCost from './EstimatedCost'
 import { paymentAPI } from '@/apis'
 import { toast } from 'react-toastify'
 
@@ -58,91 +60,50 @@ function Index({ tour }) {
     }
 
     return (
-        <div className="w-full mt-10 p-6 bg-white rounded-lg shadow-md">
-            <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">
+        <div className="w-full mt-8 px-6 py-4 bg-white rounded-lg shadow-md">
+            <h1 className="text-2xl font-semibold text-center text-gray-800 mb-2">
                 Đặt tour
             </h1>
 
-            <div className="flex flex-col gap-4">
-                <label className="text-gray-700 font-medium">Người lớn:</label>
-                <input
-                    type="number"
+            <div className="flex flex-col gap-1">
+                <NumberInput
+                    label="Người lớn:"
                     value={adultNum}
-                    onChange={(e) =>
-                        setAdultNum(Math.max(0, parseInt(e.target.value) || 0))
-                    }
-                    min="0"
-                    className="border border-gray-300 rounded px-4 py-2"
+                    onChange={setAdultNum}
+                    min={0}
                 />
 
-                <label className="text-gray-700 font-medium">
-                    Trẻ em dưới 9 tuổi:
-                </label>
-                <input
-                    type="number"
+                <NumberInput
+                    label="Trẻ em dưới 9 tuổi:"
                     value={childUnder9Num}
-                    onChange={(e) =>
-                        setChildUnder9Num(
-                            Math.max(0, parseInt(e.target.value) || 0)
-                        )
-                    }
-                    min="0"
-                    className="border border-gray-300 rounded px-4 py-2"
+                    onChange={setChildUnder9Num}
+                    min={0}
                 />
 
-                <label className="text-gray-700 font-medium">
-                    Trẻ em dưới 3 tuổi:
-                </label>
-                <input
-                    type="number"
+                <NumberInput
+                    label="Trẻ em dưới 3 tuổi:"
                     value={childUnder3Num}
-                    onChange={(e) =>
-                        setChildUnder3Num(
-                            Math.max(0, parseInt(e.target.value) || 0)
-                        )
-                    }
-                    min="0"
-                    className="border border-gray-300 rounded px-4 py-2"
+                    onChange={setChildUnder3Num}
+                    min={0}
                 />
 
-                <label className="text-gray-700 font-medium">Số ngày:</label>
-                <input
-                    type="number"
+                <NumberInput
+                    label="Số ngày"
                     value={dayNum}
                     onChange={handleDayNumChange}
-                    min="1"
-                    className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    min={1}
                 />
 
                 {/* Estimated cost */}
-                <p className="text-gray-700 font-medium mt-2">Chi tiết giá:</p>
-                <ul className="text-gray-700 ml-4 list-disc">
-                    <li>
-                        Người lớn ({adultNum} người):{' '}
-                        <span className="text-blue-600 font-semibold">
-                            {adultCost.toLocaleString()} đ
-                        </span>
-                    </li>
-                    <li>
-                        Trẻ em dưới 9 tuổi ({childUnder9Num} người):{' '}
-                        <span className="text-blue-600 font-semibold">
-                            {childUnder9Cost.toLocaleString()} đ
-                        </span>
-                    </li>
-                    <li>
-                        Trẻ em dưới 3 tuổi ({childUnder3Num} người):{' '}
-                        <span className="text-blue-600 font-semibold">
-                            {childUnder3Cost.toLocaleString()} đ
-                        </span>
-                    </li>
-                </ul>
-
-                <p className="text-gray-700 font-medium mt-2">
-                    Tổng cộng:{' '}
-                    <span className="text-red-600 text-lg font-bold underline">
-                        {estimatedCost.toLocaleString()} đ
-                    </span>
-                </p>
+                <EstimatedCost
+                    adultNum={adultNum}
+                    childUnder9Num={childUnder9Num}
+                    childUnder3Num={childUnder3Num}
+                    adultCost={adultCost}
+                    childUnder9Cost={childUnder9Cost}
+                    childUnder3Cost={childUnder3Cost}
+                    estimatedCost={estimatedCost}
+                />
 
                 <button
                     onClick={() => setShowBookingConfirmDialog(true)}

@@ -15,53 +15,38 @@ function Id() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [blogs, setBlogs] = useState([])
-    const [blog, setBlog] = useState({
-        id: null,
-        blogName: '',
-        blogParagraphs: [],
-        blogImage: [],
-        createdDate: '',
-        createdBy: ''
-    })
+    const [blog, setBlog] = useState(null)
+
+    const fetchBlogs = async () => {
+        const response = await blogAPI.fetchBlogs()
+        if (response.status === 200 && response.data.data) {
+            setBlogs(sortBlogsByLatest(response.data.data).slice(0, 3))
+        }
+    }
 
     useEffect(() => {
-        const fetchBlogs = async () => {
-            const response = await blogAPI.fetchBlogs()
-            if (response.status === 200 && response.data.data) {
-                setBlogs(sortBlogsByLatest(response.data.data).slice(0, 3))
-            }
-        }
         fetchBlogs()
     }, [])
 
+    const fetchBlogById = async () => {
+        setLoading(true)
+        try {
+            const response = await blogAPI.fetchBlogById(id)
+            if (response.status === 200 && response.data.data) {
+                setBlog(response.data.data)
+                console.log(response.data.data)
+            } else {
+                setError(response.data.message || 'Không tìm thấy bài viết')
+            }
+        } catch (error) {
+            setError('Không thể lấy bài viết')
+        } finally {
+            setLoading(false)
+        }
+    }
+
     useEffect(() => {
         if (!id) return
-        const fetchBlogById = async () => {
-            setLoading(true)
-            try {
-                const response = await blogAPI.fetchBlogById(id)
-                if (response.status === 200 && response.data.data) {
-                    const blogData = response.data.data
-                    setBlog({
-                        id: blogData.blogID,
-                        blogName: blogData.blogName,
-                        blogParagraphs: splitTextByType(
-                            blogData.blogContent,
-                            'newline'
-                        ),
-                        blogImage: blogData.blogImages,
-                        createdDate: blogData.createdDate,
-                        createdBy: blogData.createdBy
-                    })
-                } else {
-                    setError(response.data.message || 'Không tìm thấy bài viết')
-                }
-            } catch (error) {
-                setError('Không thể lấy bài viết')
-            } finally {
-                setLoading(false)
-            }
-        }
         fetchBlogById()
     }, [id])
 
@@ -75,101 +60,14 @@ function Id() {
             <main className="flex-grow py-10 px-[20%]">
                 {loading ? (
                     <p className="text-center text-gray-500">Đang tải...</p>
-                ) : blog.id ? (
+                ) : blog.blogContent ? (
                     // Hiển thị nội dung blog
-                    <>
-                        <h1 className="text-3xl font-bold text-center">
-                            {blog.blogName}
-                        </h1>
-                        {/* TODO: Thiếu phần cập nhật thông tin của người cập nhật */}
-                        <p className="mt-4 text-gray-600 text-right">
-                            Được đăng ngày{' '}
-                            <span className="text-red-500">
-                                {formatDate(blog.createdDate) || '01/01/2025'}
-                            </span>{' '}
-                            bởi{' '}
-                            <span className="font-bold text-blue-500">
-                                {blog.createdBy || 'admin'}
-                            </span>
-                        </p>
-                        <div className="space-y-6 py-6">
-                            <p className="text-gray-700 text-justify">
-                                {blog.blogParagraphs[0]}
-                            </p>
-
-                            {blog.blogParagraphs
-                                .slice(1, blog.blogParagraphs.length - 1)
-                                .map((paragraph, index) => {
-                                    const paragraphImage = blog.blogImage[index]
-                                    return (
-                                        <div key={index}>
-                                            {paragraphImage && (
-                                                <div className="flex flex-col items-center">
-                                                    <img
-                                                        src={
-                                                            paragraphImage.imageURL ||
-                                                            '/image.png'
-                                                        }
-                                                        alt={
-                                                            paragraphImage.alt ||
-                                                            'Ảnh bài viết'
-                                                        }
-                                                        className="my-4 rounded w-full max-w-[80%] object-cover"
-                                                    />
-                                                    <p className="text-gray-600 italic text-sm text-center">
-                                                        {paragraphImage.alt ||
-                                                            `Ảnh bài viết ${index + 1}`}
-                                                    </p>
-                                                </div>
-                                            )}
-
-                                            <p
-                                                key={index}
-                                                className="text-gray-700 text-justify"
-                                            >
-                                                {paragraph}
-                                            </p>
-                                        </div>
-                                    )
-                                })}
-
-                            {blog.blogImage
-                                .slice(
-                                    blog.blogParagraphs.length - 2,
-                                    blog.blogImage.length
-                                )
-                                .map((img, idx) => (
-                                    <div
-                                        key={`extra-${idx}`}
-                                        className="flex flex-col items-center"
-                                    >
-                                        <img
-                                            src={img.imageURL || '/image.png'}
-                                            alt={img.alt || 'Ảnh bài viết'}
-                                            className="my-4 rounded w-full max-w-[80%] object-cover"
-                                        />
-                                        <p className="text-gray-600 italic text-sm text-center">
-                                            {img.alt}
-                                        </p>
-                                    </div>
-                                ))}
-
-                            {blog.blogParagraphs.length !== 1 && (
-                                <p className="text-gray-700 text-justify">
-                                    {
-                                        blog.blogParagraphs[
-                                            blog.blogParagraphs.length - 1
-                                        ]
-                                    }
-                                </p>
-                            )}
-
-                            {/* Phần ký tên cuối bài */}
-                            <p className="text-right mt-8 text-gray-700 italic">
-                                — {blog.createdBy || 'admin'},{' '}
-                            </p>
-                        </div>
-                    </>
+                    <div
+                        className="flex-1 overflow-y-auto"
+                        dangerouslySetInnerHTML={{
+                            __html: blog.blogContent
+                        }}
+                    />
                 ) : (
                     // Hiển thị thông báo không tìm thấy bài viết
                     <>

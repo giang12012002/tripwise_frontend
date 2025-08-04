@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { blogAPI } from '@/apis'
 import { formatDate } from '@/utils/format'
+import { sortBlogsByLatest } from '@/utils/sort'
 
 function BlogsSection() {
     const navigate = useNavigate()
@@ -10,7 +11,8 @@ function BlogsSection() {
     const fetchBlogs = async () => {
         const response = await blogAPI.fetchBlogs()
         if (response.status === 200 && response.data.data) {
-            setBlogs(response.data.data.slice(0, 3))
+            setBlogs(sortBlogsByLatest(response.data.data).slice(0, 3))
+            console.log(response.data.data)
         }
     }
 
@@ -39,7 +41,11 @@ function BlogsSection() {
                             title={blog.blogName}
                         >
                             <img
-                                src={blog.blogImages[0].imageURL}
+                                src={
+                                    blog.blogImages > 0
+                                        ? blog.blogImages[0].imageURL
+                                        : '/image.png'
+                                }
                                 alt={
                                     blog.blogImages[0].imageAlt ||
                                     `Image for ${blog.blogName}`
@@ -49,17 +55,15 @@ function BlogsSection() {
                             <div className="p-4">
                                 <div className="flex justify-between items-center mb-2">
                                     <h3
-                                        className="text-xl font-bold line-clamp-1 mb-2 max-w-[40%] text-gray-800"
+                                        className="text-xl font-bold line-clamp-1 mb-2 w-full text-gray-800"
                                         title={blog.blogName}
                                     >
                                         {blog.blogName}
                                     </h3>
-                                    <p className="text-gray-400 text-sm font-light mb-2 max-w-[40%]">
-                                        {formatDate(blog.createdDate)}
-                                    </p>
+                                    <p className="text-gray-400 text-sm font-light mb-2 max-w-[40%]"></p>
                                 </div>
                                 <p className="text-gray-600 text-sm line-clamp-4 mb-4">
-                                    {blog.blogContent}
+                                    {formatDate(blog.createdDate)}
                                 </p>
                             </div>
                         </div>

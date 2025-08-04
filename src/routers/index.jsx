@@ -8,7 +8,8 @@ import RegisterPage from '@/pages/RegisterPage/index.jsx'
 import OtpVerification from '@/pages/RegisterPage/OtpVerification'
 import SignInPage from '@/pages/SignInPage/index.jsx'
 import HomePage from '@/pages/HomePage/HomePage'
-import CustomerTourDetail from '@/pages/HomePage/CustomerTourDetail.jsx'
+import CustomerTourDetail from '@/pages/ToursPage/TourDetail'
+import CustomerTourList from '@/pages/ToursPage'
 import AboutPage from '@/pages/AboutPage/index.jsx'
 import ItineraryPage from '@/pages/ItineraryPage/index.jsx'
 import ChatbotUpdate from '@/pages/ItineraryPage/ChatbotUpdate'
@@ -82,6 +83,7 @@ function Index() {
                         path="/tour-detail/:tourId"
                         element={<CustomerTourDetail />}
                     />
+                    <Route path="/tours" element={<CustomerTourList />} />
                     {/* Khu vực quản lý đối tác */}
                     <Route path="/partner" element={<PartnerDashboard />}>
                         <Route index element={<ListAllTour />} />
@@ -104,7 +106,7 @@ function Index() {
                             element={<Navigate to="/admin/blogs" replace />}
                         />
                         <Route
-                            path="admin/blog/preview"
+                            path="/admin/blog/preview"
                             element={<PreviewBlog />}
                         />
 

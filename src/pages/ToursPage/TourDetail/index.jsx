@@ -8,7 +8,7 @@ import { useAuth } from '@/AuthContext'
 import Header from '@/components/header/Header.jsx'
 import Footer from '@/components/footer/Footer.jsx'
 
-const CustomerTourDetail = () => {
+const Index = () => {
     const { tourId } = useParams()
     const [tour, setTour] = useState(null)
     const [error, setError] = useState('')
@@ -233,8 +233,8 @@ const CustomerTourDetail = () => {
             <Header />
             <div class="flex gap-4">
                 {/* Detail */}
-                <div class="w-2/3 bg-blue-200 p-4">
-                    <div className="flex-grow py-12">
+                <div class="w-3/4 bg-blue-200 p-4">
+                    <div className="flex-grow py-4">
                         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
                             {error && (
                                 <p className="text-red-600 mb-6 text-center font-semibold text-lg bg-white p-4 rounded-lg shadow-md">
@@ -1051,7 +1051,7 @@ const CustomerTourDetail = () => {
                     </div>
                 </div>
                 {/* Booking */}
-                <div class="w-1/3 p-4 sticky top-0 self-start">
+                <div class="w-1/4 p-4 sticky top-0 self-start">
                     <Bookings tour={tour} />
                 </div>
             </div>
@@ -1061,4 +1061,4 @@ const CustomerTourDetail = () => {
     )
 }
 
-export default CustomerTourDetail
+export default Index

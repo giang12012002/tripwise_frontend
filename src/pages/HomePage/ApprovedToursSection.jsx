@@ -195,7 +195,7 @@ const ApprovedToursSection = () => {
             )}
             <div className="text-center mt-6">
                 <button
-                    onClick={() => navigate('/tour-list')}
+                    onClick={() => navigate('/tours')}
                     className="text-blue-600 font-semibold hover:underline hover:text-blue-800 transition-colors"
                 >
                     Xem tất cả

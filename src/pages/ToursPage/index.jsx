@@ -2,35 +2,33 @@ import React, { useEffect, useState } from 'react'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import { useNavigate } from 'react-router-dom'
-import blogAPI from '@/apis/blogAPI'
-import { sortBlogsByLatest } from '@/utils/sort'
-import { formatDate } from '@/utils/format'
+import { tourUserAPI } from '@/apis'
 
 function Index() {
-    const [blogs, setBlogs] = useState([])
+    const [tours, setTours] = useState([])
     const [error, setError] = useState(null)
     const navigate = useNavigate()
 
-    useEffect(() => {
-        const fetchBlogs = async () => {
-            const response = await blogAPI.fetchBlogs()
-            if (response.status === 200 && response.data.data) {
-                setBlogs(sortBlogsByLatest(response.data.data))
-                console.log(response.data.data)
-            } else {
-                setError(response.data.message || 'Không thể tải bài viết')
-            }
+    const fetchTours = async () => {
+        try {
+            const response = await tourUserAPI.getApprovedTours()
+            setTours(response.data)
+        } catch (err) {
+            setError(err.message)
         }
-        fetchBlogs()
+    }
+
+    useEffect(() => {
+        fetchTours()
     }, [])
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1)
-    const blogsPerPage = 2 // số blog mỗi trang
+    const toursPerPage = 4 // số blog mỗi trang
 
-    const totalPages = Math.ceil(blogs.length / blogsPerPage)
-    const startIndex = (currentPage - 1) * blogsPerPage
-    const currentBlogs = blogs.slice(startIndex, startIndex + blogsPerPage)
+    const totalPages = Math.ceil(tours.length / toursPerPage)
+    const startIndex = (currentPage - 1) * toursPerPage
+    const currentTours = tours.slice(startIndex, startIndex + toursPerPage)
 
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) {
@@ -43,28 +41,28 @@ function Index() {
             <Header />
             <main className="flex-grow py-10">
                 <h1 className="text-3xl font-bold text-center">
-                    Danh sách các bài viết
+                    Danh sách các tour
                 </h1>
                 <p className="mt-4 text-gray-600 text-center">
-                    Cập nhật thường xuyên các bài viết mới nhất về du lịch và
-                    khám phá thế giới.
+                    Tận hưởng các tour du lịch mới nhất từ các đối tác của chúng
+                    tôi.
                 </p>
                 <div className="mt-8 max-w-4xl mx-auto px-4">
-                    {blogs.length === 0 ? (
+                    {tours.length === 0 ? (
                         <p className="text-center text-gray-500">
-                            Không có bài viết nào.
+                            Không có tour nào.
                         </p>
                     ) : (
                         <>
                             <ul className="space-y-6">
-                                {currentBlogs.map((blog) => (
+                                {currentTours.map((tour) => (
                                     <li
-                                        key={blog.blogID}
+                                        key={tour.tourId}
                                         className="flex bg-white p-6 rounded-lg shadow hover:shadow-lg transition-all duration-200 cursor-pointer hover:ring-2 hover:ring-blue-400 active:scale-95 gap-6"
                                         onClick={() =>
                                             setTimeout(() => {
                                                 navigate(
-                                                    `/blogs/${blog.blogID}`
+                                                    `/tour-detail/${tour.tourId}`
                                                 )
                                             }, 100)
                                         }
@@ -72,12 +70,11 @@ function Index() {
                                         <div className="w-3/10 max-w-[30%] aspect-[4/3] bg-gray-200 overflow-hidden rounded-md flex items-center justify-center">
                                             <img
                                                 src={
-                                                    blog.blogImages > 0
-                                                        ? blog.blogImages[0]
-                                                              .imageURL
+                                                    tour.imageUrls.length > 0
+                                                        ? tour.imageUrls[0]
                                                         : '/image.png'
                                                 }
-                                                alt={`Image for ${blog.blogName}`}
+                                                alt={`Đây là ảnh của ${tour.tourName}`}
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
@@ -85,12 +82,12 @@ function Index() {
                                         <div className="w-7/10">
                                             <h2
                                                 className="text-xl font-semibold line-clamp-2"
-                                                title={blog.blogName}
+                                                title={tour.tourName}
                                             >
-                                                {blog.blogName}
+                                                {tour.tourName}
                                             </h2>
                                             <p className="mt-2 text-gray-600 line-clamp-3">
-                                                {formatDate(blog.createdDate)}
+                                                {tour.description}
                                             </p>
                                         </div>
                                     </li>
