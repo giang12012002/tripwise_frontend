@@ -8,6 +8,7 @@ import { useAuth } from '@/AuthContext'
 import { jwtDecode } from 'jwt-decode'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
+import { permissions } from '@/utils/authConfig'
 
 function SignIn() {
     const navigate = useNavigate()
@@ -22,9 +23,25 @@ function SignIn() {
         }
     }, [])
 
+    // useEffect(() => {
+    //     if (isLoggedIn) {
+    //         navigate('/')
+    //     }
+    // }, [isLoggedIn, navigate])
+
     useEffect(() => {
         if (isLoggedIn) {
-            navigate('/')
+            const role = jwtDecode(localStorage.getItem('accessToken'))[
+                'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+            ]
+
+            if (role === permissions.admin) {
+                navigate('/admin/reports')
+            } else if (role === permissions.partner) {
+                navigate('/partner/listTour')
+            } else {
+                navigate('/')
+            }
         }
     }, [isLoggedIn, navigate])
 
@@ -61,10 +78,23 @@ function SignIn() {
                 const decodedToken = jwtDecode(accessToken)
                 const userId = decodedToken.UserId
                 const username = decodedToken.Username
-
+                const role =
+                    decodedToken[
+                        'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+                    ]
                 localStorage.setItem('userId', userId)
                 login(username, userId)
-                navigate('/')
+
+                if (role == permissions.admin) {
+                    navigate('/admin/reports')
+                } else if (role == permissions.partner) {
+                    navigate('/partner/listTour')
+                } else if (role == permissions.customer) {
+                    navigate('/')
+                } else {
+                    console.warn('Vai trò không xác định:', role)
+                    navigate('/') // fallback nếu vai trò không khớp
+                }
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -111,10 +141,27 @@ function SignIn() {
                 const decodedToken = jwtDecode(accessToken)
                 const userId = decodedToken.UserId
                 const username = decodedToken.Username
-
+                const role =
+                    decodedToken[
+                        'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+                    ]
                 localStorage.setItem('userId', userId)
+
+                console.log('Role from token:', role)
+                console.log('Expected admin:', permissions.admin)
+                console.log('Comparison result:', role === permissions.admin)
                 login(username, userId)
-                navigate('/')
+
+                if (role === permissions.admin) {
+                    navigate('/admin/reports')
+                } else if (role === permissions.partner) {
+                    navigate('/partner/listTour')
+                } else if (role === permissions.customer) {
+                    navigate('/')
+                } else {
+                    console.warn('Vai trò không xác định:', role)
+                    navigate('/') // fallback nếu vai trò không khớp
+                }
             } else {
                 Swal.fire({
                     icon: 'error',

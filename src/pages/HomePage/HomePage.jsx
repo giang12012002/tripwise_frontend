@@ -8,6 +8,8 @@ import Footer from '@/components/footer/Footer'
 import ApprovedToursSection from '@/pages/HomePage/ApprovedToursSection.jsx'
 
 function HomePage() {
+    const token = localStorage.getItem('accessToken')
+
     return (
         <div className="min-h-screen bg-gray-100 font-sans">
             <Header />

@@ -3,8 +3,10 @@ import { useLocation } from 'react-router-dom'
 import { blogAPI } from '@/apis'
 import ChooseNameDialog from './ChooseNameDialog'
 import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
 
 function PreviewBlog() {
+    const navigate = useNavigate()
     const location = useLocation()
     const { blogData } = location.state || {}
     const [showDialog, setShowDialog] = React.useState(false)
@@ -17,8 +19,9 @@ function PreviewBlog() {
                 image
             })
             if (response.status === 200) {
-                toast.success(response.data.message)
                 setShowDialog(false)
+                navigate('/admin/blogs')
+                toast.success(response.data.message)
             }
         } catch (error) {
             toast.error(`Đã có lỗi xảy ra: ${error.message}`)
@@ -36,7 +39,10 @@ function PreviewBlog() {
 
             {/* Nút cố định dưới component */}
             <div className="sticky bottom-0 bg-gray-100 border-t border-gray-200 px-6 py-4 flex justify-end gap-2">
-                <button className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                <button
+                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                    onClick={() => navigate(-1)}
+                >
                     Thoát
                 </button>
                 <button

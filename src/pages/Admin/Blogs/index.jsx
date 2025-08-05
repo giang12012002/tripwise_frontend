@@ -124,7 +124,7 @@ function Index() {
                                 onClick={() =>
                                     navigate(`/admin/blogs/${blog.blogID}`)
                                 }
-                                className="bg-white p-4 rounded shadow hover:shadow-lg transition hover:scale-105 active:scale-95 duration-200 cursor-pointer"
+                                className="bg-white p-4 rounded shadow hover:shadow-lg transition hover:scale-102 active:scale-98 duration-200 cursor-pointer"
                             >
                                 <div className="flex justify-between items-center">
                                     <h2
