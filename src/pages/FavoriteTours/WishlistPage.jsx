@@ -4,24 +4,37 @@ import { useAuth } from '@/AuthContext'
 import tourUserAPI from '@/apis/TourUserAPI'
 import Swal from 'sweetalert2'
 import TourCard from '@/pages/HomePage/TourCard.jsx'
+import Header from '@/components/header/Header.jsx'
+import Footer from '@/components/footer/Footer.jsx'
+import TourFilter from '@/pages/AllToursPage/TourFilter.jsx'
 
 const WishlistPage = () => {
     const [wishlistTours, setWishlistTours] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [searchTerm, setSearchTerm] = useState('')
+    const [priceFilter, setPriceFilter] = useState('')
+    const [cityFilter, setCityFilter] = useState('')
+    const [currentPage, setCurrentPage] = useState(1)
     const { isLoggedIn, isAuthLoading } = useAuth()
     const navigate = useNavigate()
+    const toursPerPage = 6
+
+    const cities = [
+        'Hà Nội',
+        'TP. Hồ Chí Minh',
+        'Đà Nẵng',
+        'Hội An',
+        'Huế',
+        'Nha Trang',
+        'Đà Lạt',
+        'Phú Quốc',
+        'Hạ Long',
+        'Sapa'
+    ]
 
     useEffect(() => {
-        console.log('WishlistPage useEffect triggered', {
-            isLoggedIn,
-            isAuthLoading
-        })
-
         if (!isAuthLoading && !isLoggedIn) {
-            console.log(
-                'Người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập'
-            )
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
@@ -36,7 +49,6 @@ const WishlistPage = () => {
         const fetchWishlist = async () => {
             const accessToken = localStorage.getItem('accessToken')
             if (!accessToken) {
-                console.log('Thiếu accessToken trong localStorage')
                 setError('Vui lòng đăng nhập để xem danh sách yêu thích.')
                 setLoading(false)
                 navigate('/signin')
@@ -44,10 +56,7 @@ const WishlistPage = () => {
             }
 
             try {
-                console.log('Đang lấy danh sách yêu thích với accessToken')
                 const response = await tourUserAPI.getUserWishlist(accessToken)
-                console.log('Phản hồi API Wishlist:', response.data)
-
                 const rawWishlist = response.data || []
                 const validTours = []
 
@@ -58,11 +67,11 @@ const WishlistPage = () => {
                                 tour.tourId,
                                 accessToken
                             )
-
                         validTours.push({
                             id: tour.tourId,
                             name: tour.tourName,
-                            price: tour.price
+                            price: tour.price || 0,
+                            formattedPrice: tour.price
                                 ? new Intl.NumberFormat('vi-VN', {
                                       style: 'currency',
                                       currency: 'VND'
@@ -71,7 +80,10 @@ const WishlistPage = () => {
                             image:
                                 tour.imageUrls?.[0] ||
                                 'https://via.placeholder.com/150',
-                            address: tour.location || 'Không xác định'
+                            address: tour.location || 'Không xác định',
+                            city: tour.location
+                                ? extractCity(tour.location)
+                                : 'Không xác định'
                         })
                     } catch (e) {
                         console.warn(
@@ -97,9 +109,6 @@ const WishlistPage = () => {
                     err.response?.status === 401 ||
                     err.response?.data?.error?.includes('token')
                 ) {
-                    console.log(
-                        'Token không hợp lệ hoặc hết hạn, chuyển hướng đến trang đăng nhập'
-                    )
                     localStorage.removeItem('accessToken')
                     localStorage.removeItem('userId')
                     navigate('/signin')
@@ -110,22 +119,24 @@ const WishlistPage = () => {
         }
 
         if (isLoggedIn && !isAuthLoading) {
-            console.log('Gọi fetchWishlist với thông tin xác thực hợp lệ')
             fetchWishlist()
-        } else {
-            console.log(
-                'Bỏ qua fetchWishlist do thông tin xác thực không hợp lệ',
-                {
-                    isLoggedIn,
-                    isAuthLoading
-                }
-            )
         }
     }, [isLoggedIn, isAuthLoading, navigate])
 
+    const extractCity = (location) => {
+        const cityMatch = cities.find((city) =>
+            location.toLowerCase().includes(city.toLowerCase())
+        )
+        return cityMatch || 'Không xác định'
+    }
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value)
+        setCurrentPage(1)
+    }
+
     const handleViewDetail = (tourId) => {
         if (!tourId || isNaN(tourId)) {
-            console.log('tourId không hợp lệ:', tourId)
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
@@ -135,49 +146,176 @@ const WishlistPage = () => {
             })
             return
         }
-        console.log('Chuyển hướng đến chi tiết tour:', tourId)
         navigate(`/tour-detail/${tourId}`)
     }
 
+    const filteredTours = wishlistTours.filter((tour) => {
+        const matchesSearch =
+            tour.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            tour.address?.toLowerCase().includes(searchTerm.toLowerCase())
+        const matchesPrice =
+            priceFilter === ''
+                ? true
+                : priceFilter === 'low'
+                  ? tour.price < 5000000
+                  : priceFilter === 'medium'
+                    ? tour.price >= 5000000 && tour.price <= 10000000
+                    : tour.price > 10000000
+        const matchesCity =
+            cityFilter === '' ||
+            tour.city.toLowerCase() === cityFilter.toLowerCase()
+        return matchesSearch && matchesPrice && matchesCity
+    })
+
+    const totalPages = Math.ceil(filteredTours.length / toursPerPage)
+    const indexOfLastTour = currentPage * toursPerPage
+    const indexOfFirstTour = indexOfLastTour - toursPerPage
+    const currentTours = filteredTours.slice(indexOfFirstTour, indexOfLastTour)
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber)
+    }
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+
     return (
-        <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-gray-100 min-h-screen">
-            <div className="text-center mb-8">
-                <h2 className="text-4xl font-bold text-blue-900 tracking-tight">
-                    Danh Sách Yêu Thích
-                </h2>
-            </div>
-            {loading || isAuthLoading ? (
-                <div className="col-span-full text-center bg-white p-6 rounded-xl shadow-lg">
-                    <p className="text-lg text-gray-600">Đang tải...</p>
+        <div className="min-h-screen flex flex-col bg-gray-50">
+            <Header />
+            <div className="flex flex-1 w-full px-4 sm:px-6 lg:px-4 mt-6 mb-8">
+                {/* TourFilter Sidebar */}
+                <div className="hidden lg:block w-80 ml-2 mr-2 bg-white shadow-lg rounded-lg p-4">
+                    <TourFilter
+                        priceFilter={priceFilter}
+                        setPriceFilter={setPriceFilter}
+                        cityFilter={cityFilter}
+                        setCityFilter={setCityFilter}
+                    />
                 </div>
-            ) : error ? (
-                <div className="col-span-full text-center bg-white p-6 rounded-xl shadow-lg">
-                    <p className="text-lg text-red-600">{error}</p>
-                </div>
-            ) : wishlistTours.length === 0 ? (
-                <div className="col-span-full text-center bg-white p-6 rounded-xl shadow-lg">
-                    <p className="text-lg text-gray-600">
-                        Danh sách yêu thích của bạn đang trống.
-                    </p>
-                    <button
-                        onClick={() => navigate('/')}
-                        className="mt-4 text-blue-600 font-semibold hover:underline hover:text-blue-800 transition-colors"
-                    >
-                        Khám phá các tour
-                    </button>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {wishlistTours.map((tour) => (
-                        <TourCard
-                            key={tour.id}
-                            tour={tour}
-                            onViewDetail={() => handleViewDetail(tour.id)}
+                {/* Main Content */}
+                <section className="flex-1 bg-white shadow-lg rounded-lg p-4 ml-2">
+                    <div className="text-center mb-6">
+                        <h2 className="text-3xl font-bold text-gray-800">
+                            Danh Sách Yêu Thích
+                        </h2>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo tên tour hoặc địa điểm..."
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            className="w-full max-w-md p-2 mt-4 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
-                    ))}
-                </div>
-            )}
-        </section>
+                    </div>
+                    {loading || isAuthLoading ? (
+                        <div className="col-span-full text-center bg-white p-6 rounded-xl shadow-lg">
+                            <p className="text-lg text-gray-600">Đang tải...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="col-span-full text-center bg-red-100 p-4 rounded-md mb-6">
+                            <p className="text-base text-red-700">{error}</p>
+                        </div>
+                    ) : filteredTours.length === 0 ? (
+                        <div className="col-span-full text-center bg-gray-50 p-4 rounded-md">
+                            <p className="text-base text-gray-600">
+                                {searchTerm || priceFilter || cityFilter
+                                    ? 'Không tìm thấy tour phù hợp với tiêu chí.'
+                                    : 'Danh sách yêu thích của bạn đang trống.'}
+                            </p>
+                            <button
+                                onClick={() => navigate('/alltour')}
+                                className="mt-4 text-blue-600 font-semibold hover:underline hover:text-blue-800 transition-colors"
+                            >
+                                Khám phá các tour
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {currentTours.map((tour) => (
+                                <TourCard
+                                    key={tour.id}
+                                    tour={{
+                                        ...tour,
+                                        price: tour.formattedPrice
+                                    }}
+                                    onViewDetail={() =>
+                                        handleViewDetail(tour.id)
+                                    }
+                                />
+                            ))}
+                        </div>
+                    )}
+                    {totalPages > 1 && (
+                        <div className="flex justify-center mt-6 space-x-2">
+                            <button
+                                onClick={handlePreviousPage}
+                                disabled={currentPage === 1}
+                                className="px-3 py-1 bg-gray-300 text-white rounded-md hover:bg-gray-400 disabled:opacity-50 flex items-center"
+                            >
+                                <svg
+                                    className="w-4 h-4 mr-1"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M15 19l-7-7 7-7"
+                                    />
+                                </svg>
+                                Trước
+                            </button>
+                            {Array.from({ length: totalPages }, (_, index) => (
+                                <button
+                                    key={index + 1}
+                                    onClick={() => handlePageChange(index + 1)}
+                                    className={`px-3 py-1 rounded-md text-sm ${
+                                        currentPage === index + 1
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                                    }`}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+                            <button
+                                onClick={handleNextPage}
+                                disabled={currentPage === totalPages}
+                                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 flex items-center"
+                            >
+                                Sau
+                                <svg
+                                    className="w-4 h-4 ml-1"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M9 5l7 7-7 7"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
+                </section>
+            </div>
+            <Footer />
+        </div>
     )
 }
 
