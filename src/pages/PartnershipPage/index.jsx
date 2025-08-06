@@ -2,6 +2,13 @@ import React from 'react'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 
+function sendMail() {
+    const to = 'anhnvvhe179005@fpt.edu.vn'
+    const subject = encodeURIComponent('Chào bạn')
+    const body = encodeURIComponent('Tôi muốn liên hệ với bạn qua email.')
+    return `https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${to}&subject=${subject}&body=${body}`
+}
+
 function Index() {
     return (
         <div className="flex flex-col min-h-screen bg-gray-100">
@@ -56,9 +63,60 @@ function Index() {
                             Đăng ký ngay để bắt đầu kết nối với cộng đồng du
                             lịch của chúng tôi.
                         </p>
-                        <button className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition">
-                            Đăng ký làm đối tác
-                        </button>
+
+                        <div className="grid md:grid-cols-2 gap-6 mb-6">
+                            <div className="bg-gradient-to-br from-indigo-100 to-white shadow-xl rounded-2xl p-6 w-full max-w-sm mx-auto text-center border border-indigo-200">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-24 h-24 mb-4">
+                                        <img
+                                            src="/gmail-logo.svg"
+                                            alt="Gmail"
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-indigo-700 mb-1">
+                                        Liên hệ qua Gmail
+                                    </h3>
+                                    <p className="text-gray-600 text-sm">
+                                        anhnvvhe179005@fpt.edu.vn
+                                    </p>
+                                    <a
+                                        href={sendMail()}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="mt-4 inline-block bg-indigo-600 text-white px-4 py-2 rounded-full text-sm hover:bg-indigo-700 transition"
+                                    >
+                                        Gửi Email
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-blue-100 to-white shadow-xl rounded-2xl p-6 w-full max-w-sm mx-auto text-center border border-blue-200">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-24 h-24 mb-4">
+                                        <img
+                                            src="/zalo-logo.svg"
+                                            alt="Zalo"
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-blue-700 mb-1">
+                                        Liên hệ qua Zalo
+                                    </h3>
+                                    <p className="text-gray-600 text-sm">
+                                        0965619777
+                                    </p>
+                                    <a
+                                        href="https://zalo.me/0965619777"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded-full text-sm hover:bg-blue-700 transition"
+                                    >
+                                        Liên hệ Zalo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>

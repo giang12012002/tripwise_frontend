@@ -21,6 +21,8 @@ function Index() {
                 setPayments(response.data)
                 setFilteredPayments(response.data)
             }
+
+            console.log(response)
         } catch (error) {
             console.log(error)
         }
@@ -85,7 +87,7 @@ function Index() {
                         <thead className="bg-gray-100 text-left">
                             <tr>
                                 <th className="p-3 border">Mã giao dịch</th>
-                                <th className="p-3 border">Order Code</th>
+                                <th className="p-3 border">Tên</th>
                                 <th className="p-3 border">Số tiền</th>
                                 <th className="p-3 border">Trạng thái</th>
                                 <th className="p-3 border">Ngân hàng</th>
@@ -103,7 +105,16 @@ function Index() {
                                             {item.transactionId}
                                         </td>
                                         <td className="p-3 border">
-                                            {item.orderCode}
+                                            {item.planName === null ? (
+                                                <a
+                                                    href={`/tour-detail/${item.tourId}`}
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    {item.tourName}
+                                                </a>
+                                            ) : (
+                                                item.planName
+                                            )}
                                         </td>
                                         <td className="p-3 border">
                                             {item.amount.toLocaleString()}đ

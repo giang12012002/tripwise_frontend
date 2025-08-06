@@ -1,4 +1,3 @@
-import { jwtDecode } from 'jwt-decode'
 import { roles } from '@/utils/authConfig'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import RegisterPage from '@/pages/RegisterPage/index.jsx'

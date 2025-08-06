@@ -7,6 +7,7 @@ import planAdminAPI from './planAdminAPI'
 import appSettingAPI from './appSettingAPI'
 import reviewAPI from './reviewAPI'
 import tourUserAPI from './TourUserAPI'
+import logAPI from './logAPI'
 
 export {
     authAPI,
@@ -17,5 +18,6 @@ export {
     planAdminAPI,
     appSettingAPI,
     reviewAPI,
-    tourUserAPI
+    tourUserAPI,
+    logAPI
 }
