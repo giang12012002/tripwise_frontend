@@ -41,7 +41,7 @@ function HistoryDetail() {
             console.log('History Detail ID:', id)
             if (!id) {
                 toast.error('ID lịch trình không hợp lệ.')
-                navigate('/HistoryItinerary')
+                navigate('/user/HistoryItinerary')
                 return
             }
 
@@ -216,7 +216,7 @@ function HistoryDetail() {
                         confirmButtonColor: '#2563eb'
                     })
                 } else if (err.response?.status === 404) {
-                    navigate('/HistoryItinerary')
+                    navigate('/user/HistoryItinerary')
                     toast.error('Không tìm thấy lịch trình.')
                 }
             } finally {
@@ -287,7 +287,7 @@ function HistoryDetail() {
                 showConfirmButton: false,
                 timer: 1500
             })
-            navigate('/mytour')
+            navigate('/user/mytour')
         } catch (err) {
             Swal.fire({
                 icon: 'error',
@@ -320,7 +320,7 @@ function HistoryDetail() {
             'Dữ liệu historyDetail trước khi chuyển hướng:',
             historyDetail
         )
-        navigate('/chatbot-update', {
+        navigate('/user/chatbot-update', {
             state: { itineraryData: historyDetail }
         })
     }
@@ -337,7 +337,7 @@ function HistoryDetail() {
                     <div className="flex space-x-4">
                         {/* Nút quay lại lịch sử */}
                         <button
-                            onClick={() => navigate('/HistoryItinerary')}
+                            onClick={() => navigate('/user/HistoryItinerary')}
                             className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-md flex items-center"
                         >
                             <svg

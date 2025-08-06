@@ -293,7 +293,9 @@ function ChatbotUpdate() {
             'Dữ liệu truyền sang ItineraryDisplay:',
             JSON.stringify(updatedItinerary, null, 2)
         )
-        navigate('/itinerary', { state: { itineraryData: updatedItinerary } })
+        navigate('/user/itinerary', {
+            state: { itineraryData: updatedItinerary }
+        })
     }
 
     const handleClearChatHistory = () => {

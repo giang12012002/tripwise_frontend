@@ -10,14 +10,16 @@ const paymentAPI = {
     },
     sendBookingRequest: async ({
         tourId,
-        numberOfPeople,
-        numberOfDays,
+        numAdults,
+        numChildren5To10,
+        numChildrenUnder5,
         paymentMethod
     }) => {
         const response = await authorizedAxios.post('/api/payment/booking', {
             tourId,
-            numberOfPeople,
-            numberOfDays,
+            numAdults,
+            numChildren5To10,
+            numChildrenUnder5,
             paymentMethod
         })
         return response

@@ -12,6 +12,7 @@ import BlogList from '@/pages/BlogsPage'
 import BlogDetail from '@/pages/BlogsPage/id'
 import PartnershipPage from '@/pages/PartnershipPage'
 import ForgotPassword from '@/pages/ForgotPasswordPage'
+import VNPayCallback from '@/components/callbacks/VNPayCallback'
 
 import { getRoleFromJwtCode } from '@/utils/user'
 
@@ -42,6 +43,7 @@ function PublicRoutes() {
             <Route path="/tours" element={<CustomerTourList />} />
             <Route path="/connect" element={<PartnershipPage />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/vnpay-callback" element={<VNPayCallback />} />
         </Routes>
     )
 }

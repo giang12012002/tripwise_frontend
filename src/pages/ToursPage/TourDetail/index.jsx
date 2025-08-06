@@ -55,23 +55,12 @@ const Index = () => {
                 return
             }
             try {
-                console.log(
-                    'Fetching tour with ID:',
-                    tourId,
-                    'Token:',
-                    token ? 'Available' : 'Not available'
-                )
                 const response = await tourUserAPI.getApprovedTourDetail(
                     tourId,
                     token
                 )
                 console.log('Tour detail response:', response.data)
-                console.log(
-                    'ImageUrls:',
-                    response.data.imageUrls,
-                    'ImageIds:',
-                    response.data.imageIds
-                )
+
                 if (!response.data) {
                     setError('Không tìm thấy tour.')
                     setIsLoading(false)
@@ -233,7 +222,7 @@ const Index = () => {
             <Header />
             <div class="flex gap-4">
                 {/* Detail */}
-                <div class="w-3/4 bg-blue-200 p-4">
+                <div className="w-3/4 bg-blue-200 p-4">
                     <div className="flex-grow py-4">
                         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
                             {error && (

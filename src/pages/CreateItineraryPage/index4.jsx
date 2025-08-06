@@ -189,7 +189,7 @@ function CreateItinerary() {
                     showConfirmButton: false,
                     timer: 500
                 })
-                navigate('/itinerary', {
+                navigate('/user/itinerary', {
                     state: {
                         itineraryData: { ...itineraryData, generatePlanId }
                     }

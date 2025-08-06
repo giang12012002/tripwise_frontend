@@ -2,11 +2,14 @@ import React from 'react'
 
 function EstimatedCost({
     adultNum,
-    childUnder9Num,
-    childUnder3Num,
+    childUnder10Num,
+    childUnder5Num,
     adultCost,
-    childUnder9Cost,
-    childUnder3Cost,
+    childUnder10Cost,
+    childUnder5Cost,
+    price1Adult,
+    price1ChildUnder10,
+    price1ChildUnder5,
     estimatedCost
 }) {
     return (
@@ -14,21 +17,24 @@ function EstimatedCost({
             <p className="text-gray-700 font-medium">Chi tiết giá:</p>
             <ul className="text-gray-700 ml-4 list-disc">
                 <li>
-                    Người lớn ({adultNum} người):{' '}
+                    Người lớn ({price1Adult.toLocaleString()} đ * {adultNum}{' '}
+                    người):{' '}
                     <span className="text-blue-600 font-semibold">
                         {adultCost.toLocaleString()} đ
                     </span>
                 </li>
                 <li>
-                    Trẻ em dưới 9 tuổi ({childUnder9Num} người):{' '}
+                    Trẻ em dưới 10 tuổi ( {price1ChildUnder10.toLocaleString()}{' '}
+                    đ * {childUnder10Num} người):{' '}
                     <span className="text-blue-600 font-semibold">
-                        {childUnder9Cost.toLocaleString()} đ
+                        {childUnder10Cost.toLocaleString()} đ
                     </span>
                 </li>
                 <li>
-                    Trẻ em dưới 3 tuổi ({childUnder3Num} người):{' '}
+                    Trẻ em dưới 5 tuổi ( {price1ChildUnder5.toLocaleString()} đ
+                    * {childUnder5Num} người):{' '}
                     <span className="text-blue-600 font-semibold">
-                        {childUnder3Cost.toLocaleString()} đ
+                        {childUnder5Cost.toLocaleString()} đ
                     </span>
                 </li>
             </ul>

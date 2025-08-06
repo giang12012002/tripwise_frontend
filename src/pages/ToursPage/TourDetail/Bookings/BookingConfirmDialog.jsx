@@ -9,7 +9,11 @@ function BookingConfirmDialog({
     tourId,
     tourName,
     dayNum,
-    peopleNum
+    peopleNum,
+    estimatedCost,
+    adultNum,
+    childUnder10Num,
+    childUnder5Num
 }) {
     const [isVisible, setIsVisible] = useState(false)
     const [animationClass, setAnimationClass] = useState('fade-in')
@@ -29,7 +33,7 @@ function BookingConfirmDialog({
         setLoading(true)
         try {
             await new Promise((resolve) => setTimeout(resolve, 1000))
-            onConfirm(tourId, peopleNum, dayNum)
+            onConfirm(tourId, adultNum, childUnder10Num, childUnder5Num)
         } catch (err) {
             toast.error('Có lỗi xảy ra khi tạo gói')
         } finally {
@@ -73,6 +77,21 @@ function BookingConfirmDialog({
                         </p>
                         <p>
                             <strong>Số ngày đi:</strong> {dayNum}
+                        </p>
+                        <p>
+                            <strong>Chi phí dự kiến:</strong> {estimatedCost}{' '}
+                            VND
+                        </p>
+                        <p>
+                            <strong>Chi tiết người lớn:</strong> {adultNum}
+                        </p>
+                        <p>
+                            <strong>Chi tiết trẻ em dưới 10 tuổi:</strong>{' '}
+                            {childUnder10Num}
+                        </p>
+                        <p>
+                            <strong>Chi tiết trẻ em dưới 5 tuổi:</strong>{' '}
+                            {childUnder5Num}
                         </p>
                     </div>
 

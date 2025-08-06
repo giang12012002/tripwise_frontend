@@ -1,12 +1,12 @@
 export const roles = {
     admin: 'ADMIN',
     partner: 'PARTNER',
-    customer: 'CUSTOMER'
+    user: 'USER'
 }
 
 export const permissions = {
-    // customer
-    customer: 'CUSTOMER',
+    // user
+    user: 'USER',
 
     // admin
     admin: 'ADMIN',
@@ -18,5 +18,5 @@ export const permissions = {
 export const rolePermissions = {
     [roles.admin]: [permissions.admin],
     [roles.partner]: [permissions.partner],
-    [roles.customer]: [permissions.customer]
+    [roles.user]: [permissions.user]
 }

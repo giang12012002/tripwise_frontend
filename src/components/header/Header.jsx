@@ -80,7 +80,7 @@ function Header() {
                     {isLoggedIn && (
                         <li>
                             <Link
-                                to="/mytour"
+                                to="/user/mytour"
                                 className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
                                 onClick={() => setIsMenuOpen(false)}
                             >
@@ -110,7 +110,7 @@ function Header() {
                     {isLoggedIn && (
                         <li title="Subcription plan">
                             <Link
-                                to="/plans"
+                                to="/user/plans"
                                 className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-800 transition-colors duration-200"
                                 onClick={() => setIsMenuOpen(false)}
                             >
@@ -165,7 +165,7 @@ function Header() {
                                     <ul className="absolute top-full right-0 bg-blue-700 text-white rounded shadow-md mt-2 w-48 z-20">
                                         <li>
                                             <Link
-                                                to="/view-Profile"
+                                                to="/user/view-Profile"
                                                 className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)
@@ -179,7 +179,7 @@ function Header() {
                                         </li>
                                         <li>
                                             <Link
-                                                to="/HistoryItinerary"
+                                                to="/user/HistoryItinerary"
                                                 className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)
@@ -193,7 +193,7 @@ function Header() {
                                         </li>
                                         <li>
                                             <Link
-                                                to="/payment-history"
+                                                to="/user/payment-history"
                                                 className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)

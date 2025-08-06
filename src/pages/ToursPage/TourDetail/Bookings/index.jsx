@@ -6,48 +6,56 @@ import { paymentAPI } from '@/apis'
 import { toast } from 'react-toastify'
 
 function Index({ tour }) {
-    // const [peopleNum, setPeopleNum] = useState(1)
     const [adultNum, setAdultNum] = useState(1)
-    const [childUnder9Num, setChildUnder9Num] = useState(0)
-    const [childUnder3Num, setChildUnder3Num] = useState(0)
-    const [dayNum, setDayNum] = useState(1)
+    const [childUnder10Num, setChildUnder10Num] = useState(0)
+    const [childUnder5Num, setChildUnder5Num] = useState(0)
 
     const [estimatedCost, setEstimatedCost] = useState(0)
     const [adultCost, setAdultCost] = useState(0)
-    const [childUnder9Cost, setChildUnder9Cost] = useState(0)
-    const [childUnder3Cost, setChildUnder3Cost] = useState(0)
+    const [childUnder10Cost, setChildUnder10Cost] = useState(0)
+    const [childUnder5Cost, setChildUnder5Cost] = useState(0)
 
     useEffect(() => {
-        if (tour?.pricePerDay > 0) {
-            const price = tour.pricePerDay
+        if (
+            tour?.priceAdult &&
+            tour?.priceChildUnder5 &&
+            tour?.priceChild5To10 &&
+            tour?.days
+        ) {
+            const dayNum = parseInt(tour.days)
+            const price1Adult = tour.priceAdult
+            const price1ChildUnder10 = tour.priceChild5To10
+            const price1ChildUnder5 = tour.priceChildUnder5
 
-            const adultTotal = adultNum * price * dayNum
-            const childUnder9Total = childUnder9Num * price * dayNum
-            const childUnder3Total = 0 // miễn phí
+            const adultTotal = adultNum * price1Adult * dayNum
+            const childUnder9Total =
+                childUnder10Num * price1ChildUnder10 * dayNum
+            const childUnder3Total = childUnder5Num * price1ChildUnder5 * dayNum
 
             setAdultCost(adultTotal)
-            setChildUnder9Cost(childUnder9Total)
-            setChildUnder3Cost(0)
+            setChildUnder10Cost(childUnder9Total)
+            setChildUnder5Cost(childUnder3Total)
 
-            setEstimatedCost(adultTotal + childUnder9Total)
+            setEstimatedCost(adultTotal + childUnder9Total + childUnder3Total)
         }
-    }, [adultNum, childUnder9Num, childUnder3Num, dayNum, tour])
+    }, [adultNum, childUnder10Num, childUnder5Num, tour])
 
     const [showBookingConfirmDialog, setShowBookingConfirmDialog] =
         useState(false)
 
-    const handleDayNumChange = (e) => {
-        const value = parseInt(e.target.value)
-        if (!isNaN(value) && value > 0) setDayNum(value)
-    }
-
-    const handleConfirm = async (tourId, peopleNum, dayNum) => {
+    const handleConfirm = async (
+        tourId,
+        adultNum,
+        childUnder10Num,
+        childUnder5Num
+    ) => {
         setShowBookingConfirmDialog(false)
         try {
             const response = await paymentAPI.sendBookingRequest({
                 tourId: tourId,
-                numberOfPeople: peopleNum,
-                numberOfDays: dayNum,
+                numAdults: adultNum,
+                numChildren5To10: childUnder10Num,
+                numChildrenUnder5: childUnder5Num,
                 paymentMethod: 'vnpay'
             })
             if (response.status === 200) {
@@ -74,34 +82,30 @@ function Index({ tour }) {
                 />
 
                 <NumberInput
-                    label="Trẻ em dưới 9 tuổi:"
-                    value={childUnder9Num}
-                    onChange={setChildUnder9Num}
+                    label="Trẻ em dưới 10 tuổi:"
+                    value={childUnder10Num}
+                    onChange={setChildUnder10Num}
                     min={0}
                 />
 
                 <NumberInput
-                    label="Trẻ em dưới 3 tuổi:"
-                    value={childUnder3Num}
-                    onChange={setChildUnder3Num}
+                    label="Trẻ em dưới 5 tuổi:"
+                    value={childUnder5Num}
+                    onChange={setChildUnder5Num}
                     min={0}
-                />
-
-                <NumberInput
-                    label="Số ngày"
-                    value={dayNum}
-                    onChange={handleDayNumChange}
-                    min={1}
                 />
 
                 {/* Estimated cost */}
                 <EstimatedCost
                     adultNum={adultNum}
-                    childUnder9Num={childUnder9Num}
-                    childUnder3Num={childUnder3Num}
+                    childUnder10Num={childUnder10Num}
+                    childUnder5Num={childUnder5Num}
                     adultCost={adultCost}
-                    childUnder9Cost={childUnder9Cost}
-                    childUnder3Cost={childUnder3Cost}
+                    childUnder10Cost={childUnder10Cost}
+                    childUnder5Cost={childUnder5Cost}
+                    price1Adult={tour.priceAdult}
+                    price1ChildUnder10={tour.priceChild5To10}
+                    price1ChildUnder5={tour.priceChildUnder5}
                     estimatedCost={estimatedCost}
                 />
 
@@ -118,9 +122,13 @@ function Index({ tour }) {
                 onClose={() => setShowBookingConfirmDialog(false)}
                 onConfirm={handleConfirm}
                 tourId={tour.tourId}
-                dayNum={dayNum}
-                peopleNum={adultNum + childUnder9Num + childUnder3Num}
+                peopleNum={adultNum + childUnder10Num + childUnder5Num}
+                dayNum={tour.days}
                 tourName={tour.tourName}
+                estimatedCost={estimatedCost}
+                adultNum={adultNum}
+                childUnder10Num={childUnder10Num}
+                childUnder5Num={childUnder5Num}
             />
         </div>
     )

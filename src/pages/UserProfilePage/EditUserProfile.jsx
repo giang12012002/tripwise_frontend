@@ -80,7 +80,7 @@ function EditUserProfile() {
                         timer: 1500
                     })
                 } else if (err.response?.status === 404) {
-                    navigate('/view-profile')
+                    navigate('/user/view-profile')
                 }
             } finally {
                 setLoading(false)
@@ -106,7 +106,7 @@ function EditUserProfile() {
                     showConfirmButton: false,
                     timer: 1500
                 })
-                navigate('/view-profile')
+                navigate('/user/view-profile')
             } else {
                 throw new Error('Không thể cập nhật hồ sơ.')
             }
@@ -289,7 +289,7 @@ function EditUserProfile() {
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                navigate('/view-profile')
+                                                navigate('/user/view-profile')
                                             }
                                             className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition duration-200 shadow-md"
                                         >

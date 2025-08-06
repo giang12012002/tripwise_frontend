@@ -102,7 +102,7 @@ function ItineraryDisplay() {
                 showConfirmButton: false,
                 timer: 1500
             })
-            navigate('/mytour')
+            navigate('/user/mytour')
         } catch (err) {
             Swal.fire({
                 icon: 'error',
@@ -139,7 +139,7 @@ function ItineraryDisplay() {
             hasMore,
             nextStartDate
         }
-        navigate('/chatbot-update', {
+        navigate('/user/chatbot-update', {
             state: { itineraryData: updatedItineraryData }
         })
     }

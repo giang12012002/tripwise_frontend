@@ -89,7 +89,7 @@ function SignIn() {
                     navigate('/admin/reports')
                 } else if (role == permissions.partner) {
                     navigate('/partner/listTour')
-                } else if (role == permissions.customer) {
+                } else if (role == permissions.user) {
                     navigate('/')
                 } else {
                     console.warn('Vai trò không xác định:', role)
@@ -156,7 +156,7 @@ function SignIn() {
                     navigate('/admin/reports')
                 } else if (role === permissions.partner) {
                     navigate('/partner/listTour')
-                } else if (role === permissions.customer) {
+                } else if (role === permissions.user) {
                     navigate('/')
                 } else {
                     console.warn('Vai trò không xác định:', role)
