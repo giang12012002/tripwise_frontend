@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
     BarChart,
     Bar,
@@ -19,6 +19,7 @@ const PartnerPerformanceReport = ({
     const [selectedMonth, setSelectedMonth] = useState(
         new Date().toISOString().slice(0, 7)
     ) // Mặc định là tháng hiện tại (YYYY-MM)
+    const [searchPartnerID, setSearchPartnerID] = useState('')
 
     const formatCurrency = (amount) => {
         const validAmount =
@@ -52,6 +53,13 @@ const PartnerPerformanceReport = ({
         }
         return options
     }
+
+    // Filter data based on exact match for searchPartnerID
+    const filteredData = data.filter((item) => {
+        if (!searchPartnerID) return true // Show all data if search input is empty
+        const partnerID = item.partnerID != null ? String(item.partnerID) : ''
+        return partnerID.toLowerCase() === searchPartnerID.toLowerCase()
+    })
 
     const handleMonthChange = (e) => {
         const newMonth = e.target.value
@@ -98,7 +106,7 @@ const PartnerPerformanceReport = ({
                     So Sánh Hiệu Suất Đối Tác -{' '}
                     {selectedMonth.replace('-', '/')}
                 </h4>
-                {data.length > 0 ? (
+                {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -127,19 +135,31 @@ const PartnerPerformanceReport = ({
                 ) : (
                     <p className="text-red-500">
                         Không có dữ liệu để hiển thị biểu đồ cho tháng{' '}
-                        {selectedMonth.replace('-', '/')}.
+                        {selectedMonth.replace('-', '/')}
                     </p>
                 )}
             </div>
             {/* Bảng */}
             <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-                {data.length === 0 && !loading && (
+                <div className="p-4">
+                    <label className="mr-2 text-gray-700">
+                        Tìm kiếm theo Mã đối tác:
+                    </label>
+                    <input
+                        type="text"
+                        value={searchPartnerID}
+                        onChange={(e) => setSearchPartnerID(e.target.value)}
+                        placeholder="Nhập mã đối tác..."
+                        className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-md"
+                    />
+                </div>
+                {filteredData.length === 0 && !loading && (
                     <p className="text-red-500 p-4">
                         Không có dữ liệu hiệu suất đối tác cho tháng{' '}
-                        {selectedMonth.replace('-', '/')}
+                        {selectedMonth.replace('-', '/')} hoặc mã đối tác này.
                     </p>
                 )}
-                {data.length > 0 && (
+                {filteredData.length > 0 && (
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
@@ -164,7 +184,7 @@ const PartnerPerformanceReport = ({
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {data.map((item, index) => (
+                            {filteredData.map((item, index) => (
                                 <tr key={index} className="hover:bg-gray-50">
                                     <td className="py-4 px-6">{index + 1}</td>
                                     <td className="py-4 px-6">

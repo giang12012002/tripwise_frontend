@@ -85,13 +85,13 @@ const ApprovedToursSection = () => {
                 <h2 className="text-4xl font-bold text-blue-900 tracking-tight">
                     Tour Du Lịch Hot
                 </h2>
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm theo tên tour hoặc địa điểm..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    className="w-full max-w-md p-3 mt-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mx-auto block"
-                />
+                {/*<input*/}
+                {/*    type="text"*/}
+                {/*    placeholder="Tìm kiếm theo tên tour hoặc địa điểm..."*/}
+                {/*    value={searchTerm}*/}
+                {/*    onChange={handleSearchChange}*/}
+                {/*    className="w-full max-w-md p-3 mt-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mx-auto block"*/}
+                {/*/>*/}
             </div>
             {error && (
                 <div className="col-span-full text-center bg-white p-6 rounded-xl shadow-lg mb-6">

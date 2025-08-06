@@ -328,18 +328,7 @@ const CustomerTourDetail = () => {
                                             </strong>{' '}
                                             {tour.days} ngày
                                         </p>
-                                        <hr className="border-t border-gray-300 my-4" />
-                                        <p className="text-gray-800 mb-3 flex items-center">
-                                            <strong className="text-gray-900 font-semibold mr-2">
-                                                ▶ Giá mỗi ngày từ:
-                                            </strong>{' '}
-                                            <span className="text-red-700 font-semibold mr-2">
-                                                {formatCurrency(
-                                                    tour.pricePerDay
-                                                )}
-                                            </span>
-                                            / Khách
-                                        </p>
+
                                         <hr className="border-t border-gray-300 my-4" />
                                         <p className="text-gray-800 mb-3 flex items-center">
                                             <strong className="text-gray-900 font-semibold mr-2">

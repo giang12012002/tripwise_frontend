@@ -311,11 +311,9 @@ const DetailTour = () => {
                             <hr className="border-t border-gray-300 my-4" />
                             <p className="text-gray-800 mb-3 flex items-center">
                                 <strong className="text-gray-900 font-semibold mr-2">
-                                    ▶ Giá mỗi ngày:
+                                    ▶ Ngày bắt đầu :
                                 </strong>{' '}
-                                <span className="text-indigo-700 font-semibold">
-                                    {formatCurrency(tour.pricePerDay)}
-                                </span>
+                                {tour.startTime}
                             </p>
                             <hr className="border-t border-gray-300 my-4" />
                             <p className="text-gray-800 mb-3 flex items-center">

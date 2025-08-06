@@ -7,6 +7,7 @@ import Swal from 'sweetalert2'
 const AdminTourList = () => {
     const [tours, setTours] = useState([])
     const [searchTerm, setSearchTerm] = useState('')
+    const [statusFilter, setStatusFilter] = useState('') // New state for status filter
     const [error, setError] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const toursPerPage = 6
@@ -43,7 +44,9 @@ const AdminTourList = () => {
     useEffect(() => {
         const fetchTours = async () => {
             try {
-                const response = await AdminManagerTourAPI.getPendingTours()
+                const response = await AdminManagerTourAPI.getAllTours(
+                    statusFilter || null
+                )
                 const validTours = response.data
                     .filter(
                         (tour) =>
@@ -57,17 +60,20 @@ const AdminTourList = () => {
                     )
                 setTours(validTours)
             } catch (err) {
-                console.error('Error fetching pending tours:', err)
-                setError(
-                    'Không thể tải danh sách tour chờ duyệt. Vui lòng thử lại.'
-                )
+                console.error('Error fetching tours:', err)
+                setError('Không thể tải danh sách tour. Vui lòng thử lại.')
             }
         }
         fetchTours()
-    }, [])
+    }, [statusFilter]) // Re-fetch when statusFilter changes
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value)
+        setCurrentPage(1)
+    }
+
+    const handleStatusFilterChange = (e) => {
+        setStatusFilter(e.target.value)
         setCurrentPage(1)
     }
 
@@ -203,23 +209,36 @@ const AdminTourList = () => {
             )}
             <div className="mb-6">
                 <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight text-center">
-                    Danh Sách Tour Chờ Duyệt
+                    Danh Sách Tour
                 </h1>
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm theo địa điểm hoặc tên tour..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mt-4"
-                />
+                <div className="flex flex-col sm:flex-row gap-4 mt-4">
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm theo địa điểm hoặc tên tour..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        className="w-full sm:w-2/3 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    <select
+                        value={statusFilter}
+                        onChange={handleStatusFilterChange}
+                        className="w-full sm:w-1/3 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="Draft">Bản Nháp</option>
+                        <option value="PendingApproval">Chờ duyệt</option>
+                        <option value="Approved">Đã duyệt</option>
+                        <option value="Rejected">Bị từ chối</option>
+                    </select>
+                </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentTours.length === 0 ? (
                     <div className="col-span-full text-center bg-white p-8 rounded-xl shadow-lg">
                         <p className="text-lg text-gray-600">
-                            {searchTerm
-                                ? 'Không tìm thấy tour phù hợp với địa điểm hoặc tên.'
-                                : 'Không có tour chờ duyệt.'}
+                            {searchTerm || statusFilter
+                                ? 'Không tìm thấy tour phù hợp với tiêu chí.'
+                                : 'Không có tour nào.'}
                         </p>
                     </div>
                 ) : (
@@ -288,7 +307,10 @@ const AdminTourList = () => {
                                             />
                                         </svg>
                                         <span
-                                            className={`px-2 py-1 rounded text-xs font-medium ${statusColors[tour.status] || 'bg-gray-100 text-gray-800'}`}
+                                            className={`px-2 py-1 rounded text-xs font-medium ${
+                                                statusColors[tour.status] ||
+                                                'bg-gray-100 text-gray-800'
+                                            }`}
                                         >
                                             {statusTranslations[tour.status] ||
                                                 tour.status ||
@@ -349,50 +371,54 @@ const AdminTourList = () => {
                                     </svg>
                                     <span>Xem</span>
                                 </button>
-                                <button
-                                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-1"
-                                    onClick={() =>
-                                        handleApproveTour(tour.tourId)
-                                    }
-                                >
-                                    <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                        />
-                                    </svg>
-                                    <span>Phê duyệt</span>
-                                </button>
-                                <button
-                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition duration-200 flex items-center justify-center space-x-1"
-                                    onClick={() =>
-                                        handleRejectTour(tour.tourId)
-                                    }
-                                >
-                                    <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M6 18L18 6M6 6l12 12"
-                                        />
-                                    </svg>
-                                    <span>Từ chối</span>
-                                </button>
+                                {tour.status === 'PendingApproval' && (
+                                    <>
+                                        <button
+                                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-1"
+                                            onClick={() =>
+                                                handleApproveTour(tour.tourId)
+                                            }
+                                        >
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                            <span>Phê duyệt</span>
+                                        </button>
+                                        <button
+                                            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition duration-200 flex items-center justify-center space-x-1"
+                                            onClick={() =>
+                                                handleRejectTour(tour.tourId)
+                                            }
+                                        >
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                            <span>Từ chối</span>
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))

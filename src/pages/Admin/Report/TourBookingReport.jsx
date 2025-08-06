@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
     BarChart,
     Bar,
@@ -10,6 +11,8 @@ import {
 } from 'recharts'
 
 const TourBookingReport = ({ data, onExport, loading }) => {
+    const [searchTourID, setSearchTourID] = useState('')
+
     const formatCurrency = (amount) => {
         const validAmount =
             typeof amount === 'number' && !isNaN(amount) ? amount : 0
@@ -25,6 +28,13 @@ const TourBookingReport = ({ data, onExport, loading }) => {
         totalBookings: item.totalBookings || 0,
         totalRevenue: item.totalRevenue || 0
     }))
+
+    // Filter data based on exact match for searchTourID
+    const filteredData = data.filter((item) => {
+        if (!searchTourID) return true // Show all data if search input is empty
+        const tourID = item.tourID != null ? String(item.tourID) : ''
+        return tourID.toLowerCase() === searchTourID.toLowerCase()
+    })
 
     return (
         <div className="space-y-6">
@@ -48,7 +58,7 @@ const TourBookingReport = ({ data, onExport, loading }) => {
                 <h4 className="text-lg font-medium mb-4 text-gray-700">
                     So Sánh Đặt Tour Theo Tour
                 </h4>
-                {data.length > 0 ? (
+                {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -82,58 +92,72 @@ const TourBookingReport = ({ data, onExport, loading }) => {
             </div>
             {/* Bảng */}
             <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-                {data.length === 0 && !loading && (
+                <div className="p-4">
+                    <label className="mr-2 text-gray-700">
+                        Tìm kiếm theo Mã Tour:
+                    </label>
+                    <input
+                        type="text"
+                        value={searchTourID}
+                        onChange={(e) => setSearchTourID(e.target.value)}
+                        placeholder="Nhập mã tour..."
+                        className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-md"
+                    />
+                </div>
+                {filteredData.length === 0 && !loading && (
                     <p className="text-red-500 p-4">
                         Không có dữ liệu thống kê đặt tour cho khoảng thời gian
-                        này.
+                        này hoặc mã tour này.
                     </p>
                 )}
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                STT
-                            </th>
-                            <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tháng
-                            </th>
-                            <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Mã Tour
-                            </th>
-                            <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tên Tour
-                            </th>
-                            <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Số lượt đặt
-                            </th>
-                            <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tổng doanh thu
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {data.map((item, index) => (
-                            <tr key={index} className="hover:bg-gray-50">
-                                <td className="py-4 px-6">{index + 1}</td>
-                                <td className="py-4 px-6">
-                                    {item.month || 'N/A'}
-                                </td>
-                                <td className="py-4 px-6">
-                                    {item.tourID || 'N/A'}
-                                </td>
-                                <td className="py-4 px-6">
-                                    {item.tourName || 'N/A'}
-                                </td>
-                                <td className="py-4 px-6">
-                                    {item.totalBookings || 0}
-                                </td>
-                                <td className="py-4 px-6">
-                                    {formatCurrency(item.totalRevenue)}
-                                </td>
+                {filteredData.length > 0 && (
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    STT
+                                </th>
+                                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Tháng
+                                </th>
+                                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Mã Tour
+                                </th>
+                                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Tên Tour
+                                </th>
+                                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Số lượt đặt
+                                </th>
+                                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Tổng doanh thu
+                                </th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {filteredData.map((item, index) => (
+                                <tr key={index} className="hover:bg-gray-50">
+                                    <td className="py-4 px-6">{index + 1}</td>
+                                    <td className="py-4 px-6">
+                                        {item.month || 'N/A'}
+                                    </td>
+                                    <td className="py-4 px-6">
+                                        {item.tourID || 'N/A'}
+                                    </td>
+                                    <td className="py-4 px-6">
+                                        {item.tourName || 'N/A'}
+                                    </td>
+                                    <td className="py-4 px-6">
+                                        {item.totalBookings || 0}
+                                    </td>
+                                    <td className="py-4 px-6">
+                                        {formatCurrency(item.totalRevenue)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
         </div>
     )

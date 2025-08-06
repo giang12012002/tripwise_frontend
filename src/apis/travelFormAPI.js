@@ -2,7 +2,7 @@ import authorizedAxios from './authorizedAxios'
 
 const createItinerary = async (formData) => {
     const payload = {
-        destination: formData.destination.trim(), // Loại bỏ khoảng trắng thừa
+        destination: formData.destination.trim(),
         travelDate: formData.travelDate,
         days: parseInt(formData.days, 10),
         preferences: formData.preferences || 'General sightseeing',
@@ -79,6 +79,7 @@ const updateItinerary = async (generatePlanId, message) => {
         throw err
     }
 }
+
 const updateItineraryChunk = async (
     generatePlanId,
     userMessage,
@@ -103,6 +104,7 @@ const updateItineraryChunk = async (
         throw err
     }
 }
+
 const getToursByUserId = async (userId) => {
     return await authorizedAxios.get(
         `api/AIGeneratePlan/GetToursByUserId?userId=${userId}`
@@ -114,7 +116,31 @@ const deleteTour = async (tourId) => {
         `api/AIGeneratePlan/DeleteTour/${tourId}`
     )
 }
-
+const deleteGenerateTravelPlans = async (id) => {
+    try {
+        const response = await authorizedAxios.delete(
+            `api/AIGeneratePlan/DeleteGenerateTravelPlan/${id}`
+        )
+        console.log('deleteGenerateTravelPlans response:', response.data)
+        return response
+    } catch (err) {
+        console.error('API Error (deleteGenerateTravelPlans):', {
+            message: err.message,
+            response: err.response?.data || 'No response data',
+            status: err.response?.status || 'No status',
+            errors:
+                err.response?.data?.message ||
+                err.response?.data?.error ||
+                'Không có chi tiết lỗi',
+            travelPlanId: id,
+            requestUrl: `api/AIGeneratePlan/DeleteGenerateTravelPlan/${id}`,
+            accessToken: localStorage.getItem('accessToken')
+                ? 'Token present'
+                : 'No token'
+        })
+        throw err
+    }
+}
 const getTourDetailById = async (id) => {
     try {
         const response = await authorizedAxios.get(
@@ -173,5 +199,6 @@ export default {
     deleteTour,
     getTourDetailById,
     getHistory,
-    getHistoryDetail
+    getHistoryDetail,
+    deleteGenerateTravelPlans
 }

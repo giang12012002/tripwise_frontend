@@ -30,107 +30,191 @@ function History() {
         }
     }, [isLoggedIn, isAuthLoading, navigate])
 
-    useEffect(() => {
-        const fetchHistory = async () => {
-            const accessToken = localStorage.getItem('accessToken')
-            if (!accessToken) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi',
-                    text: 'Vui lòng đăng nhập để xem lịch sử lịch trình.',
-                    showConfirmButton: false,
-                    timer: 1500
-                })
-                navigate('/signin')
-                return
-            }
+    // Hàm lấy lịch sử
+    const fetchHistory = async () => {
+        const accessToken = localStorage.getItem('accessToken')
+        if (!accessToken) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng đăng nhập để xem lịch sử lịch trình.',
+                showConfirmButton: false,
+                timer: 1500
+            })
+            navigate('/signin')
+            return
+        }
 
-            try {
-                const response = await travelFormAPI.getHistory()
-                if (response.status === 200 && Array.isArray(response.data)) {
-                    const normalizedHistories = response.data
-                        .map((item) => {
-                            const id = item.id || item.Id || item._id
-                            if (!id) {
-                                console.warn('History item missing ID:', item)
-                                return null
-                            }
-                            return {
-                                Id: id,
-                                Destination:
-                                    item.destination ||
-                                    item.Destination ||
-                                    'Chưa xác định',
-                                TravelDate:
-                                    item.travelDate || item.TravelDate || null,
-                                Days: item.days || item.Days || null,
-                                Preferences:
-                                    item.preferences || item.Preferences || '',
-                                BudgetVND:
-                                    item.budgetVND || item.BudgetVND || 0,
-                                CreatedAt:
-                                    item.createdAt || item.CreatedAt || null
-                            }
-                        })
-                        .filter((item) => item !== null)
-                        .sort((a, b) => {
-                            const dateA = a.CreatedAt
-                                ? new Date(a.CreatedAt)
-                                : new Date(0)
-                            const dateB = b.CreatedAt
-                                ? new Date(b.CreatedAt)
-                                : new Date(0)
-                            return dateB - dateA // Sắp xếp giảm dần (mới nhất lên đầu)
-                        })
-                    setHistories(normalizedHistories)
-                    if (normalizedHistories.length === 0) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi',
-                            text: 'Không tìm thấy lịch trình hợp lệ.',
-                            showConfirmButton: false,
-                            timer: 1500
-                        })
-                    }
-                } else {
-                    throw new Error('Dữ liệu lịch sử không hợp lệ.')
-                }
-            } catch (err) {
-                const errorMessage =
-                    err.response?.data?.error ||
-                    err.message ||
-                    'Không thể tải lịch sử lịch trình.'
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi',
-                    text: errorMessage,
-                    showConfirmButton: false,
-                    timer: 1500
-                })
-                if (
-                    err.response?.status === 401 ||
-                    err.response?.data?.error?.includes('token')
-                ) {
-                    localStorage.removeItem('accessToken')
-                    localStorage.removeItem('userId')
-                    navigate('/signin')
+        try {
+            setLoading(true)
+            const response = await travelFormAPI.getHistory()
+            console.log('Raw getHistory response:', response.data)
+            if (response.status === 200 && Array.isArray(response.data)) {
+                const normalizedHistories = response.data
+                    .map((item) => {
+                        const id = item.id || item.Id || item._id
+                        if (!id) {
+                            console.warn('History item missing ID:', item)
+                            return null
+                        }
+                        return {
+                            Id: id,
+                            Destination:
+                                item.destination ||
+                                item.Destination ||
+                                'Chưa xác định',
+                            TravelDate:
+                                item.travelDate || item.TravelDate || null,
+                            Days: item.days || item.Days || null,
+                            Preferences:
+                                item.preferences || item.Preferences || '',
+                            BudgetVND: item.budgetVND || item.BudgetVND || 0,
+                            CreatedAt: item.createdAt || item.CreatedAt || null
+                        }
+                    })
+                    .filter((item) => item !== null)
+                    .sort((a, b) => {
+                        const dateA = a.CreatedAt
+                            ? new Date(a.CreatedAt)
+                            : new Date(0)
+                        const dateB = b.CreatedAt
+                            ? new Date(b.CreatedAt)
+                            : new Date(0)
+                        return dateB - dateA
+                    })
+                setHistories(normalizedHistories)
+                if (normalizedHistories.length === 0) {
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi',
-                        text: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
+                        icon: 'info',
+                        title: 'Thông báo',
+                        text: 'Không tìm thấy lịch trình hợp lệ.',
                         showConfirmButton: false,
                         timer: 1500
                     })
                 }
-            } finally {
-                setLoading(false)
+            } else {
+                throw new Error('Dữ liệu lịch sử không hợp lệ.')
             }
+        } catch (err) {
+            const errorMessage =
+                err.response?.data?.error ||
+                err.message ||
+                'Không thể tải lịch sử lịch trình.'
+            console.error('Error in fetchHistory:', {
+                errorMessage,
+                status: err.response?.status,
+                responseData: err.response?.data
+            })
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: errorMessage,
+                showConfirmButton: false,
+                timer: 2000
+            })
+            if (
+                err.response?.status === 401 ||
+                err.response?.data?.error?.includes('token')
+            ) {
+                localStorage.removeItem('accessToken')
+                localStorage.removeItem('userId')
+                navigate('/signin')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+            }
+        } finally {
+            setLoading(false)
         }
+    }
 
+    useEffect(() => {
         if (isLoggedIn) {
             fetchHistory()
         }
     }, [isLoggedIn, navigate])
+
+    // Hàm xóa lịch trình
+    const handleDelete = async (id) => {
+        Swal.fire({
+            title: 'Xác nhận xóa',
+            text: 'Bạn có chắc muốn xóa lịch trình này? Hành động này không thể hoàn tác.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    setLoading(true)
+                    console.log('🧪 handleDelete bắt đầu với ID:', id)
+                    const response =
+                        await travelFormAPI.deleteGenerateTravelPlans(id)
+                    console.log(
+                        '🧪 Kết quả từ API:',
+                        response?.status,
+                        response?.data
+                    )
+                    if (response.status === 200) {
+                        Swal.fire({
+                            icon: 'success',
+                            text: 'Xóa lịch trình thành công!',
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
+                        await fetchHistory() // Refresh the history list
+                        if (currentHistories.length === 1 && currentPage > 1) {
+                            setCurrentPage(currentPage - 1)
+                        }
+                    }
+                } catch (err) {
+                    const errorMessage =
+                        err.response?.status === 404
+                            ? 'Lịch trình không tồn tại hoặc bạn không có quyền xóa. Vui lòng làm mới danh sách hoặc liên hệ hỗ trợ.'
+                            : err.response?.data?.message ||
+                              err.response?.data?.error ||
+                              'Không thể xóa lịch trình. Vui lòng kiểm tra lại hoặc liên hệ hỗ trợ.'
+                    console.error('Error in handleDelete:', {
+                        id: id,
+                        errorMessage,
+                        status: err.response?.status,
+                        responseData: err.response?.data || 'No response data'
+                    })
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: errorMessage,
+                        showConfirmButton: false,
+                        timer: 2000
+                    })
+                    if (
+                        err.response?.status === 401 ||
+                        err.response?.data?.error?.includes('token') ||
+                        err.response?.data?.message?.includes('token')
+                    ) {
+                        localStorage.removeItem('accessToken')
+                        localStorage.removeItem('userId')
+                        navigate('/signin')
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
+                    }
+                } finally {
+                    setLoading(false)
+                }
+            }
+        })
+    }
 
     const formatCurrency = (value) => {
         if (value == null || isNaN(value)) return '0 VND'
@@ -214,6 +298,41 @@ function History() {
         if (currentPage < totalPages) {
             setCurrentPage(currentPage + 1)
         }
+    }
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Header />
+                <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+                    <div className="flex items-center space-x-3 p-6 bg-white rounded-xl shadow-lg">
+                        <svg
+                            className="animate-spin h-8 w-8 text-indigo-600"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                            ></circle>
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                        </svg>
+                        <span className="text-lg font-medium text-gray-700">
+                            Đang tải...
+                        </span>
+                    </div>
+                </div>
+                <Footer />
+            </div>
+        )
     }
 
     if (loading) {
@@ -347,7 +466,7 @@ function History() {
                                                         className="w-4 h-4"
                                                         fill="none"
                                                         stroke="currentColor"
-                                                        viewBox="0 24 24"
+                                                        viewBox="0 0 24 24"
                                                         xmlns="http://www.w3.org/2000/svg"
                                                     >
                                                         <path
@@ -357,6 +476,32 @@ function History() {
                                                             d="M15 12c0-1.5-1.5-3-3-3s-3 1.5-3 3 1.5 3 3 3 3-1.5 3-3zm6 0c0 4.5-4.5 9-9 9s-9-4.5-9-9 4.5-9 9-9 9 4.5 9 9z"
                                                         />
                                                     </svg>
+                                                    <span>Xem chi tiết</span>
+                                                </button>
+                                                <button
+                                                    className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
+                                                    onClick={() =>
+                                                        handleDelete(history.Id)
+                                                    }
+                                                    disabled={
+                                                        !history.Id || loading
+                                                    }
+                                                >
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M6 18L18 6M6 6l12 12"
+                                                        />
+                                                    </svg>
+                                                    <span>Xóa</span>
                                                 </button>
                                             </div>
                                         </div>

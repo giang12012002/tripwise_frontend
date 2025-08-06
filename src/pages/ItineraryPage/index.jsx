@@ -52,32 +52,6 @@ function ItineraryDisplay() {
         console.log('relatedTourMessage:', relatedTourMessage)
     }, [location.state, itineraryData, relatedTours, relatedTourMessage])
 
-    const weatherTranslations = {
-        'clear sky': 'trời quang đãng',
-        'few clouds': 'ít mây',
-        'scattered clouds': 'mây rải rác',
-        'broken clouds': 'mây đứt quãng',
-        'overcast clouds': 'trời nhiều mây',
-        'light rain': 'mưa nhẹ',
-        'moderate rain': 'mưa vừa',
-        'heavy rain': 'mưa to',
-        'light snow': 'tuyết nhẹ',
-        snow: 'tuyết',
-        'heavy snow': 'tuyết dày',
-        mist: 'sương mù',
-        fog: 'sương mù dày',
-        thunderstorm: 'giông bão',
-        drizzle: 'mưa phùn'
-    }
-
-    const translateWeatherDescription = (description) => {
-        return (
-            weatherTranslations[description?.toLowerCase()] ||
-            description ||
-            'mây rải rác'
-        )
-    }
-
     const formatCurrency = (value) => {
         if (!value || isNaN(value)) return '0 đ'
         return new Intl.NumberFormat('vi-VN', {
@@ -343,7 +317,7 @@ function ItineraryDisplay() {
                         <div className="space-y-3">
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">📅</span>
-                                <strong>Ngày đi: </strong>
+                                <strong>Ngày đi:&nbsp;</strong>
                                 {itineraryData.travelDate
                                     ? new Date(
                                           itineraryData.travelDate
@@ -352,12 +326,12 @@ function ItineraryDisplay() {
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">⏳</span>
-                                <strong>Số ngày: </strong>
+                                <strong>Số ngày:&nbsp;</strong>
                                 {itineraryData.days || 'Không xác định'}
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">💸</span>
-                                <strong>Tổng chi phí ước tính: </strong>
+                                <strong>Tổng chi phí ước tính:&nbsp;</strong>
                                 <span className="text-blue-600">
                                     {formatCurrency(totalEstimatedCost)}
                                 </span>
@@ -372,7 +346,7 @@ function ItineraryDisplay() {
                             {itineraryData.preferences && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🌟</span>
-                                    <strong>Sở thích: </strong>
+                                    <strong>Sở thích:&nbsp;</strong>
                                     {itineraryData.preferences
                                         .split(', ')
                                         .map((pref, index) => (
@@ -388,7 +362,7 @@ function ItineraryDisplay() {
                             {itineraryData.diningStyle && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🍽️</span>
-                                    <strong>Phong cách ăn uống: </strong>
+                                    <strong>Phong cách ăn uống:&nbsp;</strong>
                                     {itineraryData.diningStyle
                                         .split(', ')
                                         .map((style, index) => (
@@ -404,28 +378,28 @@ function ItineraryDisplay() {
                             {itineraryData.transportation && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🚗</span>
-                                    <strong>Phương tiện: </strong>
+                                    <strong>Phương tiện:&nbsp; </strong>
                                     {itineraryData.transportation}
                                 </p>
                             )}
                             {itineraryData.groupType && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">👥</span>
-                                    <strong>Nhóm: </strong>
+                                    <strong>Nhóm:&nbsp; </strong>
                                     {itineraryData.groupType}
                                 </p>
                             )}
                             {itineraryData.accommodation && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🏨</span>
-                                    <strong>Chỗ ở: </strong>
+                                    <strong>Chỗ ở:&nbsp; </strong>
                                     {itineraryData.accommodation}
                                 </p>
                             )}
                             {itineraryData.suggestedAccommodation && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🗺️</span>
-                                    <strong>Đề xuất chỗ ở: </strong>
+                                    <strong>Đề xuất chỗ ở:&nbsp; </strong>
                                     <a
                                         href={
                                             itineraryData.suggestedAccommodation
@@ -495,9 +469,7 @@ function ItineraryDisplay() {
                                             </p>
                                             <p className="text-gray-700">
                                                 <strong>Thời tiết: </strong>
-                                                {translateWeatherDescription(
-                                                    day.weatherDescription
-                                                )}
+                                                {day.weatherDescription}
                                             </p>
                                             <p className="text-gray-700">
                                                 <strong>Nhiệt độ: </strong>
@@ -540,12 +512,6 @@ function ItineraryDisplay() {
                                                                             'Activity'
                                                                         }
                                                                         className="w-full h-48 object-cover rounded-lg mb-4"
-                                                                        onError={(
-                                                                            e
-                                                                        ) => {
-                                                                            e.target.src =
-                                                                                'https://via.placeholder.com/150'
-                                                                        }}
                                                                     />
                                                                 )}
                                                                 <p className="text-gray-700">

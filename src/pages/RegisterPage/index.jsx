@@ -312,7 +312,7 @@ function Register() {
                                 className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm md:text-base"
                                 disabled={isLoading}
                             >
-                                {isLoading ? 'Đang xử lý...' : 'Register'}
+                                {isLoading ? 'Đang xử lý...' : 'Đăng Ký'}
                             </button>
                         </div>
                         <p className="text-center text-gray-600 mt-4 text-sm md:text-base">

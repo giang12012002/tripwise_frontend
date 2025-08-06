@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Footer = () => {
     return (
@@ -35,43 +36,6 @@ const Footer = () => {
                     </p>
                 </div>
 
-                {/* Mạng xã hội Section */}
-                <div className="mb-6 md:mb-0 text-left">
-                    <h3 className="font-bold text-2xl ml-6">Mạng Xã Hội</h3>
-                    <div className="ml-6 flex flex-col space-y-2">
-                        <p>
-                            <a
-                                href="https://facebook.com"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label="Facebook"
-                            >
-                                <i className="fab fa-facebook-f text-lg"></i>
-                            </a>
-                        </p>
-                        <p>
-                            <a
-                                href="https://twitter.com"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label="Twitter"
-                            >
-                                <i className="fab fa-twitter text-lg"></i>
-                            </a>
-                        </p>
-                        <p>
-                            <a
-                                href="https://instagram.com"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label="Instagram"
-                            >
-                                <i className="fab fa-instagram text-lg"></i>
-                            </a>
-                        </p>
-                    </div>
-                </div>
-
                 {/* Email Subscription Section */}
                 <div className="text-left">
                     <h3 className="font-bold text-2xl ml-6">Email</h3>
@@ -81,9 +45,12 @@ const Footer = () => {
                             placeholder="Email"
                             className="p-2 rounded-lg border border-gray-300 text-black text-sm w-3/5"
                         />
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm w-2/5">
+                        <Link
+                            to="/register"
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm w-2/5 text-center"
+                        >
                             Đăng Ký
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>

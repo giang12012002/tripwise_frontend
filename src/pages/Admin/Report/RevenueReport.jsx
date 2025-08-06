@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import {
     BarChart,
@@ -16,7 +16,15 @@ import {
 
 const RevenueReport = ({ data, onExport, loading }) => {
     const { details, totals } = data
-    const [selectedMonth, setSelectedMonth] = useState(totals[0]?.month || '')
+    const [selectedMonth, setSelectedMonth] = useState('')
+    const [searchUserID, setSearchUserID] = useState('')
+
+    // Synchronize selectedMonth with totals when data is available
+    useEffect(() => {
+        if (totals.length > 0 && !selectedMonth) {
+            setSelectedMonth(totals[0].month || '')
+        }
+    }, [totals, selectedMonth])
 
     const formatCurrency = (amount) =>
         new Intl.NumberFormat('vi-VN', {
@@ -53,6 +61,13 @@ const RevenueReport = ({ data, onExport, loading }) => {
             { name: 'Tổng Gói', value: totalPlan, percentage: planPercentage }
         ]
     }
+
+    // Filter details based on exact match for searchUserID
+    const filteredDetails = details.filter((item) => {
+        if (!searchUserID) return true // Show all data if search input is empty
+        const userID = item.userID != null ? String(item.userID) : ''
+        return userID.toLowerCase() === searchUserID.toLowerCase()
+    })
 
     const COLORS = ['#8884d8', '#82ca9d']
 
@@ -106,7 +121,7 @@ const RevenueReport = ({ data, onExport, loading }) => {
                 {/* Pie Chart for Tour vs Plan Revenue by Selected Month */}
                 <div className="bg-white p-4 rounded-lg shadow-md">
                     <h4 className="text-lg font-medium mb-4 text-gray-700">
-                        Tỷ Lệ Doanh Thu Tour vs Gói Theo Tháng
+                        Tỷ Lệ Doanh Thu Tour vs Gói Theo Từng Tháng
                     </h4>
                     <div className="mb-4">
                         <label className="mr-2 text-gray-700">
@@ -172,9 +187,22 @@ const RevenueReport = ({ data, onExport, loading }) => {
                 <h4 className="text-lg font-medium p-4 text-gray-700">
                     Chi Tiết Doanh Thu
                 </h4>
-                {details.length === 0 && !loading && (
+                <div className="p-4">
+                    <label className="mr-2 text-gray-700">
+                        Tìm kiếm theo Mã người dùng:
+                    </label>
+                    <input
+                        type="text"
+                        value={searchUserID}
+                        onChange={(e) => setSearchUserID(e.target.value)}
+                        placeholder="Nhập mã người dùng..."
+                        className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-md"
+                    />
+                </div>
+                {filteredDetails.length === 0 && !loading && (
                     <p className="text-red-500 p-4">
-                        Không có dữ liệu doanh thu cho khoảng thời gian này.
+                        Không có dữ liệu doanh thu cho khoảng thời gian này hoặc
+                        mã người dùng này.
                     </p>
                 )}
                 <table className="min-w-full divide-y divide-gray-200">
@@ -210,7 +238,7 @@ const RevenueReport = ({ data, onExport, loading }) => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {details.map((item, index) => (
+                        {filteredDetails.map((item, index) => (
                             <tr key={index} className="hover:bg-gray-50">
                                 <td className="py-4 px-6">{index + 1}</td>
                                 <td className="py-4 px-6">

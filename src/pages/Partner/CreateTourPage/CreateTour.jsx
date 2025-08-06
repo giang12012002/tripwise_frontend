@@ -10,13 +10,13 @@ const CreateTour = () => {
         description: '',
         duration: '1',
         price: 0,
-        pricePerDay: 0,
         location: '',
         maxGroupSize: 1,
         category: '',
         tourNote: '',
         tourInfo: '',
         tourTypesID: 2,
+        startTime: '',
         imageFiles: [],
         imageUrls: [],
         imageIds: [],
@@ -44,17 +44,14 @@ const CreateTour = () => {
             }
         ]
     })
-    const [openDays, setOpenDays] = useState({ 0: true }) // Open the first day by default
+    const [openDays, setOpenDays] = useState({ 0: true })
     const [imagePreviews, setImagePreviews] = useState([])
     const [activityPreviews, setActivityPreviews] = useState({})
-    const [tempUrlInput, setTempUrlInput] = useState({ tour: '' }) // Initialize with tour: ''
+    const [tempUrlInput, setTempUrlInput] = useState({ tour: '' })
     const tourFileInputRef = useRef(null)
     const activityFileInputRefs = useRef({})
-
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
-
-    // Maximum number of images allowed
     const MAX_IMAGES = 20
 
     useEffect(() => {
@@ -83,7 +80,6 @@ const CreateTour = () => {
         window.addEventListener('beforeunload', handleBeforeUnload)
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload)
-            // Revoke URL previews to prevent memory leaks
             imagePreviews.forEach((url) => URL.revokeObjectURL(url))
             Object.values(activityPreviews)
                 .flat()
@@ -135,9 +131,7 @@ const CreateTour = () => {
             )
         } else {
             const newValue =
-                name === 'price' ||
-                name === 'maxGroupSize' ||
-                name === 'pricePerDay'
+                name === 'price' || name === 'maxGroupSize'
                     ? parseFloat(value) || 0
                     : value
             setTour({ ...tour, [name]: newValue })
@@ -502,6 +496,7 @@ const CreateTour = () => {
         if (!tour.category.trim()) return 'Danh mục là bắt buộc.'
         if (!tour.tourInfo.trim()) return 'Thông tin tour là bắt buộc.'
         if (!tour.tourNote.trim()) return 'Ghi chú tour là bắt buộc.'
+        if (!tour.startTime.trim()) return 'Thời gian bắt đầu là bắt buộc.'
         if (
             !tour.duration ||
             isNaN(parseInt(tour.duration)) ||
@@ -509,10 +504,6 @@ const CreateTour = () => {
         )
             return 'Thời gian phải là số lớn hơn 0.'
         if (isNaN(tour.price) || tour.price < 0) return 'Giá không được âm.'
-        if (isNaN(tour.pricePerDay) || tour.pricePerDay < 0)
-            return 'Giá mỗi ngày không được âm.'
-        if (tour.pricePerDay > tour.price)
-            return 'Giá mỗi ngày/khách không được lớn hơn giá trọn gói của tour.'
         if (isNaN(tour.maxGroupSize) || tour.maxGroupSize <= 0)
             return 'Số người tối đa phải lớn hơn 0.'
         if (tour.itinerary.length > parseInt(tour.duration))
@@ -567,13 +558,13 @@ const CreateTour = () => {
             formData.append('Description', tour.description)
             formData.append('Duration', parseInt(tour.duration) || 1)
             formData.append('Price', parseFloat(tour.price) || 0)
-            formData.append('PricePerDay', parseFloat(tour.pricePerDay) || 0)
             formData.append('Location', tour.location)
             formData.append('MaxGroupSize', parseInt(tour.maxGroupSize) || 1)
             formData.append('Category', tour.category)
             formData.append('TourNote', tour.tourNote || '')
             formData.append('TourInfo', tour.tourInfo || '')
             formData.append('TourTypesId', tour.tourTypesID || 2)
+            formData.append('StartTime', tour.startTime)
 
             tour.imageFiles.forEach((file) => {
                 formData.append('ImageFile', file)
@@ -796,6 +787,20 @@ const CreateTour = () => {
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
+                            Thời Gian Bắt Đầu
+                        </label>
+                        <input
+                            type="datetime-local"
+                            name="startTime"
+                            value={tour.startTime}
+                            onChange={handleTourChange}
+                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                            placeholder="Chọn thời gian bắt đầu"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-800 font-semibold text-lg mb-2">
                             Danh Mục
                         </label>
                         <input
@@ -841,27 +846,6 @@ const CreateTour = () => {
                             min="0"
                             step="10000"
                             placeholder="Nhập giá tour (VND)"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Giá Mỗi Ngày/Khách (VND)
-                        </label>
-                        <input
-                            type="number"
-                            name="pricePerDay"
-                            value={
-                                tour.pricePerDay === 0 ||
-                                tour.pricePerDay === undefined
-                                    ? ''
-                                    : tour.pricePerDay
-                            }
-                            onChange={handleTourChange}
-                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
-                            min="0"
-                            step="10000"
-                            placeholder="Nhập giá mỗi ngày/khách (VND)"
                         />
                     </div>
                     <div>

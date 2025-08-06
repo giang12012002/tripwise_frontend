@@ -79,15 +79,16 @@ function TourDetail() {
                         CreatedDate: apiData.travelDate || null,
                         Itineraries: Array.isArray(apiData.itinerary)
                             ? apiData.itinerary.map((day, index) => ({
-                                  ItineraryId: index + 1,
+                                  ItineraryId: day.itineraryId || index + 1,
                                   ItineraryName:
                                       day.title ||
                                       `Ngày ${day.dayNumber || index + 1}`,
                                   DayNumber: day.dayNumber || index + 1,
+                                  Description:
+                                      day.description || 'Chưa xác định', // Updated to include itinerary description
+                                  DailyCost: day.dailyCost || 0, // Updated to include dailyCost
                                   StartTime: null,
                                   EndTime: null,
-                                  Description:
-                                      day.description || 'Chưa xác định',
                                   Category:
                                       apiData.preferences || 'Chưa xác định',
                                   Activities: Array.isArray(day.activities)
@@ -115,12 +116,12 @@ function TourDetail() {
                                                         ? activity.imageUrls[0]
                                                         : null,
                                                 StartTime:
-                                                    activity.startTime || null, // Thêm ánh xạ cho StartTime
+                                                    activity.startTime || null,
                                                 EndTime:
-                                                    activity.endTime || null, // Thêm ánh xạ cho EndTime
+                                                    activity.endTime || null,
                                                 Description:
                                                     activity.description ||
-                                                    'Chưa xác định' // Thêm ánh xạ cho Description
+                                                    'Chưa xác định'
                                             })
                                         )
                                       : []
@@ -313,11 +314,11 @@ function TourDetail() {
                                             {formatCurrency(tourDetail.Price)}
                                         </span>
                                     </p>
-                                    <p className="flex items-center text-gray-700">
-                                        <span className="mr-2">📅</span>
-                                        <strong>Ngày bắt đầu: </strong>
-                                        {formatDate(tourDetail.CreatedDate)}
-                                    </p>
+                                    {/*<p className="flex items-center text-gray-700">*/}
+                                    {/*    <span className="mr-2">📅</span>*/}
+                                    {/*    <strong>Ngày bắt đầu: </strong>*/}
+                                    {/*    {formatDate(tourDetail.CreatedDate)}*/}
+                                    {/*</p>*/}
                                 </div>
                             </div>
                             <div>
@@ -357,7 +358,7 @@ function TourDetail() {
                             {tourDetail.Itineraries?.length > 0 ? (
                                 tourDetail.Itineraries.map((itinerary) => (
                                     <div
-                                        key={itinerary.DayNumber}
+                                        key={itinerary.ItineraryId}
                                         className="bg-white rounded-xl shadow-md overflow-hidden"
                                     >
                                         <button
@@ -396,6 +397,22 @@ function TourDetail() {
                                         </button>
                                         {openDays[itinerary.DayNumber] && (
                                             <div className="p-6 animate-fade-in">
+                                                <div className="mb-4">
+                                                    <p className="text-gray-700">
+                                                        {itinerary.Description}
+                                                    </p>
+                                                    <p className="text-gray-700">
+                                                        <strong>
+                                                            Chi phí ước tính
+                                                            ngày:{' '}
+                                                        </strong>
+                                                        <span className="text-blue-600">
+                                                            {formatCurrency(
+                                                                itinerary.DailyCost
+                                                            )}
+                                                        </span>
+                                                    </p>
+                                                </div>
                                                 <ul className="relative space-y-6">
                                                     {itinerary.Activities
                                                         ?.length > 0 ? (
@@ -434,15 +451,6 @@ function TourDetail() {
                                                                             </strong>
                                                                             {
                                                                                 activity.TourAttractionsName
-                                                                            }
-                                                                        </p>
-                                                                        <p className="text-gray-700">
-                                                                            <strong>
-                                                                                Chi
-                                                                                tiết:{' '}
-                                                                            </strong>
-                                                                            {
-                                                                                activity.PlaceDetail
                                                                             }
                                                                         </p>
                                                                         <p className="text-gray-700">

@@ -20,7 +20,7 @@ import BlogDetail from '@/pages/BlogsPage/id'
 import ItineraryDisplayHistory from '@/pages/ItineraryDisplayHistory/History'
 import ItineraryDisplayHistoryDetail from '@/pages/ItineraryDisplayHistory/HistoryDetail'
 import MyTourPage from '@/pages/MyTourPage/index1.jsx'
-import FavoriteTours from '@/pages/FavoriteTours/FavoriteTours.jsx'
+import FavoriteTours from '@/pages/FavoriteTours/WishlistPage.jsx'
 import AllToursPage from '@/pages/AllToursPage/AllToursPage.jsx'
 import TourDetail from '@/pages/MyTourPage/TourDetail'
 import PlanList from '@/pages/PlanPage'
@@ -43,6 +43,7 @@ import PlanAdminList from '@/pages/Admin/Plans'
 import PartnershipPage from '@/pages/PartnershipPage'
 import ForgotPassword from '@/pages/ForgotPasswordPage'
 import PaymentHistory from '@/pages/PaymentHistory'
+import SystemStatsPage from '@/pages/Admin/LandingReportPage/SystemStatsPage.jsx'
 import { AuthProvider } from '@/AuthContext'
 
 function Index() {
@@ -60,7 +61,6 @@ function Index() {
                     <Route path="/view-Profile" element={<ViewProfilePage />} />
                     <Route path="/edit-Profile" element={<EditProfilePage />} />
                     <Route path="/about" element={<AboutPage />} />
-                    AllToursPage
                     <Route path="/alltour" element={<AllToursPage />} />
                     <Route path="/favoritetour" element={<FavoriteTours />} />
                     <Route
@@ -80,14 +80,14 @@ function Index() {
                     <Route path="/myTour" element={<MyTourPage />} />
                     <Route path="/tourDetail/:id" element={<TourDetail />} />
                     <Route path="/blogs" element={<BlogList />} />
-                    <Route path="/blogs/:id" element={<BlogDetail />} />
+                    <Route path="/blog/:id" element={<BlogDetail />} />
                     <Route path="/plans" element={<PlanList />} />
                     <Route path="/vnpay-callback" element={<VNPayCallback />} />
                     <Route
                         path="/tour-detail/:tourId"
                         element={<CustomerTourDetail />}
                     />
-                    {/* Khu vực quản lý đối tác */}
+                    {/* Partner Management Area */}
                     <Route path="/partner" element={<PartnerDashboard />}>
                         <Route index element={<ListAllTour />} />
                         <Route path="listTour" element={<ListAllTour />} />
@@ -101,19 +101,15 @@ function Index() {
                         />
                         <Route path="edit/:tourId" element={<EditTour />} />
                     </Route>
-                    {/* Khu vực quản lý admin */}
+                    {/* Admin Management Area */}
                     <Route path="/admin" element={<AdminDashboard />}>
                         <Route
                             index
                             element={<Navigate to="/admin/blogs" replace />}
                         />
-                        <Route
-                            path="admin/blog/preview"
-                            element={<PreviewBlog />}
-                        />
-
                         <Route path="blogs" element={<AdminBlogList />} />
                         <Route path="blogs/:id" element={<AdminBlogDetail />} />
+                        <Route path="blogs/preview" element={<PreviewBlog />} />
                         <Route
                             path="tours/pending"
                             element={<AdminTourList />}
@@ -122,12 +118,15 @@ function Index() {
                             path="tourDetail/:tourId"
                             element={<AdminTourDetail />}
                         />
-
                         <Route
                             path="partners"
                             element={<AdminManagerPartner />}
                         />
                         <Route path="users" element={<AdminManagerUser />} />
+                        <Route
+                            path="system-stats"
+                            element={<SystemStatsPage />}
+                        />
                         <Route path="reports" element={<ReportDashboard />}>
                             <Route
                                 index
