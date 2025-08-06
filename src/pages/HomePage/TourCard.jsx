@@ -151,7 +151,7 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Đã xóa',
-                    text: 'Đã xóa tour khỏi danh sách yêu thích.',
+                    text: 'Đã xóa tour khỏi "Tour yêu thích.',
                     showConfirmButton: false,
                     timer: 1500
                 })
@@ -168,7 +168,7 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Đã thêm',
-                    text: 'Đã thêm tour vào danh sách yêu thích.',
+                    text: 'Đã thêm tour vào "Tour yêu thích".',
                     showConfirmButton: false,
                     timer: 1500
                 })

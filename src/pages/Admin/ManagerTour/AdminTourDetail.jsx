@@ -254,7 +254,31 @@ const AdminTourDetail = () => {
                 (tour?.imageUrls?.length || 1)
         )
     }
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Không xác định'
+        try {
+            const date = new Date(dateString)
+            const hours = date.getHours()
+            const period = hours < 12 ? 'sáng' : 'tối' // Determine AM/PM
 
+            // Format date and time separately
+            const formattedDate = date.toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            })
+            const formattedTime = date.toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            })
+
+            // Combine time, period, and date with a hyphen
+            return `${formattedTime} ${period} - ${formattedDate}`
+        } catch {
+            return dateString
+        }
+    }
     useEffect(() => {
         if (tour?.imageUrls?.length > 1) {
             const interval = setInterval(nextImage, 4000)
@@ -399,18 +423,30 @@ const AdminTourDetail = () => {
                             <hr className="border-t border-gray-300 my-4" />
                             <p className="text-gray-800 mb-3 flex items-center">
                                 <strong className="text-gray-900 font-semibold mr-2">
-                                    ▶ Giá mỗi ngày:
+                                    ▶ Ngày bắt đầu:
                                 </strong>{' '}
-                                <span className="text-indigo-700 font-semibold">
-                                    {formatCurrency(tour.pricePerDay)}
-                                </span>
+                                {formatDate(tour.startTime)}
                             </p>
                             <hr className="border-t border-gray-300 my-4" />
                             <p className="text-gray-800 mb-3 flex items-center">
                                 <strong className="text-gray-900 font-semibold mr-2">
-                                    ▶ Phương tiện:
+                                    ▶ Giá người lớn:
                                 </strong>{' '}
-                                Ô tô chất lượng cao
+                                {formatCurrency(tour.priceAdult)}
+                            </p>
+                            <hr className="border-t border-gray-300 my-4" />
+                            <p className="text-gray-800 mb-3 flex items-center">
+                                <strong className="text-gray-900 font-semibold mr-2">
+                                    ▶ Giá trẻ em 5-10 tuổi:
+                                </strong>{' '}
+                                {formatCurrency(tour.priceChild5To10)}
+                            </p>
+                            <hr className="border-t border-gray-300 my-4" />
+                            <p className="text-gray-800 mb-3 flex items-center">
+                                <strong className="text-gray-900 font-semibold mr-2">
+                                    ▶ Giá trẻ em dưới 5 tuổi:
+                                </strong>{' '}
+                                {formatCurrency(tour.priceChildUnder5)}
                             </p>
                         </div>
                     </div>

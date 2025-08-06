@@ -502,18 +502,6 @@ function ItineraryDisplay() {
                                                                 <span className="absolute left-3 top-6 w-0.5 h-full bg-blue-200"></span>
                                                             )}
                                                             <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
-                                                                {activity.image && (
-                                                                    <img
-                                                                        src={
-                                                                            activity.image
-                                                                        }
-                                                                        alt={
-                                                                            activity.description ||
-                                                                            'Activity'
-                                                                        }
-                                                                        className="w-full h-48 object-cover rounded-lg mb-4"
-                                                                    />
-                                                                )}
                                                                 <p className="text-gray-700">
                                                                     <strong>
                                                                         Thời
@@ -581,6 +569,19 @@ function ItineraryDisplay() {
                                                                     {activity.placeDetail ||
                                                                         'Không xác định'}
                                                                 </p>
+
+                                                                {activity.image && (
+                                                                    <img
+                                                                        src={
+                                                                            activity.image
+                                                                        }
+                                                                        alt={
+                                                                            activity.description ||
+                                                                            'Activity'
+                                                                        }
+                                                                        className="w-full h-120 object-cover rounded-lg mb-6"
+                                                                    />
+                                                                )}
                                                             </div>
                                                         </li>
                                                     )

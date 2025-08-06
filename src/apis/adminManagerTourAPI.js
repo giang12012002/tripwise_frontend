@@ -1,11 +1,19 @@
 import authorizedAxios from './authorizedAxios'
 
-// Lấy danh sách tất cả các tour với tùy chọn lọc theo trạng thái
-const getAllTours = async (status = null) => {
+// Lấy danh sách tất cả các tour với tùy chọn lọc theo trạng thái và partnerId
+const getAllTours = async (status = null, partnerId = null) => {
     try {
-        const url = status
-            ? `api/admin/tours/all-tour?status=${encodeURIComponent(status)}`
-            : 'api/admin/tours/all-tour'
+        let url = 'api/admin/tours/all-tour'
+        const params = new URLSearchParams()
+        if (status) {
+            params.append('status', encodeURIComponent(status))
+        }
+        if (partnerId) {
+            params.append('partnerId', encodeURIComponent(partnerId))
+        }
+        if (params.toString()) {
+            url += `?${params.toString()}`
+        }
         const response = await authorizedAxios.get(url)
         console.log('All tours fetched:', response.data)
         return response

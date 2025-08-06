@@ -116,6 +116,7 @@ const deleteTour = async (tourId) => {
         `api/AIGeneratePlan/DeleteTour/${tourId}`
     )
 }
+
 const deleteGenerateTravelPlans = async (id) => {
     try {
         const response = await authorizedAxios.delete(
@@ -141,6 +142,7 @@ const deleteGenerateTravelPlans = async (id) => {
         throw err
     }
 }
+
 const getTourDetailById = async (id) => {
     try {
         const response = await authorizedAxios.get(
@@ -178,6 +180,11 @@ const getHistoryDetail = async (id) => {
         const response = await authorizedAxios.get(
             `api/AIGeneratePlan/GetHistoryDetailById/${id}`
         )
+        console.log(
+            'getHistoryDetail Raw Response:',
+            JSON.stringify(response, null, 2)
+        )
+        console.log('getHistoryDetail Data:', response.data)
         return response
     } catch (err) {
         console.error('API Error (getHistoryDetail):', {

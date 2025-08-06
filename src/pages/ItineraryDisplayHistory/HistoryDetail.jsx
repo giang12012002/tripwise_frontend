@@ -6,12 +6,15 @@ import Footer from '@/components/footer/Footer'
 import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
 import { useAuth } from '@/AuthContext'
+import RelatedToursSection from '@/pages/ItineraryPage/RelatedToursSection.jsx'
 
 function HistoryDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
     const [historyDetail, setHistoryDetail] = useState(null)
+    const [relatedTours, setRelatedTours] = useState([])
+    const [relatedTourMessage, setRelatedTourMessage] = useState(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [openDays, setOpenDays] = useState({})
@@ -33,16 +36,19 @@ function HistoryDetail() {
     }, [isLoggedIn, isAuthLoading, navigate])
 
     const fetchHistoryDetail = async () => {
-        console.log('Fetching history detail for ID:', id)
+        console.log('Bắt đầu gọi API cho ID:', id)
         if (!id || isNaN(id)) {
-            console.error('Invalid ID:', id)
+            console.error('ID không hợp lệ:', id)
             toast.error('ID lịch trình không hợp lệ.')
             navigate('/HistoryItinerary')
             return
         }
 
         const accessToken = localStorage.getItem('accessToken')
-        console.log('Access Token:', accessToken ? 'Present' : 'Missing')
+        console.log(
+            'Access Token:',
+            accessToken ? 'Có token' : 'Không có token'
+        )
         if (!accessToken) {
             Swal.fire({
                 icon: 'error',
@@ -57,7 +63,20 @@ function HistoryDetail() {
         try {
             setLoading(true)
             const response = await travelFormAPI.getHistoryDetail(id)
-            console.log('History Detail API Response:', response.data)
+            console.log(
+                'Phản hồi API đầy đủ:',
+                JSON.stringify(response, null, 2)
+            )
+            console.log(
+                'response.data.RelatedTours:',
+                response.data.relatedTours
+            )
+            console.log(
+                'response.data.RelatedTourMessage:',
+                response.data.relatedTourMessage
+            )
+            console.log('Kiểm tra response.data:', response.data)
+
             if (response.status === 200 && response.data) {
                 const normalizedData = {
                     generatePlanId: id,
@@ -179,8 +198,18 @@ function HistoryDetail() {
                     })
                 )
 
-                console.log('Normalized History Detail:', normalizedData)
+                console.log('Dữ liệu chuẩn hóa:', normalizedData)
                 setHistoryDetail(normalizedData)
+                setRelatedTours(response.data.relatedTours || [])
+                setRelatedTourMessage(response.data.relatedTourMessage || null)
+                console.log(
+                    'Trạng thái sau khi set - Related Tours:',
+                    response.data.relatedTours || []
+                )
+                console.log(
+                    'Trạng thái sau khi set - Related Tour Message:',
+                    response.data.relatedTourMessage || null
+                )
             } else {
                 throw new Error('Dữ liệu chi tiết lịch trình không hợp lệ.')
             }
@@ -191,10 +220,12 @@ function HistoryDetail() {
                     : err.response?.data?.error ||
                       err.message ||
                       'Không thể tải chi tiết lịch trình.'
-            console.error('History Detail API Error:', {
+            console.error('Lỗi API:', {
                 message: err.message,
                 response: err.response?.data,
-                status: err.response?.status
+                status: err.response?.status,
+                headers: err.response?.headers,
+                requestUrl: `api/AIGeneratePlan/GetHistoryDetailById/${id}`
             })
             toast.error(errorMessage)
             if (
@@ -315,6 +346,16 @@ function HistoryDetail() {
             state: { itineraryData: historyDetail }
         })
     }
+
+    useEffect(() => {
+        if (!loading && historyDetail) {
+            console.log('Trước khi render - Related Tours:', relatedTours)
+            console.log(
+                'Trước khi render - Related Tour Message:',
+                relatedTourMessage
+            )
+        }
+    }, [loading, historyDetail, relatedTours, relatedTourMessage])
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -460,17 +501,19 @@ function HistoryDetail() {
                                 <div className="space-y-3">
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">📅</span>
-                                        <strong>Ngày đi: </strong>
+                                        <strong>Ngày đi:&nbsp; </strong>
                                         {formatDate(historyDetail.TravelDate)}
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">⏳</span>
-                                        <strong>Số ngày: </strong>
+                                        <strong>Số ngày:&nbsp; </strong>
                                         {historyDetail.Days || 'Không xác định'}
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">💸</span>
-                                        <strong>Tổng chi phí ước tính: </strong>
+                                        <strong>
+                                            Tổng chi phí ước tính:&nbsp;{' '}
+                                        </strong>
                                         <span className="text-blue-600">
                                             {formatCurrency(
                                                 historyDetail.TotalEstimatedCost
@@ -489,7 +532,9 @@ function HistoryDetail() {
                                             'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">🌟</span>
-                                                <strong>Sở thích: </strong>
+                                                <strong>
+                                                    Sở thích:&nbsp;{' '}
+                                                </strong>
                                                 {historyDetail.Preferences.split(
                                                     ', '
                                                 ).map((pref, index) => (
@@ -508,7 +553,8 @@ function HistoryDetail() {
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">🍽️</span>
                                                 <strong>
-                                                    Phong cách ăn uống:{' '}
+                                                    Phong cách ăn
+                                                    uống:&nbsp;{' '}
                                                 </strong>
                                                 {historyDetail.DiningStyle.split(
                                                     ', '
@@ -527,7 +573,9 @@ function HistoryDetail() {
                                             'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">🚗</span>
-                                                <strong>Phương tiện: </strong>
+                                                <strong>
+                                                    Phương tiện:&nbsp;{' '}
+                                                </strong>
                                                 {historyDetail.Transportation}
                                             </p>
                                         )}
@@ -536,7 +584,7 @@ function HistoryDetail() {
                                             'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">👥</span>
-                                                <strong>Nhóm: </strong>
+                                                <strong>Nhóm:&nbsp; </strong>
                                                 {historyDetail.GroupType}
                                             </p>
                                         )}
@@ -545,7 +593,7 @@ function HistoryDetail() {
                                             'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">🏨</span>
-                                                <strong>Chỗ ở: </strong>
+                                                <strong>Chỗ ở:&nbsp; </strong>
                                                 {historyDetail.Accommodation}
                                             </p>
                                         )}
@@ -554,7 +602,9 @@ function HistoryDetail() {
                                             'Chưa xác định' && (
                                             <p className="flex items-center text-gray-700">
                                                 <span className="mr-2">🗺️</span>
-                                                <strong>Đề xuất chỗ ở: </strong>
+                                                <strong>
+                                                    Đề xuất chỗ ở:&nbsp;{' '}
+                                                </strong>
                                                 <a
                                                     href={
                                                         historyDetail.SuggestedAccommodation
@@ -666,18 +716,6 @@ function HistoryDetail() {
                                                                         <span className="absolute left-3 top-6 w-0.5 h-full bg-blue-200"></span>
                                                                     )}
                                                                     <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
-                                                                        {activity.image && (
-                                                                            <img
-                                                                                src={
-                                                                                    activity.image
-                                                                                }
-                                                                                alt={
-                                                                                    activity.description ||
-                                                                                    'Activity'
-                                                                                }
-                                                                                className="w-full h-48 object-cover rounded-lg mb-4"
-                                                                            />
-                                                                        )}
                                                                         <p className="text-gray-700">
                                                                             <strong>
                                                                                 Thời
@@ -747,6 +785,19 @@ function HistoryDetail() {
                                                                             {activity.placeDetail ||
                                                                                 'Không xác định'}
                                                                         </p>
+
+                                                                        {activity.image && (
+                                                                            <img
+                                                                                src={
+                                                                                    activity.image
+                                                                                }
+                                                                                alt={
+                                                                                    activity.description ||
+                                                                                    'Activity'
+                                                                                }
+                                                                                className="w-full h-120 object-cover rounded-lg mb-4"
+                                                                            />
+                                                                        )}
                                                                     </div>
                                                                 </li>
                                                             )
@@ -772,6 +823,13 @@ function HistoryDetail() {
                     </>
                 )}
             </div>
+            {!loading && historyDetail && (
+                <RelatedToursSection
+                    itineraryData={historyDetail}
+                    relatedTours={relatedTours}
+                    relatedTourMessage={relatedTourMessage}
+                />
+            )}
             <Footer />
         </div>
     )

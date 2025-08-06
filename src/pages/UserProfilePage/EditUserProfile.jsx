@@ -4,7 +4,7 @@ import userProfileAPI from '@/apis/userProfileAPI.js'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import Swal from 'sweetalert2'
-import avatarImage from '@/assets/images/maleAvatar.png' // Import ảnh avatar
+import avatarImage from '@/assets/images/maleAvatar.png'
 import { useAuth } from '@/AuthContext'
 
 function EditUserProfile() {
@@ -18,15 +18,17 @@ function EditUserProfile() {
         city: '',
         ward: '',
         district: '',
-        streetAddress: ''
+        streetAddress: '',
+        avatarFile: null
     })
+    const [avatarPreview, setAvatarPreview] = useState(null)
     const [loading, setLoading] = useState(true)
+    const fileInputRef = React.useRef(null) // Reference for hidden file input
 
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
                 icon: 'success',
-                // title: 'Thành công',
                 text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
                 timer: 1800
@@ -48,8 +50,10 @@ function EditUserProfile() {
                         city: response.data.city || '',
                         ward: response.data.ward || '',
                         district: response.data.district || '',
-                        streetAddress: response.data.streetAddress || ''
+                        streetAddress: response.data.streetAddress || '',
+                        avatarFile: null
                     })
+                    setAvatarPreview(response.data.avatar || avatarImage)
                 } else if (response.status === 404) {
                     throw new Error(
                         'Không tìm thấy người dùng hoặc tài khoản đã bị khóa.'
@@ -94,10 +98,34 @@ function EditUserProfile() {
         setFormData((prev) => ({ ...prev, [name]: value }))
     }
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            setFormData((prev) => ({ ...prev, avatarFile: file }))
+            setAvatarPreview(URL.createObjectURL(file))
+        }
+    }
+
+    const handleAvatarClick = () => {
+        fileInputRef.current.click() // Trigger file input click
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            const response = await userProfileAPI.updateProfile(formData)
+            const formDataToSend = new FormData()
+            formDataToSend.append('userName', formData.userName)
+            formDataToSend.append('phoneNumber', formData.phoneNumber)
+            formDataToSend.append('country', formData.country)
+            formDataToSend.append('city', formData.city)
+            formDataToSend.append('ward', formData.ward)
+            formDataToSend.append('district', formData.district)
+            formDataToSend.append('streetAddress', formData.streetAddress)
+            if (formData.avatarFile) {
+                formDataToSend.append('avatarFile', formData.avatarFile)
+            }
+
+            const response = await userProfileAPI.updateProfile(formDataToSend)
             if (response.status === 200) {
                 Swal.fire({
                     icon: 'success',
@@ -169,13 +197,23 @@ function EditUserProfile() {
                     <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                         {/* Header with Avatar */}
                         <div className="bg-blue-600 p-6 flex flex-col items-center">
-                            <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg mb-4 bg-blue-500 flex items-center justify-center overflow-hidden">
+                            <div
+                                className="w-24 h-24 rounded-full border-4 border-white shadow-lg mb-4 bg-blue-500 flex items-center justify-center overflow-hidden cursor-pointer"
+                                onClick={handleAvatarClick}
+                            >
                                 <img
-                                    src={avatarImage}
+                                    src={avatarPreview || avatarImage}
                                     alt="Avatar"
                                     className="w-full h-full object-cover"
                                 />
                             </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                className="hidden"
+                                ref={fileInputRef}
+                            />
                             <h2 className="text-2xl font-semibold text-white">
                                 {profile.userName || 'Không có tên'}
                             </h2>

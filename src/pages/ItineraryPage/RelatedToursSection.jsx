@@ -12,32 +12,58 @@ const RelatedToursSection = ({
     const navigate = useNavigate()
 
     useEffect(() => {
-        // Format and filter tours, limit to maximum 3
+        // Log props đầu vào
+        console.log('RelatedToursSection - Input Props:', {
+            relatedTours,
+            itineraryData,
+            relatedTourMessage
+        })
+
+        // Format và lọc tour, giới hạn tối đa 3
         const validTours =
             relatedTours
-                ?.filter(
-                    (tour) =>
+                ?.filter((tour) => {
+                    const isValid =
                         tour.tourId && !isNaN(tour.tourId) && tour.tourId > 0
-                )
-                ?.map((tour) => ({
-                    id: tour.tourId,
-                    name: tour.tourName || 'Tour không tên',
-                    price: tour.price
-                        ? new Intl.NumberFormat('vi-VN', {
-                              style: 'currency',
-                              currency: 'VND'
-                          }).format(tour.price)
-                        : '0 đ',
-                    image: tour.thumbnail || 'Không xác định',
-                    address: tour.location || 'Không xác định'
-                }))
-                ?.sort(
-                    (a, b) =>
-                        new Date(b.createdDate || new Date()) -
-                        new Date(a.createdDate || new Date())
-                )
-                ?.slice(0, 3) || [] // Limit to 3 tours
+                    console.log('Tour Filter Check:', { tour, isValid })
+                    return isValid
+                })
+                ?.map((tour) => {
+                    const formattedTour = {
+                        id: tour.tourId,
+                        name: tour.tourName || 'Tour không tên',
+                        price: tour.price
+                            ? new Intl.NumberFormat('vi-VN', {
+                                  style: 'currency',
+                                  currency: 'VND'
+                              }).format(tour.price)
+                            : '0 đ',
+                        image: tour.thumbnail || 'Không xác định',
+                        address: tour.location || 'Không xác định'
+                    }
+                    console.log('Formatted Tour:', formattedTour)
+                    return formattedTour
+                })
+                ?.sort((a, b) => {
+                    // Kiểm tra createdDate, mặc định là ngày hiện tại nếu không có
+                    const dateA = a.createdDate
+                        ? new Date(a.createdDate)
+                        : new Date()
+                    const dateB = b.createdDate
+                        ? new Date(b.createdDate)
+                        : new Date()
+                    console.log('Sort Check:', {
+                        idA: a.id,
+                        dateA,
+                        idB: b.id,
+                        dateB
+                    })
+                    return dateB - dateA
+                })
+                ?.slice(0, 3) || []
 
+        // Log kết quả sau khi lọc và sắp xếp
+        console.log('RelatedToursSection - Filtered Tours:', validTours)
         setFilteredTours(validTours)
     }, [relatedTours])
 
@@ -57,12 +83,21 @@ const RelatedToursSection = ({
         navigate(`/tour-detail/${tourId}`)
     }
 
+    // Log trước khi render
+    console.log('RelatedToursSection - Rendering Tours:', filteredTours)
+
+    // Xử lý cả destination và Destination
+    const destination =
+        itineraryData?.destination ||
+        itineraryData?.Destination ||
+        itineraryData?.Location
+    ;(' cùng địa điểm')
+
     return (
         <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-gray-100 rounded-2xl shadow-xl mt-8">
             <div className="text-center mb-8">
                 <h3 className="text-4xl font-bold text-blue-900 tracking-tight">
-                    Tours du lịch tại {itineraryData?.destination || 'Địa điểm'}{' '}
-                    liên quan
+                    Tours du lịch tại {destination} liên quan
                 </h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -74,13 +109,16 @@ const RelatedToursSection = ({
                         </p>
                     </div>
                 ) : (
-                    filteredTours.map((tour) => (
-                        <TourCard
-                            key={tour.id}
-                            tour={tour}
-                            onViewDetail={() => handleViewDetail(tour.id)}
-                        />
-                    ))
+                    filteredTours.map((tour, index) => {
+                        console.log('Rendering TourCard:', { tour, index })
+                        return (
+                            <TourCard
+                                key={tour.id}
+                                tour={tour}
+                                onViewDetail={() => handleViewDetail(tour.id)}
+                            />
+                        )
+                    })
                 )}
             </div>
         </section>

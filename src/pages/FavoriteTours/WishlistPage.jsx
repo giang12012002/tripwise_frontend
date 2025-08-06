@@ -48,27 +48,38 @@ const WishlistPage = () => {
                 const response = await tourUserAPI.getUserWishlist(accessToken)
                 console.log('Phản hồi API Wishlist:', response.data)
 
-                const validTours = response.data
-                    .filter(
-                        (tour) =>
-                            tour.tourId &&
-                            !isNaN(tour.tourId) &&
-                            tour.tourId > 0
-                    )
-                    .map((tour) => ({
-                        id: tour.tourId,
-                        name: tour.tourName,
-                        price: tour.price
-                            ? new Intl.NumberFormat('vi-VN', {
-                                  style: 'currency',
-                                  currency: 'VND'
-                              }).format(tour.price)
-                            : '0 đ',
-                        image:
-                            tour.imageUrls?.[0] ||
-                            'https://via.placeholder.com/150',
-                        address: tour.location || 'Không xác định'
-                    }))
+                const rawWishlist = response.data || []
+                const validTours = []
+
+                for (const tour of rawWishlist) {
+                    try {
+                        const detailResponse =
+                            await tourUserAPI.getApprovedTourDetail(
+                                tour.tourId,
+                                accessToken
+                            )
+
+                        validTours.push({
+                            id: tour.tourId,
+                            name: tour.tourName,
+                            price: tour.price
+                                ? new Intl.NumberFormat('vi-VN', {
+                                      style: 'currency',
+                                      currency: 'VND'
+                                  }).format(tour.price)
+                                : '0 đ',
+                            image:
+                                tour.imageUrls?.[0] ||
+                                'https://via.placeholder.com/150',
+                            address: tour.location || 'Không xác định'
+                        })
+                    } catch (e) {
+                        console.warn(
+                            `❗ Tour ${tour.tourId} không còn tồn tại. Bỏ qua.`
+                        )
+                    }
+                }
+
                 setWishlistTours(validTours)
             } catch (err) {
                 console.error('Lỗi khi lấy danh sách yêu thích:', {
