@@ -26,7 +26,7 @@ const DeletedUserList = ({ users, onViewUserDetail, onActivateUser }) => {
                                 ID
                             </th>
                             <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                                Họ và Tên
+                                Tên Tài Khoản
                             </th>
                             <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                                 Email
@@ -60,7 +60,7 @@ const DeletedUserList = ({ users, onViewUserDetail, onActivateUser }) => {
                                     <div className="flex items-center">
                                         <div className="flex-shrink-0 h-10 w-10">
                                             <svg
-                                                className="h-10 w-10 text-gray-300 rounded-full bg-gray-100 p-1"
+                                                className="h-10 w-10 text-gray-300 rounded-full bg-blue-100 p-1"
                                                 fill="currentColor"
                                                 viewBox="0 0 24 24"
                                             >

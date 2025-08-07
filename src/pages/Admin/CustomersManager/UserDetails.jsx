@@ -54,7 +54,7 @@ const UserDetails = ({
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
-                                    Tên người dùng:
+                                    Tên tài khoản :
                                 </strong>{' '}
                                 {user.userName}
                             </p>
@@ -265,7 +265,7 @@ const UserDetails = ({
                                 </div>
                                 <div>
                                     <label className="block mb-1 text-sm font-semibold text-gray-700">
-                                        Tên người dùng
+                                        Tên tài khoản
                                     </label>
                                     <input
                                         type="text"

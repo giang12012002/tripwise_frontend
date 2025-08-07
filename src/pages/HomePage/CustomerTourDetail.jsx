@@ -20,19 +20,6 @@ const CustomerTourDetail = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
     useEffect(() => {
-        if (!isAuthLoading && !isLoggedIn) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem chi tiết tour.',
-                showConfirmButton: false,
-                timer: 1800
-            })
-            navigate('/signin')
-        }
-    }, [isLoggedIn, isAuthLoading, navigate])
-
-    useEffect(() => {
         const savedScrollPosition = localStorage.getItem('scrollPosition')
         if (savedScrollPosition) {
             window.scrollTo(0, parseInt(savedScrollPosition, 10))
@@ -55,29 +42,32 @@ const CustomerTourDetail = () => {
                 return
             }
             try {
-                console.log(
-                    'Fetching tour with ID:',
-                    tourId,
-                    'Token:',
-                    token ? 'Available' : 'Not available'
-                )
                 const response = await tourUserAPI.getApprovedTourDetail(
                     tourId,
                     token
                 )
-                console.log('Tour detail response:', response.data)
-                console.log(
-                    'ImageUrls:',
-                    response.data.imageUrls,
-                    'ImageIds:',
-                    response.data.imageIds
-                )
+
                 if (!response.data) {
                     setError('Không tìm thấy tour.')
                     setIsLoading(false)
                     return
                 }
-                setTour(response.data)
+                // Chuẩn hóa dữ liệu: đảm bảo activity.imageUrls là chuỗi
+                const normalizedTour = {
+                    ...response.data,
+                    itinerary: response.data.itinerary.map((day) => ({
+                        ...day,
+                        activities: day.activities.map((activity) => ({
+                            ...activity,
+                            imageUrls: Array.isArray(activity.imageUrls)
+                                ? activity.imageUrls.length > 0
+                                    ? activity.imageUrls[0]
+                                    : ''
+                                : activity.imageUrls || ''
+                        }))
+                    }))
+                }
+                setTour(normalizedTour)
                 setIsLoading(false)
             } catch (err) {
                 console.error('API Error (getApprovedTourDetail):', {
@@ -113,7 +103,29 @@ const CustomerTourDetail = () => {
             [sectionKey]: !prev[sectionKey]
         }))
     }
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Không xác định'
+        try {
+            const date = new Date(dateString)
+            const hours = date.getHours()
+            const period = hours < 12 ? 'sáng' : 'tối'
 
+            const formattedDate = date.toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            })
+            const formattedTime = date.toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            })
+
+            return `${formattedTime} ${period} - ${formattedDate}`
+        } catch {
+            return dateString
+        }
+    }
     const formatTime = (time) => {
         if (!time) return 'Không xác định'
         try {
@@ -231,9 +243,8 @@ const CustomerTourDetail = () => {
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 to-indigo-100">
             <Header />
-            <div class="flex gap-4">
-                {/* Detail */}
-                <div class="w-2/3 bg-blue-200 p-4">
+            <div className="flex gap-4">
+                <div className="w-2/3 bg-blue-200 p-4">
                     <div className="flex-grow py-12">
                         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
                             {error && (
@@ -324,11 +335,17 @@ const CustomerTourDetail = () => {
                                         <hr className="border-t border-gray-300 my-4" />
                                         <p className="text-gray-800 mb-3 flex items-center">
                                             <strong className="text-gray-900 font-semibold mr-2">
+                                                ▶ Ngày bắt đầu:
+                                            </strong>{' '}
+                                            {formatDate(tour.startTime)}
+                                        </p>
+                                        <hr className="border-t border-gray-300 my-4" />
+                                        <p className="text-gray-800 mb-3 flex items-center">
+                                            <strong className="text-gray-900 font-semibold mr-2">
                                                 ▶ Thời gian:
                                             </strong>{' '}
                                             {tour.days} ngày
                                         </p>
-
                                         <hr className="border-t border-gray-300 my-4" />
                                         <p className="text-gray-800 mb-3 flex items-center">
                                             <strong className="text-gray-900 font-semibold mr-2">
@@ -365,14 +382,13 @@ const CustomerTourDetail = () => {
                             </h3>
                             <div className="space-y-4">
                                 {tour.itinerary.map((day) => {
-                                    const dayImage =
-                                        day.activities.reduce(
-                                            (acc, activity) =>
-                                                acc.concat(
-                                                    activity.imageUrls || []
-                                                ),
-                                            []
-                                        )[0] || tour.imageUrls[0]
+                                    const dayImage = day.activities.find(
+                                        (activity) => activity.imageUrls
+                                    )
+                                        ? day.activities.find(
+                                              (activity) => activity.imageUrls
+                                          ).imageUrls
+                                        : tour.imageUrls[0]
                                     return (
                                         <div
                                             key={
@@ -457,104 +473,56 @@ const CustomerTourDetail = () => {
                                                                             </strong>{' '}
                                                                             {activity.startTime &&
                                                                             activity.endTime
-                                                                                ? `${formatTime(activity.startTime)} - ${formatTime(activity.endTime)}`
-                                                                                : 'N/A'}
+                                                                                ? `${formatTime(
+                                                                                      activity.startTime
+                                                                                  )} - ${formatTime(
+                                                                                      activity.endTime
+                                                                                  )}`
+                                                                                : 'Không xác định'}
                                                                         </p>
-                                                                        <p className="text-gray-800 mb-2 flex items-center">
-                                                                            <strong className="text-gray-900 font-semibold mr-2">
+                                                                        <p className="text-gray-800 mb-2">
+                                                                            <strong className="text-gray-900 font-semibold">
                                                                                 Địa
                                                                                 điểm:
                                                                             </strong>{' '}
                                                                             {activity.address ||
-                                                                                'N/A'}
+                                                                                'Không xác định'}
                                                                         </p>
-                                                                        <p className="text-gray-800 mb-2 flex items-center">
-                                                                            <strong className="text-gray-900 font-semibold mr-2">
+                                                                        <p className="text-gray-800 mb-2">
+                                                                            <strong className="text-gray-900 font-semibold">
                                                                                 Hoạt
                                                                                 động:
                                                                             </strong>{' '}
-                                                                            {activity.description ||
-                                                                                'N/A'}
-                                                                        </p>
-                                                                        <p className="text-gray-800 mb-2 flex items-center">
-                                                                            <strong className="text-gray-900 font-semibold mr-2">
-                                                                                Chi
-                                                                                Tiết:
-                                                                            </strong>{' '}
                                                                             {activity.placeDetail ||
-                                                                                'N/A'}
+                                                                                'Không có mô tả'}
                                                                         </p>
-                                                                        <p className="text-gray-800 mb-2 flex items-center">
-                                                                            <strong className="text-gray-900 font-semibold mr-2">
+                                                                        <p className="text-gray-800 mb-2">
+                                                                            <strong className="text-gray-900 font-semibold">
                                                                                 Chi
-                                                                                phí:
+                                                                                tiết:
                                                                             </strong>{' '}
-                                                                            <span className="text-indigo-700 font-semibold">
-                                                                                {formatCurrency(
-                                                                                    activity.estimatedCost
-                                                                                )}
-                                                                            </span>
+                                                                            {activity.description ||
+                                                                                'Không có mô tả'}
                                                                         </p>
-
-                                                                        {/*{activity.mapUrl && (*/}
-                                                                        {/*    <p className="text-gray-800 mb-2 flex items-center">*/}
-                                                                        {/*        <strong className="text-gray-900 font-semibold mr-2">*/}
-                                                                        {/*            Bản*/}
-                                                                        {/*            đồ:*/}
-                                                                        {/*        </strong>{' '}*/}
-                                                                        {/*        <a*/}
-                                                                        {/*            href={*/}
-                                                                        {/*                activity.mapUrl*/}
-                                                                        {/*            }*/}
-                                                                        {/*            target="_blank"*/}
-                                                                        {/*            rel="noopener noreferrer"*/}
-                                                                        {/*            className="text-indigo-600 hover:underline hover:text-indigo-800 transition-colors"*/}
-                                                                        {/*        >*/}
-                                                                        {/*            Xem*/}
-                                                                        {/*            trên*/}
-                                                                        {/*            Google*/}
-                                                                        {/*            Maps*/}
-                                                                        {/*        </a>*/}
-                                                                        {/*    </p>*/}
-                                                                        {/*)}p*/}
-                                                                        {activity.imageUrls &&
-                                                                            activity
-                                                                                .imageUrls
-                                                                                .length >
-                                                                                0 && (
-                                                                                <div>
-                                                                                    {activity.imageUrls.map(
-                                                                                        (
-                                                                                            url,
-                                                                                            imgIndex
-                                                                                        ) => (
-                                                                                            <div
-                                                                                                key={
-                                                                                                    activity
-                                                                                                        .imageIds[
-                                                                                                        imgIndex
-                                                                                                    ] ||
-                                                                                                    imgIndex
-                                                                                                }
-                                                                                                className="relative"
-                                                                                            >
-                                                                                                <img
-                                                                                                    src={
-                                                                                                        url
-                                                                                                    }
-                                                                                                    alt={`Activity ${index + 1} image ${imgIndex}`}
-                                                                                                    className="w-full h-170 object-cover rounded-lg shadow-md scale-90 hover:scale-100 transition-transform duration-300"
-                                                                                                    onError={() =>
-                                                                                                        console.error(
-                                                                                                            `Failed to load activity image: ${url}`
-                                                                                                        )
-                                                                                                    }
-                                                                                                />
-                                                                                            </div>
+                                                                        {activity.imageUrls && (
+                                                                            <div className="relative">
+                                                                                <img
+                                                                                    src={
+                                                                                        activity.imageUrls
+                                                                                    }
+                                                                                    alt={`Activity ${
+                                                                                        index +
+                                                                                        1
+                                                                                    } image`}
+                                                                                    className="w-full h-full object-cover rounded-lg shadow-md scale-90 hover:scale-100 transition-transform duration-300"
+                                                                                    onError={() =>
+                                                                                        console.error(
+                                                                                            `Failed to load activity image: ${activity.imageUrls}`
                                                                                         )
-                                                                                    )}
-                                                                                </div>
-                                                                            )}
+                                                                                    }
+                                                                                />
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                 </li>
                                                             )
@@ -566,7 +534,6 @@ const CustomerTourDetail = () => {
                                     )
                                 })}
                             </div>
-
                             <div className="mt-12">
                                 <h3 className="text-3xl font-extrabold text-center mb-8 uppercase text-indigo-700 tracking-wide">
                                     Những Thông Tin Cần Lưu Ý
@@ -1040,7 +1007,7 @@ const CustomerTourDetail = () => {
                     </div>
                 </div>
                 {/* Booking */}
-                <div class="w-1/3 p-4 sticky top-0 self-start">
+                <div className="w-1/3 p-4 sticky top-0 self-start">
                     <Bookings tour={tour} />
                 </div>
             </div>

@@ -27,12 +27,13 @@ function CreateItinerary() {
     const [shouldScroll, setShouldScroll] = useState(false)
     const fieldRefs = useRef({})
 
-    const handleRadioClick = (name, value) => {
+    const handleRadioChange = (name, value) => {
         if (loading) return
         setFormData((prev) => ({
             ...prev,
-            [name]: prev[name] === value ? '' : value
+            [name]: value
         }))
+        setErrors((prev) => ({ ...prev, [name]: '' }))
     }
 
     const handleChange = (e) => {
@@ -617,8 +618,8 @@ function CreateItinerary() {
                                                     formData[field.name] ===
                                                     option.value
                                                 }
-                                                onClick={() =>
-                                                    handleRadioClick(
+                                                onChange={() =>
+                                                    handleRadioChange(
                                                         field.name,
                                                         option.value
                                                     )

@@ -14,7 +14,7 @@ const ApprovedToursSection = () => {
         const fetchApprovedTours = async () => {
             try {
                 const response = await tourUserAPI.getApprovedTours()
-                console.log('Approved tours fetched:', response.data)
+
                 const validTours = response.data
                     .filter(
                         (tour) =>
@@ -65,7 +65,7 @@ const ApprovedToursSection = () => {
             })
             return
         }
-        console.log('Navigating to tour detail with ID:', tourId)
+
         navigate(`/tour-detail/${tourId}`)
     }
 

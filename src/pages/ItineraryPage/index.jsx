@@ -45,13 +45,6 @@ function ItineraryDisplay() {
         }
     }, [isLoggedIn, isAuthLoading, navigate])
 
-    useEffect(() => {
-        console.log('location.state:', location.state)
-        console.log('itineraryData:', itineraryData)
-        console.log('relatedTours:', relatedTours)
-        console.log('relatedTourMessage:', relatedTourMessage)
-    }, [location.state, itineraryData, relatedTours, relatedTourMessage])
-
     const formatCurrency = (value) => {
         if (!value || isNaN(value)) return '0 đ'
         return new Intl.NumberFormat('vi-VN', {

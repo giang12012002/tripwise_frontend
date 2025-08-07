@@ -11,7 +11,6 @@ function ChatbotUpdate() {
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
     const itineraryData = location.state?.itineraryData || null
-    console.log('itineraryData received in ChatbotUpdate:', itineraryData)
 
     // Hàm chuẩn hóa dữ liệu để xử lý sự không nhất quán trong tên thuộc tính
     const normalizeItineraryData = (data) => {
@@ -115,7 +114,6 @@ function ChatbotUpdate() {
     }
 
     const normalizedItineraryData = normalizeItineraryData(itineraryData)
-    console.log('Normalized itineraryData:', normalizedItineraryData)
 
     const [messages, setMessages] = useState([
         {
@@ -161,7 +159,6 @@ function ChatbotUpdate() {
     }
 
     const toggleDay = (dayNumber) => {
-        console.log('Toggling day:', dayNumber)
         setOpenDays((prev) => ({ ...prev, [dayNumber]: !prev[dayNumber] }))
     }
 
@@ -239,10 +236,6 @@ function ChatbotUpdate() {
                     chunkSize
                 )
             } else {
-                console.log('Gửi yêu cầu cập nhật toàn bộ:', {
-                    generatePlanId: normalizedItineraryData.generatePlanId,
-                    Message: input
-                })
                 response = await travelFormAPI.updateItinerary(
                     normalizedItineraryData.generatePlanId,
                     input
@@ -251,10 +244,6 @@ function ChatbotUpdate() {
 
             const historyResponse = await travelFormAPI.getHistoryDetail(
                 normalizedItineraryData.generatePlanId
-            )
-            console.log(
-                'API getHistoryDetail response:',
-                JSON.stringify(historyResponse.data, null, 2)
             )
 
             const updatedItinerary = {
@@ -328,11 +317,6 @@ function ChatbotUpdate() {
                     historyResponse.data.relatedTourMessage || null
             }
 
-            console.log(
-                'Dữ liệu sau ánh xạ:',
-                JSON.stringify(updatedItinerary, null, 2)
-            )
-
             setMessages((prev) => [
                 ...prev,
                 {
@@ -400,14 +384,6 @@ function ChatbotUpdate() {
             </div>
         )
     }
-
-    console.log('itineraryData details:', {
-        destination: normalizedItineraryData.destination,
-        travelDate: normalizedItineraryData.travelDate,
-        days: normalizedItineraryData.days,
-        totalEstimatedCost: normalizedItineraryData.totalEstimatedCost,
-        itinerary: normalizedItineraryData.itinerary
-    })
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -593,12 +569,6 @@ function ChatbotUpdate() {
                             {normalizedItineraryData.itinerary &&
                             normalizedItineraryData.itinerary.length > 0 ? (
                                 normalizedItineraryData.itinerary.map((day) => {
-                                    console.log('Day data:', {
-                                        dayNumber: day.dayNumber,
-                                        title: day.title,
-                                        dailyCost: day.dailyCost,
-                                        activities: day.activities
-                                    })
                                     return (
                                         <div
                                             key={day.dayNumber}
@@ -684,19 +654,6 @@ function ChatbotUpdate() {
                                                                     activity,
                                                                     index
                                                                 ) => {
-                                                                    console.log(
-                                                                        `Activity ${index} for day ${day.dayNumber}:`,
-                                                                        {
-                                                                            starttime:
-                                                                                activity.starttime,
-                                                                            endtime:
-                                                                                activity.endtime,
-                                                                            description:
-                                                                                activity.description,
-                                                                            estimatedCost:
-                                                                                activity.estimatedCost
-                                                                        }
-                                                                    )
                                                                     return (
                                                                         <li
                                                                             key={

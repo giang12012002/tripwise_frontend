@@ -12,13 +12,13 @@ const createItinerary = async (formData) => {
         groupType: formData.groupType || '',
         accommodation: formData.accommodation || ''
     }
-    console.log('Payload gửi đi:', payload)
+
     try {
         const response = await authorizedAxios.post(
             'api/AIGeneratePlan/CreateItinerary',
             payload
         )
-        console.log('Phản hồi API:', response.data)
+
         return response
     } catch (err) {
         console.error('API Error:', {
@@ -56,13 +56,10 @@ const saveTourFromGenerated = async (generatePlanId) => {
     const response = await authorizedAxios.post(
         `api/AIGeneratePlan/SaveTourFromGenerated/${generatePlanId}`
     )
-    console.log('saveTourFromGenerated response:', response.data)
-    return response
 }
 
 const updateItinerary = async (generatePlanId, message) => {
     try {
-        console.log('Payload gửi đi:', { Message: message, generatePlanId })
         const response = await authorizedAxios.post(
             `api/AIGeneratePlan/UpdateItinerary/${generatePlanId}`,
             { Message: message }
@@ -87,7 +84,6 @@ const updateItineraryChunk = async (
     chunkSize
 ) => {
     try {
-        console.log('Payload gửi đi:', { userMessage, startDay, chunkSize })
         const response = await authorizedAxios.post(
             `api/AIGeneratePlan/UpdateItineraryChunk/${generatePlanId}`,
             { userMessage, startDay, chunkSize }
@@ -122,7 +118,7 @@ const deleteGenerateTravelPlans = async (id) => {
         const response = await authorizedAxios.delete(
             `api/AIGeneratePlan/DeleteGenerateTravelPlan/${id}`
         )
-        console.log('deleteGenerateTravelPlans response:', response.data)
+
         return response
     } catch (err) {
         console.error('API Error (deleteGenerateTravelPlans):', {
@@ -180,11 +176,7 @@ const getHistoryDetail = async (id) => {
         const response = await authorizedAxios.get(
             `api/AIGeneratePlan/GetHistoryDetailById/${id}`
         )
-        console.log(
-            'getHistoryDetail Raw Response:',
-            JSON.stringify(response, null, 2)
-        )
-        console.log('getHistoryDetail Data:', response.data)
+
         return response
     } catch (err) {
         console.error('API Error (getHistoryDetail):', {
