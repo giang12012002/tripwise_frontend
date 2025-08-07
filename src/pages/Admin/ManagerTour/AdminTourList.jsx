@@ -59,31 +59,29 @@ const AdminTourList = () => {
         }
     }, [isLoggedIn, isAuthLoading, navigate])
 
+    const fetchTours = async () => {
+        try {
+            const response = await AdminManagerTourAPI.getAllTours(
+                statusFilter || null,
+                selectedPartnerId || null // Thêm partnerId vào API call
+            )
+            const validTours = response.data
+                .filter(
+                    (tour) =>
+                        tour.tourId && !isNaN(tour.tourId) && tour.tourId > 0
+                )
+                .sort(
+                    (a, b) => new Date(b.createdDate) - new Date(a.createdDate)
+                )
+            setTours(validTours)
+        } catch (err) {
+            console.error('Lỗi khi lấy danh sách tour:', err)
+            setError('Không thể tải danh sách tour. Vui lòng thử lại.')
+        }
+    }
+
     // Lấy danh sách tour với bộ lọc
     useEffect(() => {
-        const fetchTours = async () => {
-            try {
-                const response = await AdminManagerTourAPI.getAllTours(
-                    statusFilter || null,
-                    selectedPartnerId || null // Thêm partnerId vào API call
-                )
-                const validTours = response.data
-                    .filter(
-                        (tour) =>
-                            tour.tourId &&
-                            !isNaN(tour.tourId) &&
-                            tour.tourId > 0
-                    )
-                    .sort(
-                        (a, b) =>
-                            new Date(b.createdDate) - new Date(a.createdDate)
-                    )
-                setTours(validTours)
-            } catch (err) {
-                console.error('Lỗi khi lấy danh sách tour:', err)
-                setError('Không thể tải danh sách tour. Vui lòng thử lại.')
-            }
-        }
         fetchTours()
     }, [statusFilter, selectedPartnerId]) // Thêm selectedPartnerId vào dependency
 
@@ -130,7 +128,8 @@ const AdminTourList = () => {
                 showConfirmButton: false,
                 timer: 1800
             })
-            setTours(tours.filter((tour) => tour.tourId !== tourId))
+            // setTours(tours.filter((tour) => tour.tourId !== tourId))
+            fetchTours()
         } catch (err) {
             console.error('Lỗi khi phê duyệt tour:', err)
             Swal.fire({
