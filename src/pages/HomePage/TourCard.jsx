@@ -10,18 +10,12 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
         const checkIfLiked = async () => {
             const accessToken = localStorage.getItem('accessToken')
             if (!accessToken) {
-                console.log('Không tìm thấy accessToken trong localStorage')
                 setIsLiked(false) // Đặt isLiked về false nếu không có token
                 return
             }
 
             try {
-                console.log(
-                    'Bắt đầu kiểm tra trạng thái yêu thích cho tour:',
-                    tour?.id
-                )
                 const response = await tourUserAPI.getUserWishlist(accessToken)
-                console.log('Phản hồi từ getUserWishlist:', response.data)
 
                 // Đảm bảo response.data là mảng, nếu không thì đặt về mảng rỗng
                 const wishlistTours = Array.isArray(response.data)
@@ -30,9 +24,7 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
                 const isTourLiked = wishlistTours.some(
                     (wishlistTour) => wishlistTour.tourId === tour.id
                 )
-                console.log(
-                    `Tour ${tour.id} ${isTourLiked ? 'đã' : 'chưa'} được yêu thích`
-                )
+
                 setIsLiked(isTourLiked)
             } catch (err) {
                 console.error('Lỗi khi kiểm tra danh sách yêu thích:', {
@@ -93,23 +85,13 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
             return
         }
 
-        // Ghi log để debug validTourIds
-        console.log('Kiểm tra validTourIds:', {
-            tourId: tour.id,
-            validTourIds,
-            isValidTour:
-                Array.isArray(validTourIds) && validTourIds.includes(tour.id)
-        })
-
         // Kiểm tra validTourIds và xác thực tour nếu cần
         let isTourValid =
             Array.isArray(validTourIds) && validTourIds.includes(tour.id)
         if (!isTourValid) {
             try {
                 // Gọi API để xác thực tour nếu không có trong validTourIds
-                console.log(
-                    `Xác thực tour ${tour.id} qua API /api/TourUser/approved/${tour.id}`
-                )
+
                 await tourUserAPI.getApprovedTourDetail(tour.id, accessToken)
                 isTourValid = true // Tour hợp lệ nếu API không trả về lỗi
             } catch (err) {
@@ -135,18 +117,13 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
 
         try {
             setLoading(true)
-            console.log(
-                `Chuẩn bị ${isLiked ? 'xóa' : 'thêm'} tour với tourId: ${tour.id} vào wishlist`
-            )
+
             if (isLiked) {
                 const response = await tourUserAPI.removeFromWishlist(
                     tour.id,
                     accessToken
                 )
-                console.log('Phản hồi từ removeFromWishlist:', {
-                    tourId: tour.id,
-                    response: response.data
-                })
+
                 setIsLiked(false)
                 Swal.fire({
                     icon: 'success',
@@ -160,10 +137,7 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
                     tour.id,
                     accessToken
                 )
-                console.log('Phản hồi từ addToWishlist:', {
-                    tourId: tour.id,
-                    response: response.data
-                })
+
                 setIsLiked(true)
                 Swal.fire({
                     icon: 'success',
@@ -212,9 +186,6 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
             })
         } finally {
             setLoading(false)
-            console.log(
-                `Hoàn tất thao tác yêu thích cho tourId: ${tour.id}, trạng thái hiện tại: ${isLiked ? 'Đã thích' : 'Chưa thích'}`
-            )
         }
     }
 

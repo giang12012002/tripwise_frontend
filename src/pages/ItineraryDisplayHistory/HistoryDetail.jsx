@@ -36,7 +36,6 @@ function HistoryDetail() {
     }, [isLoggedIn, isAuthLoading, navigate])
 
     const fetchHistoryDetail = async () => {
-        console.log('Bắt đầu gọi API cho ID:', id)
         if (!id || isNaN(id)) {
             console.error('ID không hợp lệ:', id)
             toast.error('ID lịch trình không hợp lệ.')
@@ -45,10 +44,7 @@ function HistoryDetail() {
         }
 
         const accessToken = localStorage.getItem('accessToken')
-        console.log(
-            'Access Token:',
-            accessToken ? 'Có token' : 'Không có token'
-        )
+
         if (!accessToken) {
             Swal.fire({
                 icon: 'error',
@@ -63,19 +59,6 @@ function HistoryDetail() {
         try {
             setLoading(true)
             const response = await travelFormAPI.getHistoryDetail(id)
-            console.log(
-                'Phản hồi API đầy đủ:',
-                JSON.stringify(response, null, 2)
-            )
-            console.log(
-                'response.data.RelatedTours:',
-                response.data.relatedTours
-            )
-            console.log(
-                'response.data.RelatedTourMessage:',
-                response.data.relatedTourMessage
-            )
-            console.log('Kiểm tra response.data:', response.data)
 
             if (response.status === 200 && response.data) {
                 const normalizedData = {
@@ -198,18 +181,9 @@ function HistoryDetail() {
                     })
                 )
 
-                console.log('Dữ liệu chuẩn hóa:', normalizedData)
                 setHistoryDetail(normalizedData)
                 setRelatedTours(response.data.relatedTours || [])
                 setRelatedTourMessage(response.data.relatedTourMessage || null)
-                console.log(
-                    'Trạng thái sau khi set - Related Tours:',
-                    response.data.relatedTours || []
-                )
-                console.log(
-                    'Trạng thái sau khi set - Related Tour Message:',
-                    response.data.relatedTourMessage || null
-                )
             } else {
                 throw new Error('Dữ liệu chi tiết lịch trình không hợp lệ.')
             }
@@ -346,16 +320,6 @@ function HistoryDetail() {
             state: { itineraryData: historyDetail }
         })
     }
-
-    useEffect(() => {
-        if (!loading && historyDetail) {
-            console.log('Trước khi render - Related Tours:', relatedTours)
-            console.log(
-                'Trước khi render - Related Tour Message:',
-                relatedTourMessage
-            )
-        }
-    }, [loading, historyDetail, relatedTours, relatedTourMessage])
 
     return (
         <div className="min-h-screen flex flex-col">

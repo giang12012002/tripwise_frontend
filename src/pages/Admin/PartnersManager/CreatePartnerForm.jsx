@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Swal from 'sweetalert2'
 
 const CreatePartnerForm = ({
     createForm,
@@ -7,6 +8,17 @@ const CreatePartnerForm = ({
     onClose
 }) => {
     const [showPassword, setShowPassword] = useState(false)
+
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        return emailRegex.test(email)
+    }
+
+    const validatePhoneNumber = (phoneNumber) => {
+        if (!phoneNumber) return true // Phone number is optional
+        const phoneRegex = /^\+?[0-9]{7,15}$/
+        return phoneRegex.test(phoneNumber)
+    }
 
     const handleCancel = () => {
         setCreateForm({
@@ -23,6 +35,31 @@ const CreatePartnerForm = ({
 
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev)
+    }
+
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        if (!validateEmail(createForm.email)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng nhập một địa chỉ email hợp lệ.',
+                showConfirmButton: false,
+                timer: 1800
+            })
+            return
+        }
+        if (!validatePhoneNumber(createForm.phoneNumber)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Số điện thoại phải chứa 7-15 chữ số và có thể bắt đầu bằng "+".',
+                showConfirmButton: false,
+                timer: 1800
+            })
+            return
+        }
+        onSubmit(e)
     }
 
     return (
@@ -53,7 +90,7 @@ const CreatePartnerForm = ({
                         ×
                     </button>
                 </div>
-                <form onSubmit={onSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block mb-1 text-sm font-medium text-gray-700">

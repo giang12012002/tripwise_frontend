@@ -15,7 +15,6 @@ const getAllTours = async (status = null, partnerId = null) => {
             url += `?${params.toString()}`
         }
         const response = await authorizedAxios.get(url)
-        console.log('All tours fetched:', response.data)
         return response
     } catch (err) {
         console.error('API Error (getAllTours):', {
@@ -32,7 +31,7 @@ const getAllTours = async (status = null, partnerId = null) => {
 const getPendingTours = async () => {
     try {
         const response = await authorizedAxios.get('api/admin/tours/pending')
-        console.log('Pending tours fetched:', response.data)
+
         return response
     } catch (err) {
         console.error('API Error (getPendingTours):', {
@@ -51,9 +50,9 @@ const getTourDetail = async (tourId) => {
         if (!tourId || isNaN(tourId) || parseInt(tourId) <= 0) {
             throw new Error('ID tour không hợp lệ')
         }
-        console.log('Fetching tour with ID:', tourId)
+
         const response = await authorizedAxios.get(`api/admin/tours/${tourId}`)
-        console.log('API Response:', response)
+
         return response
     } catch (err) {
         console.error('API Error (getTourDetail):', {
@@ -87,7 +86,6 @@ const approveTour = async (tourId) => {
 // Từ chối tour, chuyển trạng thái sang Rejected
 const rejectTour = async (tourId, reason) => {
     try {
-        console.log('Gửi yêu cầu từ chối tour:', { tourId, reason })
         const response = await authorizedAxios.post(
             `api/admin/tours/${tourId}/reject`,
             reason, // Gửi chuỗi thuần túy
@@ -97,7 +95,7 @@ const rejectTour = async (tourId, reason) => {
                 }
             }
         )
-        console.log('Phản hồi từ chối tour:', response.data)
+
         return response
     } catch (err) {
         console.error('Lỗi API (rejectTour):', {

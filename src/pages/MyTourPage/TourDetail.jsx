@@ -57,22 +57,6 @@ function TourDetail() {
             try {
                 setLoading(true)
                 const response = await travelFormAPI.getTourDetailById(id)
-                console.log(
-                    'Phản hồi API chi tiết tour:',
-                    JSON.stringify(response.data, null, 2)
-                )
-                console.log(
-                    'API Response - Data Structure:',
-                    Object.keys(response.data?.data || {})
-                )
-                console.log(
-                    'API Response - RelatedTours:',
-                    response.data?.data?.relatedTours
-                )
-                console.log(
-                    'API Response - RelatedTourMessage:',
-                    response.data?.data?.relatedTourMessage
-                )
 
                 if (
                     response.status === 200 &&
@@ -154,14 +138,6 @@ function TourDetail() {
                     setTourDetail(normalizedData)
                     setRelatedTours(apiData.relatedTours || [])
                     setRelatedTourMessage(apiData.relatedTourMessage || null)
-                    console.log(
-                        'State Set - RelatedTours:',
-                        apiData.RelatedTours || []
-                    )
-                    console.log(
-                        'State Set - RelatedTourMessage:',
-                        apiData.relatedTourMessage || null
-                    )
                 } else {
                     throw new Error('Dữ liệu chi tiết tour không hợp lệ.')
                 }
@@ -257,8 +233,6 @@ function TourDetail() {
 
     useEffect(() => {
         if (!loading && tourDetail) {
-            console.log('Rendering - RelatedTours:', relatedTours)
-            console.log('Rendering - RelatedTourMessage:', relatedTourMessage)
         }
     }, [loading, tourDetail, relatedTours, relatedTourMessage])
 

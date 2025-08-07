@@ -71,24 +71,10 @@ const TourList = () => {
                         (a, b) =>
                             new Date(b.createdDate) - new Date(a.createdDate)
                     )
-                console.log('Tours fetched:', validTours) // Log dữ liệu tours
-                validTours.forEach((tour, index) => {
-                    console.log(
-                        `Tour ${index + 1} - ID: ${tour.tourId}, ImageUrls:`,
-                        tour.imageUrls,
-                        'ImageIds:',
-                        tour.imageIds
-                    ) // Log chi tiết hình ảnh
-                })
+
+                validTours.forEach((tour, index) => {})
                 setTours(validTours)
             } catch (err) {
-                console.error('Error fetching tours:', {
-                    message: err.message,
-                    response: err.response?.data,
-                    status: err.response?.status,
-                    errors:
-                        err.response?.data?.errors || 'Không có chi tiết lỗi'
-                })
                 setError('Không thể tải danh sách tour. Vui lòng thử lại.')
             }
         }

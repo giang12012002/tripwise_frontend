@@ -108,8 +108,8 @@ const CreateTour = () => {
             }
             if (
                 tour.imageFiles.length +
-                validFiles.length +
-                tour.imageUrls.length >
+                    validFiles.length +
+                    tour.imageUrls.length >
                 MAX_IMAGES
             ) {
                 Swal.fire({
@@ -141,7 +141,6 @@ const CreateTour = () => {
                     ? parseFloat(value) || 0
                     : value
             setTour({ ...tour, [name]: newValue })
-            console.log(`Tour field updated: ${name} = ${newValue}`)
         }
     }
 
@@ -222,10 +221,6 @@ const CreateTour = () => {
                     ...previews
                 ]
             }))
-            console.log(
-                `Activity ${activityIndex + 1} (Day ${dayIndex + 1}) imageFiles added:`,
-                validFiles.map((f) => ({ name: f.name, size: f.size }))
-            )
         } else {
             const newValue =
                 field === 'estimatedCost' ? parseFloat(value) || 0 : value
@@ -234,9 +229,6 @@ const CreateTour = () => {
                 [field]: newValue
             }
             setTour({ ...tour, itinerary: newItinerary })
-            console.log(
-                `Activity ${activityIndex + 1} (Day ${dayIndex + 1}) updated: ${field} = ${newValue}`
-            )
         }
     }
 
@@ -289,10 +281,6 @@ const CreateTour = () => {
             ...prev,
             [key]: ''
         }))
-        console.log(
-            `Activity ${activityIndex + 1} (Day ${dayIndex + 1}) imageUrls added:`,
-            urls
-        )
     }
 
     const handleDayChange = (dayIndex, field, value) => {
@@ -302,7 +290,6 @@ const CreateTour = () => {
             [field]: value
         }
         setTour({ ...tour, itinerary: newItinerary })
-        console.log(`Day ${dayIndex + 1} updated: ${field} = ${value}`)
     }
 
     const removeTourImage = (index) => {
@@ -338,7 +325,7 @@ const CreateTour = () => {
             newItinerary[dayIndex].activities[activityIndex].imageUrls
         const newPreviews = activityPreviews[
             `${dayIndex}-${activityIndex}`
-            ].filter((_, i) => i !== index)
+        ].filter((_, i) => i !== index)
         newItinerary[dayIndex].activities[activityIndex].imageFiles =
             newItinerary[dayIndex].activities[activityIndex].imageFiles.filter(
                 (_, i) =>
@@ -478,7 +465,7 @@ const CreateTour = () => {
         }
         newItinerary[dayIndex].activities = newItinerary[
             dayIndex
-            ].activities.filter((_, index) => index !== activityIndex)
+        ].activities.filter((_, index) => index !== activityIndex)
         setTour({ ...tour, itinerary: newItinerary })
         setActivityPreviews((prev) => {
             const newPreviews = { ...prev }
@@ -529,7 +516,11 @@ const CreateTour = () => {
         for (let day of tour.itinerary) {
             if (!day.title.trim())
                 return `Tiêu đề ngày ${day.dayNumber} là bắt buộc.`
-            for (let activityIndex = 0; activityIndex < day.activities.length; activityIndex++) {
+            for (
+                let activityIndex = 0;
+                activityIndex < day.activities.length;
+                activityIndex++
+            ) {
                 const activity = day.activities[activityIndex]
                 if (!activity.description.trim())
                     return `Mô tả hoạt động trong ngày ${day.dayNumber} là bắt buộc.`
@@ -541,15 +532,22 @@ const CreateTour = () => {
                     return `Chi phí dự kiến trong ngày ${day.dayNumber} không được âm.`
                 if (
                     (activity.imageFiles?.length || 0) +
-                    (activity.imageUrls?.length || 0) ===
+                        (activity.imageUrls?.length || 0) ===
                     0
                 )
                     return `Phải cung cấp ít nhất một hình ảnh cho hoạt động trong ngày ${day.dayNumber}.`
                 totalEstimatedCost += activity.estimatedCost || 0
                 // Validate first activity of Day 1
-                if (day.dayNumber === 1 && activityIndex === 0 && activity.startTime && tour.startTime) {
+                if (
+                    day.dayNumber === 1 &&
+                    activityIndex === 0 &&
+                    activity.startTime &&
+                    tour.startTime
+                ) {
                     const tourStart = new Date(tour.startTime)
-                    const activityStart = new Date(`${tour.startTime.split('T')[0]}T${activity.startTime}`)
+                    const activityStart = new Date(
+                        `${tour.startTime.split('T')[0]}T${activity.startTime}`
+                    )
                     if (activityStart < tourStart) {
                         return `Thời gian bắt đầu của hoạt động đầu tiên trong ngày 1 không được sớm hơn thời gian bắt đầu của tour.`
                     }
@@ -585,8 +583,14 @@ const CreateTour = () => {
             formData.append('Description', tour.description)
             formData.append('Duration', parseInt(tour.duration) || 1)
             formData.append('PriceAdult', parseFloat(tour.priceAdult) || 0)
-            formData.append('PriceChild5To10', parseFloat(tour.priceChild5To10) || 0)
-            formData.append('PriceChildUnder5', parseFloat(tour.priceChildUnder5) || 0)
+            formData.append(
+                'PriceChild5To10',
+                parseFloat(tour.priceChild5To10) || 0
+            )
+            formData.append(
+                'PriceChildUnder5',
+                parseFloat(tour.priceChildUnder5) || 0
+            )
             formData.append('Location', tour.location)
             formData.append('MaxGroupSize', parseInt(tour.maxGroupSize) || 1)
             formData.append('Category', tour.category)
@@ -691,7 +695,7 @@ const CreateTour = () => {
                     )
                     newItinerary[dayIndex].activities[
                         activityIndex
-                        ].attractionId = activityResponse.data.data
+                    ].attractionId = activityResponse.data.data
                     newItinerary[dayIndex].activities[activityIndex].imageIds =
                         activityResponse.data.imageIds || []
                 }
@@ -758,7 +762,6 @@ const CreateTour = () => {
             activityFileInputRefs.current[key].current.click()
         }
     }
-
 
     const handleAddTourImageFromFile = () => {
         tourFileInputRef.current.click()

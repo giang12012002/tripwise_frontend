@@ -73,7 +73,7 @@ const UserList = ({
                                 ID
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Họ và Tên
+                                Tên Tài Khoản
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Email
@@ -106,7 +106,7 @@ const UserList = ({
                                     <div className="flex items-center">
                                         <div className="flex-shrink-0 h-10 w-10">
                                             <svg
-                                                className="h-10 w-10 text-gray-300 rounded-full bg-gray-100 p-1"
+                                                className="h-10 w-10 text-gray-300 rounded-full bg-blue-100 p-1"
                                                 fill="currentColor"
                                                 viewBox="0 0 24 24"
                                             >

@@ -12,20 +12,13 @@ const RelatedToursSection = ({
     const navigate = useNavigate()
 
     useEffect(() => {
-        // Log props đầu vào
-        console.log('RelatedToursSection - Input Props:', {
-            relatedTours,
-            itineraryData,
-            relatedTourMessage
-        })
-
         // Format và lọc tour, giới hạn tối đa 3
         const validTours =
             relatedTours
                 ?.filter((tour) => {
                     const isValid =
                         tour.tourId && !isNaN(tour.tourId) && tour.tourId > 0
-                    console.log('Tour Filter Check:', { tour, isValid })
+
                     return isValid
                 })
                 ?.map((tour) => {
@@ -41,7 +34,7 @@ const RelatedToursSection = ({
                         image: tour.thumbnail || 'Không xác định',
                         address: tour.location || 'Không xác định'
                     }
-                    console.log('Formatted Tour:', formattedTour)
+
                     return formattedTour
                 })
                 ?.sort((a, b) => {
@@ -52,18 +45,13 @@ const RelatedToursSection = ({
                     const dateB = b.createdDate
                         ? new Date(b.createdDate)
                         : new Date()
-                    console.log('Sort Check:', {
-                        idA: a.id,
-                        dateA,
-                        idB: b.id,
-                        dateB
-                    })
+
                     return dateB - dateA
                 })
                 ?.slice(0, 3) || []
 
         // Log kết quả sau khi lọc và sắp xếp
-        console.log('RelatedToursSection - Filtered Tours:', validTours)
+
         setFilteredTours(validTours)
     }, [relatedTours])
 
@@ -82,9 +70,6 @@ const RelatedToursSection = ({
         console.log('Navigating to tour detail with ID:', tourId)
         navigate(`/tour-detail/${tourId}`)
     }
-
-    // Log trước khi render
-    console.log('RelatedToursSection - Rendering Tours:', filteredTours)
 
     // Xử lý cả destination và Destination
     const destination =
@@ -110,7 +95,6 @@ const RelatedToursSection = ({
                     </div>
                 ) : (
                     filteredTours.map((tour, index) => {
-                        console.log('Rendering TourCard:', { tour, index })
                         return (
                             <TourCard
                                 key={tour.id}

@@ -48,7 +48,7 @@ function History() {
         try {
             setLoading(true)
             const response = await travelFormAPI.getHistory()
-            console.log('Raw getHistory response:', response.data)
+
             if (response.status === 200 && Array.isArray(response.data)) {
                 const normalizedHistories = response.data
                     .map((item) => {
@@ -153,14 +153,10 @@ function History() {
             if (result.isConfirmed) {
                 try {
                     setLoading(true)
-                    console.log('🧪 handleDelete bắt đầu với ID:', id)
+
                     const response =
                         await travelFormAPI.deleteGenerateTravelPlans(id)
-                    console.log(
-                        '🧪 Kết quả từ API:',
-                        response?.status,
-                        response?.data
-                    )
+
                     if (response.status === 200) {
                         Swal.fire({
                             icon: 'success',
@@ -450,10 +446,6 @@ function History() {
                                                 <button
                                                     className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
                                                     onClick={() => {
-                                                        console.log(
-                                                            'Navigating to History Detail with ID:',
-                                                            history.Id
-                                                        )
                                                         navigate(
                                                             `/user/HistoryItineraryDetail/${history.Id}`
                                                         )
