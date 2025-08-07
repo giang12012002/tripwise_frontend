@@ -52,12 +52,12 @@ const PartnerDashboard = () => {
                     >
                         Danh Sách Tour
                     </button>
-                    <button
-                        onClick={() => navigate('/partner/createTour')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Tạo Tour Mới
-                    </button>
+                    {/*<button*/}
+                    {/*    onClick={() => navigate('/partner/createTour')}*/}
+                    {/*    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"*/}
+                    {/*>*/}
+                    {/*    Tạo Tour Mới*/}
+                    {/*</button>*/}
                     <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 rounded-lg transition duration-200"

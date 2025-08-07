@@ -18,6 +18,23 @@ const getAllTours = async (status = '') => {
     }
 }
 
+const getTopDestinations = async (top = 10) => {
+    try {
+        const response = await authorizedAxios.get(
+            `api/partner/tours/top-destinations?top=${top}`
+        )
+        return response
+    } catch (err) {
+        console.error('API Error (getTopDestinations):', {
+            message: err.message,
+            response: err.response?.data,
+            status: err.response?.status,
+            errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
+        })
+        throw err
+    }
+}
+
 const createTour = async (dto) => {
     try {
         const response = await authorizedAxios.post(
@@ -85,6 +102,7 @@ const updateActivity = async (activityId, dto) => {
         throw err
     }
 }
+
 const submitTour = async (tourId) => {
     try {
         const response = await authorizedAxios.post(
@@ -310,6 +328,7 @@ const deleteOrDraftTour = async (tourId, action) => {
 
 export default {
     getAllTours,
+    getTopDestinations,
     createTour,
     submitTour,
     getTourDetail,

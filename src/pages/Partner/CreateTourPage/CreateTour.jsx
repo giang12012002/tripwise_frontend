@@ -50,7 +50,7 @@ const CreateTour = () => {
     const [imagePreviews, setImagePreviews] = useState([])
     const [activityPreviews, setActivityPreviews] = useState({})
     const [tempUrlInput, setTempUrlInput] = useState({ tour: '' })
-    const [isSubmitting, setIsSubmitting] = useState(false) // New state for loading
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const tourFileInputRef = useRef(null)
     const activityFileInputRefs = useRef({})
     const navigate = useNavigate()
@@ -537,7 +537,6 @@ const CreateTour = () => {
                 )
                     return `Phải cung cấp ít nhất một hình ảnh cho hoạt động trong ngày ${day.dayNumber}.`
                 totalEstimatedCost += activity.estimatedCost || 0
-                // Validate first activity of Day 1
                 if (
                     day.dayNumber === 1 &&
                     activityIndex === 0 &&
@@ -561,8 +560,8 @@ const CreateTour = () => {
     }
 
     const handleSubmit = async () => {
-        if (isSubmitting) return // Prevent multiple submissions
-        setIsSubmitting(true) // Set loading state
+        if (isSubmitting) return
+        setIsSubmitting(true)
         const validationError = validateForm()
         if (validationError) {
             Swal.fire({
@@ -752,7 +751,7 @@ const CreateTour = () => {
                 navigate('/signin')
             }
         } finally {
-            setIsSubmitting(false) // Reset loading state
+            setIsSubmitting(false)
         }
     }
 
@@ -774,12 +773,33 @@ const CreateTour = () => {
             openDays[dayIndex] ? 'Closed' : 'Opened'
         )
     }
+
     return (
         <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
-            <div className="text-center mb-10">
+            <div className="flex justify-between items-center mb-10">
                 <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight">
                     Tạo Tour
                 </h1>
+                <button
+                    className="px-5 py-2 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-lg hover:from-gray-500 hover:to-gray-700 transition-all duration-300 shadow-md flex items-center"
+                    onClick={() => navigate(-1)}
+                >
+                    <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M15 19l-7-7 7-7"
+                        />
+                    </svg>
+                    Quay Lại
+                </button>
             </div>
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1329,8 +1349,8 @@ const CreateTour = () => {
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
-                                                        Hình Ảnh Hoạt Động (Có
-                                                        thể chọn nhiều)
+                                                        Hình Ảnh Hoạt Động (1
+                                                        ảnh cho mỗi hoạt động)
                                                     </label>
                                                     <button
                                                         className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 import tourUserAPI from '@/apis/TourUserAPI'
 import Swal from 'sweetalert2'
 
-function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
+function TourCard({
+    tour,
+    onViewDetail,
+    removeTourFromWishlist,
+    validTourIds = []
+}) {
     const [isLiked, setIsLiked] = useState(false)
     const [loading, setLoading] = useState(false)
 
@@ -10,21 +15,18 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
         const checkIfLiked = async () => {
             const accessToken = localStorage.getItem('accessToken')
             if (!accessToken) {
-                setIsLiked(false) // Đặt isLiked về false nếu không có token
+                setIsLiked(false)
                 return
             }
 
             try {
                 const response = await tourUserAPI.getUserWishlist(accessToken)
-
-                // Đảm bảo response.data là mảng, nếu không thì đặt về mảng rỗng
                 const wishlistTours = Array.isArray(response.data)
                     ? response.data
                     : []
                 const isTourLiked = wishlistTours.some(
                     (wishlistTour) => wishlistTour.tourId === tour.id
                 )
-
                 setIsLiked(isTourLiked)
             } catch (err) {
                 console.error('Lỗi khi kiểm tra danh sách yêu thích:', {
@@ -40,19 +42,18 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
                         'Token không hợp lệ hoặc hết hạn, xóa khỏi localStorage'
                     )
                     localStorage.removeItem('accessToken')
-                    setIsLiked(false) // Đặt isLiked về false nếu token không hợp lệ
+                    setIsLiked(false)
                 } else {
-                    setIsLiked(false) // Đặt về false trong trường hợp lỗi khác
+                    setIsLiked(false)
                 }
             }
         }
 
-        // Chỉ chạy nếu tour và tour.id hợp lệ
         if (tour && tour.id) {
             checkIfLiked()
         } else {
             console.error('Lỗi: tour hoặc tour.id không hợp lệ:', tour)
-            setIsLiked(false) // Đặt isLiked về false nếu tour không hợp lệ
+            setIsLiked(false)
         }
     }, [tour?.id])
 
@@ -72,7 +73,6 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
             return
         }
 
-        // Kiểm tra tour và validTourIds
         if (!tour?.id) {
             console.error('Lỗi: tour hoặc tour.id không hợp lệ:', { tour })
             Swal.fire({
@@ -85,15 +85,12 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
             return
         }
 
-        // Kiểm tra validTourIds và xác thực tour nếu cần
         let isTourValid =
             Array.isArray(validTourIds) && validTourIds.includes(tour.id)
         if (!isTourValid) {
             try {
-                // Gọi API để xác thực tour nếu không có trong validTourIds
-
                 await tourUserAPI.getApprovedTourDetail(tour.id, accessToken)
-                isTourValid = true // Tour hợp lệ nếu API không trả về lỗi
+                isTourValid = true
             } catch (err) {
                 console.error('Lỗi khi xác thực tour:', {
                     tourId: tour.id,
@@ -108,8 +105,8 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
                     showConfirmButton: false,
                     timer: 1800
                 })
-                if (refreshTours) {
-                    await refreshTours()
+                if (removeTourFromWishlist) {
+                    removeTourFromWishlist(tour.id)
                 }
                 return
             }
@@ -119,25 +116,20 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
             setLoading(true)
 
             if (isLiked) {
-                const response = await tourUserAPI.removeFromWishlist(
-                    tour.id,
-                    accessToken
-                )
-
+                await tourUserAPI.removeFromWishlist(tour.id, accessToken)
                 setIsLiked(false)
+                if (removeTourFromWishlist) {
+                    removeTourFromWishlist(tour.id)
+                }
                 Swal.fire({
                     icon: 'success',
                     title: 'Đã xóa',
-                    text: 'Đã xóa tour khỏi "Tour yêu thích.',
+                    text: 'Đã xóa tour khỏi "Tour yêu thích".',
                     showConfirmButton: false,
                     timer: 1500
                 })
             } else {
-                const response = await tourUserAPI.addToWishlist(
-                    tour.id,
-                    accessToken
-                )
-
+                await tourUserAPI.addToWishlist(tour.id, accessToken)
                 setIsLiked(true)
                 Swal.fire({
                     icon: 'success',
@@ -146,9 +138,6 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
                     showConfirmButton: false,
                     timer: 1500
                 })
-            }
-            if (refreshTours) {
-                await refreshTours()
             }
         } catch (err) {
             console.error('Lỗi khi cập nhật danh sách yêu thích:', {
@@ -171,8 +160,8 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
                 err.response?.data?.includes('FOREIGN KEY constraint')
             ) {
                 errorMessage = `Tour với ID ${tour.id} không tồn tại trong hệ thống. Đang làm mới danh sách...`
-                if (refreshTours) {
-                    await refreshTours()
+                if (removeTourFromWishlist) {
+                    removeTourFromWishlist(tour.id)
                 }
             } else if (err.response?.status === 400) {
                 errorMessage = 'Tour đã có trong danh sách yêu thích.'
@@ -189,7 +178,6 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
         }
     }
 
-    // Kiểm tra và xử lý các trường null
     const imageUrl = tour.image && tour.image.trim() ? tour.image : null
     const tourName = tour.name || 'Tour không có tên'
     const tourPrice = tour.price || 'Giá không xác định'
@@ -206,7 +194,7 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
                         console.log(
                             `Lỗi tải ảnh cho tour ${tour.id}: ${e.target.src}`
                         )
-                        e.target.style.display = 'none' // Ẩn ảnh nếu lỗi
+                        e.target.style.display = 'none'
                     }}
                 />
             ) : (
@@ -214,16 +202,33 @@ function TourCard({ tour, onViewDetail, refreshTours, validTourIds = [] }) {
                     <span className="text-gray-500">Không có ảnh</span>
                 </div>
             )}
-            <div className="p-5">
-                <p className="text-lg font-semibold text-red-500">
+            <div className="p-6">
+                <p className="text-xl font-semibold text-red-600 mb-2">
                     {tourPrice}
                 </p>
-                <div className="flex items-center my-2">
+                <div className="flex items-center mb-3">
                     <span className="text-yellow-500">★★★★★</span>
-                    <span className="ml-2 text-gray-600">4.6</span>
+                    <span className="ml-2 text-gray-600 text-sm">4.6</span>
                 </div>
-                <h3 className="text-lg font-bold text-gray-800">{tourName}</h3>
-                <p className="text-gray-600 text-sm">{tourAddress}</p>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                    {tourName}
+                </h3>
+                <div className="flex items-center text-gray-600 text-sm mb-4">
+                    <svg
+                        className="w-5 h-5 mr-2 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"
+                        />
+                    </svg>
+                    <span>{tourAddress}</span>
+                </div>
                 <div className="flex justify-between mt-4">
                     <button
                         className={`flex items-center ${isLiked ? 'text-red-500' : 'text-gray-400'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
