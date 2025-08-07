@@ -24,20 +24,20 @@ const tourUserAPI = {
     },
     addToWishlist: async (tourId, token) => {
         const response = await authorizedAxios.post(
-            '/api/TourUser/addWishlist',
-            { tourId },
+            `/api/TourUser/addWishlist?tourId=${tourId}`, // 👈 query string
+            null, // 👈 không gửi body
             {
                 headers: { Authorization: `Bearer ${token}` }
             }
         )
         return response
     },
+
     removeFromWishlist: async (tourId, token) => {
         const response = await authorizedAxios.delete(
-            `/api/TourUser/removeFromWishlist`,
+            `/api/TourUser/removeFromWishlist?tourId=${tourId}`,
             {
-                headers: { Authorization: `Bearer ${token}` },
-                data: { tourId }
+                headers: { Authorization: `Bearer ${token}` }
             }
         )
         return response
