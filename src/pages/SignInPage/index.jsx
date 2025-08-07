@@ -36,7 +36,7 @@ function SignIn() {
             ]
 
             if (role === permissions.admin) {
-                navigate('/admin/reports')
+                navigate('/admin/system-stats')
             } else if (role === permissions.partner) {
                 navigate('/partner/listTour')
             } else {
@@ -85,13 +85,12 @@ function SignIn() {
                 login(username, userId)
 
                 if (role == permissions.admin) {
-                    navigate('/admin/reports')
+                    navigate('/admin/system-stats')
                 } else if (role == permissions.partner) {
                     navigate('/partner/listTour')
                 } else if (role == permissions.user) {
                     navigate('/')
                 } else {
-                    console.warn('Vai trò không xác định:', role)
                     navigate('/') // fallback nếu vai trò không khớp
                 }
             } else {
@@ -144,20 +143,15 @@ function SignIn() {
                         'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
                     ]
                 localStorage.setItem('userId', userId)
-
-                console.log('Role from token:', role)
-                console.log('Expected admin:', permissions.admin)
-                console.log('Comparison result:', role === permissions.admin)
                 login(username, userId)
 
                 if (role === permissions.admin) {
-                    navigate('/admin/reports')
+                    navigate('/admin/system-stats')
                 } else if (role === permissions.partner) {
                     navigate('/partner/listTour')
                 } else if (role === permissions.user) {
                     navigate('/')
                 } else {
-                    console.warn('Vai trò không xác định:', role)
                     navigate('/') // fallback nếu vai trò không khớp
                 }
             } else {

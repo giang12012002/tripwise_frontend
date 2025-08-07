@@ -13,12 +13,13 @@ import PlanAdminList from '@/pages/Admin/Plans'
 import LogPage from '@/pages/Admin/Logs'
 import ReviewPage from '@/pages/Admin/Reviews'
 import ReviewDetail from '@/pages/Admin/Reviews/ReviewDetail'
+import SystemStatsPage from '@/pages/Admin/LandingReportPage/SystemStatsPage'
 
 function AdminRoutes() {
     return (
         <Routes>
             <Route path="/" element={<AdminDashboard />}>
-                <Route index element={<Navigate to="blogs" replace />} />
+                <Route index element={<Navigate to="system-stats" replace />} />
                 <Route path="blog/preview" element={<PreviewBlog />} />
 
                 <Route path="blogs" element={<AdminBlogList />} />
@@ -31,7 +32,7 @@ function AdminRoutes() {
 
                 <Route path="partners" element={<AdminManagerPartner />} />
                 <Route path="users" element={<AdminManagerUser />} />
-                {/* <Route path="system-stats" element={<SystemStatsPage />} /> */}
+                <Route path="system-stats" element={<SystemStatsPage />} />
                 <Route path="reports" element={<ReportDashboard />}>
                     <Route
                         index

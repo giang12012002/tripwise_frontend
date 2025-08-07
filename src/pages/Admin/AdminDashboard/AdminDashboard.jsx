@@ -33,7 +33,7 @@ const AdminDashboard = () => {
     }
 
     const navItems = [
-        // { label: 'Trang Chủ', path: '/admin' },
+        { label: 'Trang Chủ', path: '/admin/system-stats' },
         { label: 'Quản Lý Bài Viết', path: '/admin/blogs' },
         { label: 'Báo cáo thống kê', path: '/admin/reports' },
         { label: 'Quản Lý Tour Đối Tác', path: '/admin/tours/pending' },
