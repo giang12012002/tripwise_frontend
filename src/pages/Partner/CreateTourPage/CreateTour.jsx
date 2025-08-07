@@ -9,14 +9,16 @@ const CreateTour = () => {
         tourName: '',
         description: '',
         duration: '1',
-        price: 0,
-        pricePerDay: 0,
+        priceAdult: 0,
+        priceChild5To10: 0,
+        priceChildUnder5: 0,
         location: '',
         maxGroupSize: 1,
         category: '',
         tourNote: '',
         tourInfo: '',
         tourTypesID: 2,
+        startTime: '',
         imageFiles: [],
         imageUrls: [],
         imageIds: [],
@@ -44,17 +46,15 @@ const CreateTour = () => {
             }
         ]
     })
-    const [openDays, setOpenDays] = useState({ 0: true }) // Open the first day by default
+    const [openDays, setOpenDays] = useState({ 0: true })
     const [imagePreviews, setImagePreviews] = useState([])
     const [activityPreviews, setActivityPreviews] = useState({})
-    const [tempUrlInput, setTempUrlInput] = useState({ tour: '' }) // Initialize with tour: ''
+    const [tempUrlInput, setTempUrlInput] = useState({ tour: '' })
+    const [isSubmitting, setIsSubmitting] = useState(false) // New state for loading
     const tourFileInputRef = useRef(null)
     const activityFileInputRefs = useRef({})
-
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
-
-    // Maximum number of images allowed
     const MAX_IMAGES = 20
 
     useEffect(() => {
@@ -83,7 +83,6 @@ const CreateTour = () => {
         window.addEventListener('beforeunload', handleBeforeUnload)
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload)
-            // Revoke URL previews to prevent memory leaks
             imagePreviews.forEach((url) => URL.revokeObjectURL(url))
             Object.values(activityPreviews)
                 .flat()
@@ -109,8 +108,8 @@ const CreateTour = () => {
             }
             if (
                 tour.imageFiles.length +
-                    validFiles.length +
-                    tour.imageUrls.length >
+                validFiles.length +
+                tour.imageUrls.length >
                 MAX_IMAGES
             ) {
                 Swal.fire({
@@ -135,9 +134,10 @@ const CreateTour = () => {
             )
         } else {
             const newValue =
-                name === 'price' ||
-                name === 'maxGroupSize' ||
-                name === 'pricePerDay'
+                name === 'priceAdult' ||
+                name === 'priceChild5To10' ||
+                name === 'priceChildUnder5' ||
+                name === 'maxGroupSize'
                     ? parseFloat(value) || 0
                     : value
             setTour({ ...tour, [name]: newValue })
@@ -338,7 +338,7 @@ const CreateTour = () => {
             newItinerary[dayIndex].activities[activityIndex].imageUrls
         const newPreviews = activityPreviews[
             `${dayIndex}-${activityIndex}`
-        ].filter((_, i) => i !== index)
+            ].filter((_, i) => i !== index)
         newItinerary[dayIndex].activities[activityIndex].imageFiles =
             newItinerary[dayIndex].activities[activityIndex].imageFiles.filter(
                 (_, i) =>
@@ -478,7 +478,7 @@ const CreateTour = () => {
         }
         newItinerary[dayIndex].activities = newItinerary[
             dayIndex
-        ].activities.filter((_, index) => index !== activityIndex)
+            ].activities.filter((_, index) => index !== activityIndex)
         setTour({ ...tour, itinerary: newItinerary })
         setActivityPreviews((prev) => {
             const newPreviews = { ...prev }
@@ -502,17 +502,23 @@ const CreateTour = () => {
         if (!tour.category.trim()) return 'Danh mục là bắt buộc.'
         if (!tour.tourInfo.trim()) return 'Thông tin tour là bắt buộc.'
         if (!tour.tourNote.trim()) return 'Ghi chú tour là bắt buộc.'
+        if (!tour.startTime.trim()) return 'Thời gian bắt đầu là bắt buộc.'
         if (
             !tour.duration ||
             isNaN(parseInt(tour.duration)) ||
             parseInt(tour.duration) <= 0
         )
             return 'Thời gian phải là số lớn hơn 0.'
-        if (isNaN(tour.price) || tour.price < 0) return 'Giá không được âm.'
-        if (isNaN(tour.pricePerDay) || tour.pricePerDay < 0)
-            return 'Giá mỗi ngày không được âm.'
-        if (tour.pricePerDay > tour.price)
-            return 'Giá mỗi ngày/khách không được lớn hơn giá trọn gói của tour.'
+        if (isNaN(tour.priceAdult) || tour.priceAdult < 0)
+            return 'Giá người lớn không được âm.'
+        if (isNaN(tour.priceChild5To10) || tour.priceChild5To10 < 0)
+            return 'Giá trẻ em 5-10 tuổi không được âm.'
+        if (tour.priceChild5To10 > tour.priceAdult)
+            return 'Giá trẻ em 5-10 tuổi không được vượt quá giá người lớn.'
+        if (isNaN(tour.priceChildUnder5) || tour.priceChildUnder5 < 0)
+            return 'Giá trẻ em dưới 5 tuổi không được âm.'
+        if (tour.priceChildUnder5 > tour.priceAdult)
+            return 'Giá trẻ em dưới 5 tuổi không được vượt quá giá người lớn.'
         if (isNaN(tour.maxGroupSize) || tour.maxGroupSize <= 0)
             return 'Số người tối đa phải lớn hơn 0.'
         if (tour.itinerary.length > parseInt(tour.duration))
@@ -523,7 +529,8 @@ const CreateTour = () => {
         for (let day of tour.itinerary) {
             if (!day.title.trim())
                 return `Tiêu đề ngày ${day.dayNumber} là bắt buộc.`
-            for (let activity of day.activities) {
+            for (let activityIndex = 0; activityIndex < day.activities.length; activityIndex++) {
+                const activity = day.activities[activityIndex]
                 if (!activity.description.trim())
                     return `Mô tả hoạt động trong ngày ${day.dayNumber} là bắt buộc.`
                 if (!activity.address.trim())
@@ -534,20 +541,30 @@ const CreateTour = () => {
                     return `Chi phí dự kiến trong ngày ${day.dayNumber} không được âm.`
                 if (
                     (activity.imageFiles?.length || 0) +
-                        (activity.imageUrls?.length || 0) ===
+                    (activity.imageUrls?.length || 0) ===
                     0
                 )
                     return `Phải cung cấp ít nhất một hình ảnh cho hoạt động trong ngày ${day.dayNumber}.`
                 totalEstimatedCost += activity.estimatedCost || 0
+                // Validate first activity of Day 1
+                if (day.dayNumber === 1 && activityIndex === 0 && activity.startTime && tour.startTime) {
+                    const tourStart = new Date(tour.startTime)
+                    const activityStart = new Date(`${tour.startTime.split('T')[0]}T${activity.startTime}`)
+                    if (activityStart < tourStart) {
+                        return `Thời gian bắt đầu của hoạt động đầu tiên trong ngày 1 không được sớm hơn thời gian bắt đầu của tour.`
+                    }
+                }
             }
         }
-        if (totalEstimatedCost > tour.price) {
-            return `Tổng chi phí dự kiến của các hoạt động (${totalEstimatedCost}) không được vượt quá giá tour (${tour.price}).`
+        if (totalEstimatedCost > tour.priceAdult) {
+            return `Tổng chi phí dự kiến của các hoạt động (${totalEstimatedCost}) không được vượt quá giá tour cho người lớn (${tour.priceAdult}).`
         }
         return ''
     }
 
     const handleSubmit = async () => {
+        if (isSubmitting) return // Prevent multiple submissions
+        setIsSubmitting(true) // Set loading state
         const validationError = validateForm()
         if (validationError) {
             Swal.fire({
@@ -558,6 +575,7 @@ const CreateTour = () => {
                 timer: 1800
             })
             console.error('Validation error:', validationError)
+            setIsSubmitting(false)
             return
         }
 
@@ -566,14 +584,16 @@ const CreateTour = () => {
             formData.append('TourName', tour.tourName)
             formData.append('Description', tour.description)
             formData.append('Duration', parseInt(tour.duration) || 1)
-            formData.append('Price', parseFloat(tour.price) || 0)
-            formData.append('PricePerDay', parseFloat(tour.pricePerDay) || 0)
+            formData.append('PriceAdult', parseFloat(tour.priceAdult) || 0)
+            formData.append('PriceChild5To10', parseFloat(tour.priceChild5To10) || 0)
+            formData.append('PriceChildUnder5', parseFloat(tour.priceChildUnder5) || 0)
             formData.append('Location', tour.location)
             formData.append('MaxGroupSize', parseInt(tour.maxGroupSize) || 1)
             formData.append('Category', tour.category)
             formData.append('TourNote', tour.tourNote || '')
             formData.append('TourInfo', tour.tourInfo || '')
             formData.append('TourTypesId', tour.tourTypesID || 2)
+            formData.append('StartTime', tour.startTime)
 
             tour.imageFiles.forEach((file) => {
                 formData.append('ImageFile', file)
@@ -671,7 +691,7 @@ const CreateTour = () => {
                     )
                     newItinerary[dayIndex].activities[
                         activityIndex
-                    ].attractionId = activityResponse.data.data
+                        ].attractionId = activityResponse.data.data
                     newItinerary[dayIndex].activities[activityIndex].imageIds =
                         activityResponse.data.imageIds || []
                 }
@@ -724,17 +744,24 @@ const CreateTour = () => {
                 timer: 1800
             })
             if (err.response?.status === 401) {
-                localStorage.removeItem('accessToken')
+                localStorage.removeItem('access_token')
                 navigate('/signin')
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi',
-                    text: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
-                    showConfirmButton: false,
-                    timer: 1800
-                })
             }
+        } finally {
+            setIsSubmitting(false) // Reset loading state
         }
+    }
+
+    const handleAddActivityImageFromFile = (dayIndex, activityIndex) => {
+        const key = `${dayIndex}-${activityIndex}`
+        if (activityFileInputRefs.current[key]?.current) {
+            activityFileInputRefs.current[key].current.click()
+        }
+    }
+
+
+    const handleAddTourImageFromFile = () => {
+        tourFileInputRef.current.click()
     }
 
     const toggleDay = (dayIndex) => {
@@ -744,19 +771,6 @@ const CreateTour = () => {
             openDays[dayIndex] ? 'Closed' : 'Opened'
         )
     }
-
-    const handleAddTourImageFromFile = () => {
-        tourFileInputRef.current.click()
-    }
-
-    const handleAddActivityImageFromFile = (dayIndex, activityIndex) => {
-        const key = `${dayIndex}-${activityIndex}`
-        if (!activityFileInputRefs.current[key]) {
-            activityFileInputRefs.current[key] = React.createRef()
-        }
-        activityFileInputRefs.current[key].current.click()
-    }
-
     return (
         <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
             <div className="text-center mb-10">
@@ -796,6 +810,20 @@ const CreateTour = () => {
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
+                            Thời Gian Bắt Đầu
+                        </label>
+                        <input
+                            type="datetime-local"
+                            name="startTime"
+                            value={tour.startTime}
+                            onChange={handleTourChange}
+                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                            placeholder="Chọn thời gian bắt đầu"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-800 font-semibold text-lg mb-2">
                             Danh Mục
                         </label>
                         <input
@@ -824,44 +852,66 @@ const CreateTour = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Giá Tour (VND)
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Giá Người Lớn (VND)
                         </label>
                         <input
                             type="number"
-                            name="price"
+                            name="priceAdult"
                             value={
-                                tour.price === 0 || tour.price === undefined
+                                tour.priceAdult === 0 ||
+                                tour.priceAdult === undefined
                                     ? ''
-                                    : tour.price
+                                    : tour.priceAdult
                             }
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                             min="0"
                             step="10000"
-                            placeholder="Nhập giá tour (VND)"
+                            placeholder="Giá người lớn"
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Giá Mỗi Ngày/Khách (VND)
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Giá Trẻ Em 5-10 Tuổi (VND)
                         </label>
                         <input
                             type="number"
-                            name="pricePerDay"
+                            name="priceChild5To10"
                             value={
-                                tour.pricePerDay === 0 ||
-                                tour.pricePerDay === undefined
+                                tour.priceChild5To10 === 0 ||
+                                tour.priceChild5To10 === undefined
                                     ? ''
-                                    : tour.pricePerDay
+                                    : tour.priceChild5To10
                             }
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                             min="0"
                             step="10000"
-                            placeholder="Nhập giá mỗi ngày/khách (VND)"
+                            placeholder="Giá trẻ em 5-10 tuổi"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Giá Trẻ Em Dưới 5 Tuổi (VND)
+                        </label>
+                        <input
+                            type="number"
+                            name="priceChildUnder5"
+                            value={
+                                tour.priceChildUnder5 === 0 ||
+                                tour.priceChildUnder5 === undefined
+                                    ? ''
+                                    : tour.priceChildUnder5
+                            }
+                            onChange={handleTourChange}
+                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                            min="0"
+                            step="10000"
+                            placeholder="Giá trẻ em dưới 5 tuổi"
                         />
                     </div>
                     <div>

@@ -2,11 +2,11 @@ import authorizedAxios from './authorizedAxios'
 
 const createItinerary = async (formData) => {
     const payload = {
-        destination: formData.destination,
-        travelDate: formData.travelDate, // Chuỗi ISO (YYYY-MM-DD)
-        days: parseInt(formData.days, 10), // Số nguyên
+        destination: formData.destination.trim(),
+        travelDate: formData.travelDate,
+        days: parseInt(formData.days, 10),
         preferences: formData.preferences || 'General sightseeing',
-        budgetVND: Number(formData.budgetVND), // Số
+        budgetVND: Number(formData.budgetVND),
         transportation: formData.transportation || '',
         diningStyle: formData.diningStyle || '',
         groupType: formData.groupType || '',
@@ -18,6 +18,7 @@ const createItinerary = async (formData) => {
             'api/AIGeneratePlan/CreateItinerary',
             payload
         )
+        console.log('Phản hồi API:', response.data)
         return response
     } catch (err) {
         console.error('API Error:', {
@@ -78,6 +79,7 @@ const updateItinerary = async (generatePlanId, message) => {
         throw err
     }
 }
+
 const updateItineraryChunk = async (
     generatePlanId,
     userMessage,
@@ -102,6 +104,7 @@ const updateItineraryChunk = async (
         throw err
     }
 }
+
 const getToursByUserId = async (userId) => {
     return await authorizedAxios.get(
         `api/AIGeneratePlan/GetToursByUserId?userId=${userId}`
@@ -112,6 +115,32 @@ const deleteTour = async (tourId) => {
     return await authorizedAxios.delete(
         `api/AIGeneratePlan/DeleteTour/${tourId}`
     )
+}
+
+const deleteGenerateTravelPlans = async (id) => {
+    try {
+        const response = await authorizedAxios.delete(
+            `api/AIGeneratePlan/DeleteGenerateTravelPlan/${id}`
+        )
+        console.log('deleteGenerateTravelPlans response:', response.data)
+        return response
+    } catch (err) {
+        console.error('API Error (deleteGenerateTravelPlans):', {
+            message: err.message,
+            response: err.response?.data || 'No response data',
+            status: err.response?.status || 'No status',
+            errors:
+                err.response?.data?.message ||
+                err.response?.data?.error ||
+                'Không có chi tiết lỗi',
+            travelPlanId: id,
+            requestUrl: `api/AIGeneratePlan/DeleteGenerateTravelPlan/${id}`,
+            accessToken: localStorage.getItem('accessToken')
+                ? 'Token present'
+                : 'No token'
+        })
+        throw err
+    }
 }
 
 const getTourDetailById = async (id) => {
@@ -151,6 +180,11 @@ const getHistoryDetail = async (id) => {
         const response = await authorizedAxios.get(
             `api/AIGeneratePlan/GetHistoryDetailById/${id}`
         )
+        console.log(
+            'getHistoryDetail Raw Response:',
+            JSON.stringify(response, null, 2)
+        )
+        console.log('getHistoryDetail Data:', response.data)
         return response
     } catch (err) {
         console.error('API Error (getHistoryDetail):', {
@@ -172,5 +206,6 @@ export default {
     deleteTour,
     getTourDetailById,
     getHistory,
-    getHistoryDetail
+    getHistoryDetail,
+    deleteGenerateTravelPlans
 }

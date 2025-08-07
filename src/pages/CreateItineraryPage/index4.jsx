@@ -24,8 +24,8 @@ function CreateItinerary() {
 
     const [loading, setLoading] = useState(false)
     const [errors, setErrors] = useState({})
-    const [shouldScroll, setShouldScroll] = useState(false) // Flag để kiểm soát cuộn
-    const fieldRefs = useRef({}) // Object để gán ref theo tên trường
+    const [shouldScroll, setShouldScroll] = useState(false)
+    const fieldRefs = useRef({})
 
     const handleRadioClick = (name, value) => {
         if (loading) return
@@ -46,10 +46,10 @@ function CreateItinerary() {
                     ? [...prev[field], value]
                     : prev[field].filter((item) => item !== value)
             }))
-            setErrors((prev) => ({ ...prev, [field]: '' })) // Xóa lỗi khi thay đổi
+            setErrors((prev) => ({ ...prev, [field]: '' }))
         } else if (type !== 'radio') {
             setFormData((prev) => ({ ...prev, [name]: value }))
-            setErrors((prev) => ({ ...prev, [name]: '' })) // Xóa lỗi khi thay đổi
+            setErrors((prev) => ({ ...prev, [name]: '' }))
         }
     }
 
@@ -63,10 +63,8 @@ function CreateItinerary() {
                 }
                 break
             case 'travelDate':
-                {
-                    if (!value || new Date(value) < new Date(today))
-                        error = 'Ngày đi phải từ hôm nay trở đi.'
-                }
+                if (!value || new Date(value) < new Date(today))
+                    error = 'Ngày đi phải từ hôm nay trở đi.'
                 break
             case 'days':
                 {
@@ -103,7 +101,7 @@ function CreateItinerary() {
     }
 
     const handleSubmit = async () => {
-        setErrors({}) // Reset lỗi trước khi validate
+        setErrors({})
         const newErrors = {}
 
         // Validate từng trường
@@ -117,7 +115,7 @@ function CreateItinerary() {
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors)
-            setShouldScroll(true) // Bật flag cuộn khi có lỗi
+            setShouldScroll(true)
             return
         }
 
@@ -129,10 +127,14 @@ function CreateItinerary() {
                 icon: 'error',
                 title: 'Lỗi',
                 text: 'Vui lòng đăng nhập để tạo lịch trình.',
-                showConfirmButton: false,
-                timer: 500
+                showConfirmButton: true,
+                confirmButtonText: 'Đăng nhập',
+                confirmButtonColor: '#2563eb'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/signin')
+                }
             })
-            localStorage.removeItem('userId')
             setLoading(false)
             return
         }
@@ -178,6 +180,7 @@ function CreateItinerary() {
 
         try {
             const response = await travelFormAPI.createItinerary(submissionData)
+            console.log('Phản hồi API:', response.data)
             const itineraryData = response.data.data
             const generatePlanId = response.data.id
 
@@ -187,45 +190,127 @@ function CreateItinerary() {
                     title: 'Thành công',
                     text: 'Tạo lịch trình thành công!',
                     showConfirmButton: false,
-                    timer: 500
+                    timer: 1500
                 })
                 navigate('/user/itinerary', {
                     state: {
-                        itineraryData: { ...itineraryData, generatePlanId }
+                        itineraryData: { ...itineraryData, generatePlanId },
+                        relatedTours: response.data.relatedTours || [],
+                        relatedTourMessage: response.data.relatedTourMessage
                     }
                 })
             } else {
                 throw new Error(
-                    response.data.error || 'Không thể tạo lịch trình.'
+                    response.data.error ||
+                        response.data.message ||
+                        'Không thể tạo lịch trình.'
                 )
             }
         } catch (err) {
-            const errorMessage =
+            console.error('API Error:', {
+                message: err.message,
+                response: err.response?.data,
+                status: err.response?.status,
+                errors: err.response?.data?.errors
+            })
+
+            let errorMessage =
                 err.response?.data?.error ||
+                err.response?.data?.message ||
                 err.message ||
                 'Không thể tạo lịch trình. Vui lòng thử lại.'
+            let showConfirmButton = false
+            let confirmButtonText = ''
+            let timer = 4000
+
+            // Xử lý lỗi cụ thể liên quan đến gói dịch vụ và đăng nhập
+            if (
+                err.response?.status === 400 &&
+                errorMessage
+                    .toLowerCase()
+                    .includes('không tìm thấy gói sử dụng')
+            ) {
+                errorMessage =
+                    err.response?.data?.error ||
+                    'Không tìm thấy gói sử dụng. Vui lòng nâng cấp gói hoặc liên hệ hỗ trợ qua support@x.ai.'
+                showConfirmButton = true
+                confirmButtonText = 'Nâng cấp gói'
+            } else if (
+                err.response?.status === 403 ||
+                errorMessage.toLowerCase().includes('no valid subscription') ||
+                errorMessage.toLowerCase().includes('subscription not found')
+            ) {
+                errorMessage =
+                    err.response?.data?.error ||
+                    'Không tìm thấy gói dịch vụ hợp lệ. Vui lòng nâng cấp gói hoặc liên hệ hỗ trợ qua support@x.ai.'
+                showConfirmButton = true
+                confirmButtonText = 'Nâng cấp gói'
+            } else if (
+                err.response?.status === 400 &&
+                (errorMessage.toLowerCase().includes('hết lượt') ||
+                    errorMessage.toLowerCase().includes('quota exceeded') ||
+                    errorMessage.toLowerCase().includes('usage limit'))
+            ) {
+                errorMessage =
+                    err.response?.data?.error ||
+                    'Bạn đã sử dụng hết lượt của gói hiện tại. Vui lòng nâng cấp gói hoặc liên hệ hỗ trợ qua support@x.ai.'
+                showConfirmButton = true
+                confirmButtonText = 'Nâng cấp gói'
+            } else if (
+                err.response?.status === 401 ||
+                errorMessage.toLowerCase().includes('token')
+            ) {
+                errorMessage =
+                    err.response?.data?.error ||
+                    'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.'
+                showConfirmButton = true
+                confirmButtonText = 'Đăng nhập'
+            } else if (
+                err.response?.status === 400 &&
+                errorMessage.toLowerCase().includes('ngày khởi hành')
+            ) {
+                errorMessage =
+                    err.response?.data?.error ||
+                    'Ngày khởi hành phải từ hôm nay trở đi.'
+                showConfirmButton = false
+                timer = 4000
+            }
+
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
                 text: errorMessage,
-                showConfirmButton: false,
-                timer: 500
+                showConfirmButton: showConfirmButton,
+                confirmButtonText: confirmButtonText,
+                confirmButtonColor: '#2563eb',
+                timer: showConfirmButton ? undefined : 4000
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (
+                        errorMessage
+                            .toLowerCase()
+                            .includes('không tìm thấy gói sử dụng') ||
+                        errorMessage
+                            .toLowerCase()
+                            .includes('no valid subscription') ||
+                        errorMessage
+                            .toLowerCase()
+                            .includes('subscription not found') ||
+                        errorMessage.toLowerCase().includes('hết lượt') ||
+                        errorMessage.toLowerCase().includes('quota exceeded') ||
+                        errorMessage.toLowerCase().includes('usage limit')
+                    ) {
+                        navigate('/plans')
+                    } else if (
+                        err.response?.status === 401 ||
+                        errorMessage.toLowerCase().includes('token')
+                    ) {
+                        localStorage.removeItem('accessToken')
+                        localStorage.removeItem('userId')
+                        navigate('/signin')
+                    }
+                }
             })
-            if (
-                err.response?.status === 401 ||
-                err.response?.data?.error?.includes('token')
-            ) {
-                localStorage.removeItem('accessToken')
-                localStorage.removeItem('userId')
-                navigate('/signin')
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi',
-                    text: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
-                    showConfirmButton: false,
-                    timer: 500
-                })
-            }
         } finally {
             setLoading(false)
         }
@@ -253,7 +338,6 @@ function CreateItinerary() {
             name: 'days',
             type: 'number',
             min: '1',
-
             required: true,
             icon: '⏳'
         },
@@ -314,7 +398,6 @@ function CreateItinerary() {
                     value: '2000000-3000000',
                     icon: '💵'
                 },
-
                 {
                     label: '3,000,000 - 4,000,000 VND',
                     value: '3000000-4000000',
@@ -425,7 +508,6 @@ function CreateItinerary() {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
                 icon: 'success',
-                // title: 'Thành công',
                 text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
                 timer: 1800
@@ -443,9 +525,9 @@ function CreateItinerary() {
                     behavior: 'smooth',
                     block: 'center'
                 })
-                window.scrollBy({ top: -100, behavior: 'smooth' }) // Offset 100px
+                window.scrollBy({ top: -100, behavior: 'smooth' })
             }
-            setShouldScroll(false) // Tắt flag sau khi cuộn
+            setShouldScroll(false)
         }
     }, [errors, shouldScroll])
 
@@ -682,7 +764,6 @@ function CreateItinerary() {
                     </button>
                 </div>
             </div>
-            x
             <Footer />
         </div>
     )

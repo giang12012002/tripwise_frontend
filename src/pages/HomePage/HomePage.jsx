@@ -1,5 +1,5 @@
 import AiTourCreateButton from './AiTourCreateButton.jsx'
-import HotToursSection from './HotToursSection'
+
 import WhyChooseUsSection from './WhyChooseUsSection'
 import AboutUsSection from './AboutUsSection'
 import BlogsSection from './BlogsSection'

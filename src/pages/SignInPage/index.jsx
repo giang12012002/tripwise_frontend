@@ -74,7 +74,6 @@ function SignIn() {
                 localStorage.setItem('refreshToken', refreshToken)
                 localStorage.setItem('deviceId', deviceId)
 
-                // Giải mã accessToken
                 const decodedToken = jwtDecode(accessToken)
                 const userId = decodedToken.UserId
                 const username = decodedToken.Username
@@ -137,7 +136,6 @@ function SignIn() {
                 localStorage.setItem('refreshToken', refreshToken)
                 localStorage.setItem('deviceId', deviceId)
 
-                // Giải mã accessToken
                 const decodedToken = jwtDecode(accessToken)
                 const userId = decodedToken.UserId
                 const username = decodedToken.Username

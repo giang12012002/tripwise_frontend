@@ -21,6 +21,32 @@ const tourUserAPI = {
             }
         )
         return response
+    },
+    addToWishlist: async (tourId, token) => {
+        const response = await authorizedAxios.post(
+            `/api/TourUser/addWishlist?tourId=${tourId}`, // 👈 query string
+            null, // 👈 không gửi body
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        )
+        return response
+    },
+
+    removeFromWishlist: async (tourId, token) => {
+        const response = await authorizedAxios.delete(
+            `/api/TourUser/removeFromWishlist?tourId=${tourId}`,
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        )
+        return response
+    },
+    getUserWishlist: async (token) => {
+        const response = await authorizedAxios.get('/api/TourUser/Wishlist', {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        return response
     }
 }
 

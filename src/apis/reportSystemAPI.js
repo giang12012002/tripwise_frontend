@@ -57,6 +57,15 @@ const reportSystemAPI = {
             }
         )
         return response.data
+    },
+    getAnnualAdminStats: async (year) => {
+        const response = await authorizedAxios.get(
+            '/api/reports/total-statistic',
+            {
+                params: { year }
+            }
+        )
+        return response.data
     }
 }
 
