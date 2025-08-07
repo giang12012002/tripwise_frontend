@@ -31,6 +31,7 @@ function AdminRoutes() {
 
                 <Route path="partners" element={<AdminManagerPartner />} />
                 <Route path="users" element={<AdminManagerUser />} />
+                {/* <Route path="system-stats" element={<SystemStatsPage />} /> */}
                 <Route path="reports" element={<ReportDashboard />}>
                     <Route
                         index

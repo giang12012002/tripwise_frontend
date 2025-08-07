@@ -1,12 +1,26 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/AuthContext'
+import { fetchRemainingRequests } from '@/stores/planSlice'
 import Swal from 'sweetalert2'
+import { useDispatch, useSelector } from 'react-redux'
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
-    const { isLoggedIn, username, logout } = useAuth()
+    const { isLoggedIn, username, logout, userId } = useAuth()
+
+    const dispatch = useDispatch()
+    const { remainingRequests } = useSelector((state) => state.plan)
+    // const { isLoggedIn, username, logout } = useAuth()
+
+    useEffect(() => {
+        if (isLoggedIn && userId) {
+            dispatch(fetchRemainingRequests(userId))
+        }
+        console.log('Remaining requests:', remainingRequests)
+        console.log('User ID:', userId)
+    }, [isLoggedIn, userId, dispatch])
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
     const toggleProfileDropdown = () =>
@@ -139,7 +153,7 @@ function Header() {
                                 </svg>
                                 {/* Badge (hiện tại là 0) */}
                                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                                    0
+                                    {remainingRequests}
                                 </span>
                             </Link>
                         </li>
@@ -188,7 +202,7 @@ function Header() {
                                         </li>
                                         <li>
                                             <Link
-                                                to="/favoritetour"
+                                                to="/user/favoritetour"
                                                 className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)
