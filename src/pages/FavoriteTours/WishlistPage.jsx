@@ -149,6 +149,12 @@ const WishlistPage = () => {
         navigate(`/tour-detail/${tourId}`)
     }
 
+    const removeTourFromWishlist = (tourId) => {
+        setWishlistTours((prevTours) =>
+            prevTours.filter((tour) => tour.id !== tourId)
+        )
+    }
+
     const filteredTours = wishlistTours.filter((tour) => {
         const matchesSearch =
             tour.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -248,6 +254,9 @@ const WishlistPage = () => {
                                     }}
                                     onViewDetail={() =>
                                         handleViewDetail(tour.id)
+                                    }
+                                    removeTourFromWishlist={
+                                        removeTourFromWishlist
                                     }
                                 />
                             ))}
