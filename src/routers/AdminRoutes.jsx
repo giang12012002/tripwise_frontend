@@ -10,7 +10,7 @@ import AdminManagerPartner from '@/pages/Admin/PartnersManager/PartnerManager.js
 import AdminTourList from '@/pages/Admin/ManagerTour/AdminTourList.jsx'
 import AdminTourDetail from '@/pages/Admin/ManagerTour/AdminTourDetail.jsx'
 import PlanAdminList from '@/pages/Admin/Plans'
-import LogPage from '@/pages/Admin/Log'
+import LogPage from '@/pages/Admin/LogsPage'
 import ReviewPage from '@/pages/Admin/Reviews'
 import ReviewDetail from '@/pages/Admin/Reviews/ReviewDetail'
 import SystemStatsPage from '@/pages/Admin/LandingReportPage/SystemStatsPage'
