@@ -301,7 +301,7 @@ function CreateItinerary() {
                         errorMessage.toLowerCase().includes('quota exceeded') ||
                         errorMessage.toLowerCase().includes('usage limit')
                     ) {
-                        navigate('/plans')
+                        navigate('/user/plans')
                     } else if (
                         err.response?.status === 401 ||
                         errorMessage.toLowerCase().includes('token')

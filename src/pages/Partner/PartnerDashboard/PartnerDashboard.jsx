@@ -34,8 +34,8 @@ const PartnerDashboard = () => {
 
     const navItems = [
         // { label: 'Trang Chủ', path: '/' },
-        { label: 'Danh Sách Tour', path: '/partner/listTour' },
-        { label: 'Tạo Tour Mới', path: '/partner/createTour' }
+        { label: 'Danh Sách Tour', path: '/partner/listTour' }
+        // { label: 'Tạo Tour Mới', path: '/partner/createTour' }
     ]
 
     return (
