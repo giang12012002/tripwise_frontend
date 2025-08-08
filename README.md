@@ -1,4 +1,4 @@
-# Tripwise_fe-0.4.2
+# Tripwise_fe-0.8
 
 1. Landing page
 2. Create tour using AI
