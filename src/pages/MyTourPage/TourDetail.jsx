@@ -7,12 +7,15 @@ import ReviewTourAI from './ReviewTourAI/index'
 import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
 import { useAuth } from '@/AuthContext'
+import RelatedToursSection from '@/pages/ItineraryPage/RelatedToursSection.jsx'
 
 function TourDetail() {
     const { id } = useParams()
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
     const [tourDetail, setTourDetail] = useState(null)
+    const [relatedTours, setRelatedTours] = useState([])
+    const [relatedTourMessage, setRelatedTourMessage] = useState(null)
     const [loading, setLoading] = useState(true)
     const [openDays, setOpenDays] = useState({})
 
@@ -52,11 +55,9 @@ function TourDetail() {
             }
 
             try {
+                setLoading(true)
                 const response = await travelFormAPI.getTourDetailById(id)
-                console.log(
-                    'Phản hồi API chi tiết tour:',
-                    JSON.stringify(response.data, null, 2)
-                )
+
                 if (
                     response.status === 200 &&
                     response.data.success &&
@@ -79,15 +80,16 @@ function TourDetail() {
                         CreatedDate: apiData.travelDate || null,
                         Itineraries: Array.isArray(apiData.itinerary)
                             ? apiData.itinerary.map((day, index) => ({
-                                  ItineraryId: index + 1,
+                                  ItineraryId: day.itineraryId || index + 1,
                                   ItineraryName:
                                       day.title ||
                                       `Ngày ${day.dayNumber || index + 1}`,
                                   DayNumber: day.dayNumber || index + 1,
-                                  StartTime: null,
-                                  EndTime: null,
                                   Description:
                                       day.description || 'Chưa xác định',
+                                  DailyCost: day.dailyCost || 0,
+                                  StartTime: null,
+                                  EndTime: null,
                                   Category:
                                       apiData.preferences || 'Chưa xác định',
                                   Activities: Array.isArray(day.activities)
@@ -106,28 +108,36 @@ function TourDetail() {
                                                     activity.placeDetail ||
                                                     'Chưa xác định',
                                                 MapUrl: activity.mapUrl || null,
-                                                ImageUrl:
-                                                    Array.isArray(
-                                                        activity.imageUrls
-                                                    ) &&
-                                                    activity.imageUrls.length >
-                                                        0
-                                                        ? activity.imageUrls[0]
-                                                        : null,
+                                                ImageUrl: activity.imageUrls
+                                                    ? typeof activity.imageUrls ===
+                                                      'string'
+                                                        ? activity.imageUrls
+                                                        : Array.isArray(
+                                                                activity.imageUrls
+                                                            ) &&
+                                                            activity.imageUrls
+                                                                .length > 0
+                                                          ? activity
+                                                                .imageUrls[0]
+                                                          : null
+                                                    : null,
                                                 StartTime:
-                                                    activity.startTime || null, // Thêm ánh xạ cho StartTime
+                                                    activity.startTime || null,
                                                 EndTime:
-                                                    activity.endTime || null, // Thêm ánh xạ cho EndTime
+                                                    activity.endTime || null,
                                                 Description:
                                                     activity.description ||
-                                                    'Chưa xác định' // Thêm ánh xạ cho Description
+                                                    'Chưa xác định'
                                             })
                                         )
                                       : []
                               }))
                             : []
                     }
+
                     setTourDetail(normalizedData)
+                    setRelatedTours(apiData.relatedTours || [])
+                    setRelatedTourMessage(apiData.relatedTourMessage || null)
                 } else {
                     throw new Error('Dữ liệu chi tiết tour không hợp lệ.')
                 }
@@ -221,7 +231,10 @@ function TourDetail() {
         ))
     }
 
-    console.log('tourId ở components cha', id)
+    useEffect(() => {
+        if (!loading && tourDetail) {
+        }
+    }, [loading, tourDetail, relatedTours, relatedTourMessage])
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -235,7 +248,7 @@ function TourDetail() {
                     <ReviewTourAI tourId={id} />
 
                     <button
-                        onClick={() => navigate('/myTour')}
+                        onClick={() => navigate('/user/myTour')}
                         className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-md flex items-center"
                     >
                         <svg
@@ -298,26 +311,26 @@ function TourDetail() {
                                 <div className="space-y-3">
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">📍</span>
-                                        <strong>Địa điểm: </strong>
+                                        <strong>Địa điểm:&nbsp; </strong>
                                         {tourDetail.Location}
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">⏳</span>
-                                        <strong>Số ngày: </strong>
+                                        <strong>Số ngày:&nbsp; </strong>
                                         {tourDetail.Duration}
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">💸</span>
-                                        <strong>Giá: </strong>
+                                        <strong>Giá:&nbsp; </strong>
                                         <span className="text-blue-600">
                                             {formatCurrency(tourDetail.Price)}
                                         </span>
                                     </p>
-                                    <p className="flex items-center text-gray-700">
-                                        <span className="mr-2">📅</span>
-                                        <strong>Ngày bắt đầu: </strong>
-                                        {formatDate(tourDetail.CreatedDate)}
-                                    </p>
+                                    {/*<p className="flex items-center text-gray-700">*/}
+                                    {/*    <span className="mr-2">📅</span>*/}
+                                    {/*    <strong>Ngày bắt đầu: </strong>*/}
+                                    {/*    {formatDate(tourDetail.CreatedDate)}*/}
+                                    {/*</p>*/}
                                 </div>
                             </div>
                             <div>
@@ -327,12 +340,12 @@ function TourDetail() {
                                 <div className="space-y-3">
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">🌟</span>
-                                        <strong>Sở thích: </strong>
+                                        <strong>Sở thích:&nbsp; </strong>
                                         {formatPreferences(tourDetail.Category)}
                                     </p>
                                     <p className="flex items-center text-gray-700">
                                         <span className="mr-2">📌</span>
-                                        <strong>Đề xuất chỗ ở: </strong>
+                                        <strong>Đề xuất chỗ ở:&nbsp; </strong>
                                         {tourDetail.TourNote ? (
                                             <a
                                                 href={tourDetail.TourNote}
@@ -357,7 +370,7 @@ function TourDetail() {
                             {tourDetail.Itineraries?.length > 0 ? (
                                 tourDetail.Itineraries.map((itinerary) => (
                                     <div
-                                        key={itinerary.DayNumber}
+                                        key={itinerary.ItineraryId}
                                         className="bg-white rounded-xl shadow-md overflow-hidden"
                                     >
                                         <button
@@ -396,6 +409,22 @@ function TourDetail() {
                                         </button>
                                         {openDays[itinerary.DayNumber] && (
                                             <div className="p-6 animate-fade-in">
+                                                <div className="mb-4">
+                                                    <p className="text-gray-700">
+                                                        {itinerary.Description}
+                                                    </p>
+                                                    <p className="text-gray-700">
+                                                        <strong>
+                                                            Chi phí ước tính
+                                                            ngày:{' '}
+                                                        </strong>
+                                                        <span className="text-blue-600">
+                                                            {formatCurrency(
+                                                                itinerary.DailyCost
+                                                            )}
+                                                        </span>
+                                                    </p>
+                                                </div>
                                                 <ul className="relative space-y-6">
                                                     {itinerary.Activities
                                                         ?.length > 0 ? (
@@ -434,15 +463,6 @@ function TourDetail() {
                                                                             </strong>
                                                                             {
                                                                                 activity.TourAttractionsName
-                                                                            }
-                                                                        </p>
-                                                                        <p className="text-gray-700">
-                                                                            <strong>
-                                                                                Chi
-                                                                                tiết:{' '}
-                                                                            </strong>
-                                                                            {
-                                                                                activity.PlaceDetail
                                                                             }
                                                                         </p>
                                                                         <p className="text-gray-700">
@@ -497,7 +517,7 @@ function TourDetail() {
                                                                                     activity.TourAttractionsName ||
                                                                                     'Hoạt động'
                                                                                 }
-                                                                                className="w-full h-48 object-cover rounded-lg mt-4"
+                                                                                className="w-full h-120 object-cover rounded-lg mt-4"
                                                                             />
                                                                         )}
                                                                     </div>
@@ -525,8 +545,16 @@ function TourDetail() {
                     </>
                 )}
             </div>
+            {!loading && tourDetail && (
+                <RelatedToursSection
+                    itineraryData={tourDetail}
+                    relatedTours={relatedTours}
+                    relatedTourMessage={relatedTourMessage}
+                />
+            )}
             <Footer />
         </div>
     )
 }
+
 export default TourDetail

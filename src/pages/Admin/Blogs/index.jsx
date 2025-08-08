@@ -124,9 +124,9 @@ function Index() {
                                 onClick={() =>
                                     navigate(`/admin/blogs/${blog.blogID}`)
                                 }
-                                className="bg-white p-4 rounded shadow hover:shadow-lg transition hover:scale-105 active:scale-95 duration-200 cursor-pointer"
+                                className="bg-white p-4 rounded shadow hover:shadow-lg transition hover:scale-102 active:scale-98 duration-200 cursor-pointer"
                             >
-                                <div className="flex justify-between items-center mb-2">
+                                <div className="flex justify-between items-center">
                                     <h2
                                         className="text-xl font-bold line-clamp-1 mb-2 max-w-[40%] text-gray-800"
                                         title={blog.blogName}
@@ -137,10 +137,6 @@ function Index() {
                                         {formatDate(blog.createdDate)}
                                     </p>
                                 </div>
-
-                                <p className="text-gray-600 line-clamp-2">
-                                    {blog.blogContent}
-                                </p>
                             </li>
                         ))}
                     </ul>

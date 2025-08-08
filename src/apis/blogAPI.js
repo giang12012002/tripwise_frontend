@@ -11,16 +11,11 @@ const blogAPI = {
         )
         return response
     },
-    createBlog: async ({ blogName, blogContent, images, imageLinks }) => {
+    createBlog: async ({ blogName, blogContent, image }) => {
         const formData = new FormData()
         formData.append('BlogName', blogName)
-        formData.append('BlogContent', encodeURIComponent(blogContent))
-        images.forEach((file) => {
-            formData.append('Images', file)
-        })
-        imageLinks.forEach((url) => {
-            formData.append('ImageUrls', url)
-        })
+        formData.append('BlogContent', blogContent)
+        formData.append('Images', image)
 
         const response = await authorizedAxios.post(
             '/api/Blog/CreateBlog',
@@ -31,13 +26,6 @@ const blogAPI = {
                 }
             }
         )
-        return response
-    },
-    createBlog2: async ({ documentId, documentContent }) => {
-        const response = await authorizedAxios.post('/api/Blog/CreateBlog', {
-            blogName: documentId,
-            blogContent: documentContent
-        })
         return response
     },
     updateBlog: async (id, blogData) => {

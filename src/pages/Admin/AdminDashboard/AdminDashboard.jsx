@@ -1,13 +1,13 @@
 import React from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import Swal from 'sweetalert2'
 
 const AdminDashboard = () => {
     const navigate = useNavigate()
+    const location = useLocation()
     const { isLoggedIn, isAuthLoading, logout } = useAuth()
 
-    // Kiểm tra đăng nhập
     React.useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
@@ -32,6 +32,18 @@ const AdminDashboard = () => {
         navigate('/signin')
     }
 
+    const navItems = [
+        { label: 'Trang Chủ', path: '/admin/system-stats' },
+        { label: 'Quản Lý Bài Viết', path: '/admin/blogs' },
+        { label: 'Báo cáo thống kê', path: '/admin/reports' },
+        { label: 'Quản Lý Tour Đối Tác', path: '/admin/tours/pending' },
+        { label: 'Quản Lý Tài Khoản Đối Tác', path: '/admin/partners' },
+        { label: 'Quản Lý Tài Khoản Khách Hàng', path: '/admin/users' },
+        { label: 'Quản Lý gói đăng ký', path: '/admin/plans' },
+        { label: 'Logs', path: '/admin/logs' },
+        { label: 'Đánh giá người dùng', path: '/admin/reviews' }
+    ]
+
     return (
         <div className="flex min-h-screen bg-gray-100">
             {/* Sidebar */}
@@ -40,48 +52,22 @@ const AdminDashboard = () => {
                     Quản Lý Admin
                 </h2>
                 <nav className="space-y-2">
-                    <button
-                        onClick={() => navigate('/admin')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Trang Chủ
-                    </button>
-                    <button
-                        onClick={() => navigate('/admin/reports')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Báo cáo thống kê
-                    </button>
-                    <button
-                        onClick={() => navigate('/admin/blogs')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Quản Lý Bài Viết
-                    </button>
-                    <button
-                        onClick={() => navigate('/admin/tours/pending')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Quản Lý Tour Đối Tác
-                    </button>
-                    <button
-                        onClick={() => navigate('/admin/partners')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Quản Lý Tài Khoản Đối Tác
-                    </button>
-                    <button
-                        onClick={() => navigate('/admin/users')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Quản Lý Tài Khoản Khách Hàng
-                    </button>
-                    <button
-                        onClick={() => navigate('/admin/plans')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Quản Lý gói đăng ký
-                    </button>
+                    {navItems.map((item) => {
+                        const isActive = location.pathname.startsWith(item.path)
+                        return (
+                            <button
+                                key={item.path}
+                                onClick={() => navigate(item.path)}
+                                className={`w-full text-left px-4 py-2 rounded-lg transition duration-200 ${
+                                    isActive
+                                        ? 'bg-blue-500 text-white'
+                                        : 'text-gray-700 hover:bg-blue-100'
+                                }`}
+                            >
+                                {item.label}
+                            </button>
+                        )
+                    })}
                     <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 rounded-lg transition duration-200"
@@ -92,7 +78,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Nội dung chính */}
-            <div className="flex-1 p-6 ml-64">
+            <div className="flex-1 ml-64">
                 <Outlet />
             </div>
         </div>

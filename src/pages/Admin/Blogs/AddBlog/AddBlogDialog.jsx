@@ -47,17 +47,24 @@ function AddBlogDialog({ isOpen, onClose }) {
 
             if (page === 'gg-docs-url') {
                 try {
-                    const response = await axios.post(
+                    const response = await axios.get(
                         'http://localhost:4000/export',
                         {
-                            url: googleDocUrl
+                            params: { url: googleDocUrl }
                         }
                     )
-                    if (response.data) {
-                        console.log(response.data)
-                        navigate(`/admin/blogs/preview`)
+
+                    if (response.status === 200) {
+                        navigate('/admin/blog/preview', {
+                            state: { blogData: response.data }
+                        })
+
+                        // console.log(response.data)
+                    } else {
+                        toast.error(response.data.message)
                     }
                 } catch (err) {
+                    toast.error(err.message)
                     console.log(err)
                 }
             }
@@ -165,7 +172,7 @@ function AddBlogDialog({ isOpen, onClose }) {
                             {/* Nút */}
                             <div className="flex justify-end gap-4">
                                 <button
-                                    onClick={handleClose}
+                                    onClick={() => setPage('method')}
                                     className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 transition hover:cursor-pointer active:bg-gray-500"
                                 >
                                     Hủy

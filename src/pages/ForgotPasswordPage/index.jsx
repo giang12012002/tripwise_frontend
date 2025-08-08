@@ -37,7 +37,7 @@ function ForgotPassword() {
                 email,
                 enteredOtp: otpString
             })
-            if (res.status === 200) {
+            if (res.data.statusCode === 200) {
                 setPage('reset')
                 toast.success(res.data.message || 'Otp hợp lệ')
             } else {

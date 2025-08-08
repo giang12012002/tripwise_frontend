@@ -6,6 +6,7 @@ import Swal from 'sweetalert2'
 
 const TourList = () => {
     const [tours, setTours] = useState([])
+    const [topDestinations, setTopDestinations] = useState([])
     const [status, setStatus] = useState('')
     const [searchTerm, setSearchTerm] = useState('')
     const [error, setError] = useState('')
@@ -22,10 +23,10 @@ const TourList = () => {
     }
 
     const statusColors = {
-        Draft: 'bg-yellow-100 text-yellow-800',
-        PendingApproval: 'bg-blue-100 text-blue-800',
-        Approved: 'bg-green-100 text-green-800',
-        Rejected: 'bg-red-100 text-red-800'
+        Draft: 'bg-yellow-200 text-yellow-900',
+        PendingApproval: 'bg-blue-200 text-blue-900',
+        Approved: 'bg-green-200 text-green-900',
+        Rejected: 'bg-red-200 text-red-900'
     }
 
     useEffect(() => {
@@ -51,12 +52,31 @@ const TourList = () => {
             localStorage.setItem('scrollPosition', window.scrollY)
         }
 
-        window.addEventListener('beforeUnload', handleBeforeUnload)
+        window.addEventListener('beforeunload', handleBeforeUnload)
         return () =>
-            window.removeEventListener('beforeUnload', handleBeforeUnload)
+            window.removeEventListener('beforeunload', handleBeforeUnload)
     }, [])
 
     useEffect(() => {
+        const fetchTopDestinations = async () => {
+            try {
+                const response = await partnerTourAPI.getTopDestinations(10)
+                const destinations = Object.entries(response.data || {}).map(
+                    ([location, count]) => ({
+                        location,
+                        count
+                    })
+                )
+                setTopDestinations(destinations)
+            } catch (err) {
+                console.error('Failed to fetch top destinations:', err)
+                setError(
+                    'Không thể tải danh sách địa điểm hàng đầu. Vui lòng thử lại.'
+                )
+                setTopDestinations([])
+            }
+        }
+
         const fetchTours = async () => {
             try {
                 const response = await partnerTourAPI.getAllTours(status)
@@ -71,27 +91,13 @@ const TourList = () => {
                         (a, b) =>
                             new Date(b.createdDate) - new Date(a.createdDate)
                     )
-                console.log('Tours fetched:', validTours) // Log dữ liệu tours
-                validTours.forEach((tour, index) => {
-                    console.log(
-                        `Tour ${index + 1} - ID: ${tour.tourId}, ImageUrls:`,
-                        tour.imageUrls,
-                        'ImageIds:',
-                        tour.imageIds
-                    ) // Log chi tiết hình ảnh
-                })
                 setTours(validTours)
             } catch (err) {
-                console.error('Error fetching tours:', {
-                    message: err.message,
-                    response: err.response?.data,
-                    status: err.response?.status,
-                    errors:
-                        err.response?.data?.errors || 'Không có chi tiết lỗi'
-                })
                 setError('Không thể tải danh sách tour. Vui lòng thử lại.')
             }
         }
+
+        fetchTopDestinations()
         fetchTours()
     }, [status])
 
@@ -255,24 +261,92 @@ const TourList = () => {
     }
 
     return (
-        <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-gray-50">
+            {/* Top Destinations Section */}
+            <section className="mb-12 bg-white rounded-2xl shadow-lg p-8">
+                <h2 className="text-2xl text-center font-bold text-gray-900 mb-6">
+                    Top các thành phố được khách hàng quan tâm khi sử dụng AI
+                    của TripWise
+                </h2>
+                {topDestinations.length === 0 ? (
+                    <p className="text-gray-500 text-center text-lg">
+                        Không có dữ liệu địa điểm hàng đầu.
+                    </p>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {topDestinations.map((destination, index) => (
+                            <div
+                                key={index}
+                                className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                        <span className="text-indigo-600 font-bold text-lg">
+                                            {index + 1}.
+                                        </span>
+                                        <span className="text-gray-800 font-medium">
+                                            {destination.location || 'N/A'}
+                                        </span>
+                                    </div>
+                                    <span className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full">
+                                        {destination.count || 0} tours
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* Tour List Header */}
+            <div className="flex flex-row justify-between items-center mb-8">
+                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                    Danh Sách Tour
+                </h1>
+                <button
+                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md flex items-center space-x-2"
+                    onClick={() =>
+                        navigate('/partner/createTour', { relative: 'path' })
+                    }
+                >
+                    <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 4v16m8-8H4"
+                        />
+                    </svg>
+                    <span>Tạo Tour Mới</span>
+                </button>
+            </div>
+
+            {/* Error Message */}
             {error && (
-                <p className="text-red-500 mb-6 text-center font-medium text-lg">
+                <p className="text-red-600 mb-6 text-center font-medium text-lg bg-red-50 p-4 rounded-lg">
                     {error}
                 </p>
             )}
-            <div className="mb-6 flex flex-col sm:flex-row gap-4">
+
+            {/* Search and Filter */}
+            <div className="mb-8 flex flex-col sm:flex-row gap-4">
                 <input
                     type="text"
                     placeholder="Tìm kiếm theo địa điểm..."
                     value={searchTerm}
                     onChange={handleSearchChange}
-                    className="flex-1 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="flex-1 p-4 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white shadow-sm"
                 />
                 <select
                     value={status}
                     onChange={handleStatusChange}
-                    className="p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="p-4 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white shadow-sm"
                 >
                     <option value="">Tất cả</option>
                     <option value="Draft">Bản Nháp</option>
@@ -281,9 +355,11 @@ const TourList = () => {
                     <option value="Rejected">Bị từ chối</option>
                 </select>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {/* Tour List */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentTours.length === 0 ? (
-                    <div className="col-span-full text-center bg-white p-8 rounded-xl shadow-lg">
+                    <div className="col-span-full text-center bg-white p-12 rounded-2xl shadow-lg">
                         <p className="text-lg text-gray-600">
                             {searchTerm
                                 ? 'Không tìm thấy tour phù hợp với địa điểm.'
@@ -294,34 +370,34 @@ const TourList = () => {
                     currentTours.map((tour, index) => (
                         <div
                             key={tour.tourId}
-                            className="bg-white rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-2xl flex flex-col"
+                            className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col"
                         >
-                            <div className="relative h-48">
+                            <div className="relative h-56">
                                 {tour.imageUrls && tour.imageUrls.length > 0 ? (
                                     <img
                                         src={tour.imageUrls[0]}
                                         alt={tour.tourName}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                     />
                                 ) : (
-                                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                        <span className="text-gray-500">
+                                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                        <span className="text-gray-400 text-lg">
                                             No Image
                                         </span>
                                     </div>
                                 )}
-                                <div className="absolute top-2 right-2 bg-white bg-opacity-80 px-2 py-1 rounded-full text-xs font-semibold text-gray-800">
+                                <div className="absolute top-3 right-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
                                     #{indexOfFirstTour + index + 1}
                                 </div>
                             </div>
-                            <div className="p-4 flex-grow">
-                                <h3 className="text-xl font-semibold text-gray-800 mb-2 break-words">
+                            <div className="p-6 flex-grow">
+                                <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
                                     {tour.tourName}
                                 </h3>
-                                <div className="space-y-2 text-sm text-gray-600">
+                                <div className="space-y-3 text-sm text-gray-600">
                                     <div className="flex items-center">
                                         <svg
-                                            className="w-4 h-4 mr-2 text-indigo-500"
+                                            className="w-5 h-5 mr-2 text-indigo-600"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -339,27 +415,11 @@ const TourList = () => {
                                                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                                             />
                                         </svg>
-                                        {tour.location || 'N/A'}
+                                        <span>{tour.location || 'N/A'}</span>
                                     </div>
-                                    {/*<div className="flex items-center">*/}
-                                    {/*    <svg*/}
-                                    {/*        className="w-4 h-4 mr-2 text-indigo-500"*/}
-                                    {/*        fill="none"*/}
-                                    {/*        stroke="currentColor"*/}
-                                    {/*        viewBox="0 0 24 24"*/}
-                                    {/*    >*/}
-                                    {/*        <path*/}
-                                    {/*            strokeLinecap="round"*/}
-                                    {/*            strokeLinejoin="round"*/}
-                                    {/*            strokeWidth="2"*/}
-                                    {/*            d="M13 10V3L4 14h7v7l9-11h-7z"*/}
-                                    {/*        />*/}
-                                    {/*    </svg>*/}
-                                    {/*    {tour.description || 'N/A'}*/}
-                                    {/*</div>*/}
                                     <div className="flex items-center">
                                         <svg
-                                            className="w-4 h-4 mr-2 text-indigo-500"
+                                            className="w-5 h-5 mr-2 text-indigo-600"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -372,7 +432,7 @@ const TourList = () => {
                                             />
                                         </svg>
                                         <span
-                                            className={`px-2 py-1 rounded text-xs font-medium ${statusColors[tour.status] || 'bg-gray-100 text-gray-800'}`}
+                                            className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[tour.status] || 'bg-gray-100 text-gray-800'}`}
                                         >
                                             {statusTranslations[tour.status] ||
                                                 tour.status ||
@@ -381,7 +441,7 @@ const TourList = () => {
                                     </div>
                                     <div className="flex items-center">
                                         <svg
-                                            className="w-4 h-4 mr-2 text-indigo-500"
+                                            className="w-5 h-5 mr-2 text-indigo-600"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -393,20 +453,22 @@ const TourList = () => {
                                                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                             />
                                         </svg>
-                                        {new Date(
-                                            tour.createdDate
-                                        ).toLocaleDateString('vi-VN')}
+                                        <span>
+                                            {new Date(
+                                                tour.createdDate
+                                            ).toLocaleDateString('vi-VN')}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                             <div className="p-6 pt-0 flex justify-end">
-                                <span className="text-2xl font-bold text-blue-700">
+                                <span className="text-2xl font-bold text-indigo-700">
                                     {formatCurrency(tour.price)}
                                 </span>
                             </div>
-                            <div className="p-6 pt-0 flex space-x-2">
+                            <div className="p-6 pt-0 flex space-x-3">
                                 <button
-                                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition duration-200 flex items-center justify-center space-x-1"
+                                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
                                     onClick={() =>
                                         handleViewDetail(tour.tourId)
                                     }
@@ -434,7 +496,7 @@ const TourList = () => {
                                     <span>Xem</span>
                                 </button>
                                 <button
-                                    className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 transition duration-200 flex items-center justify-center space-x-1"
+                                    className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 transition-all duration-200 flex items-center justify-center space-x-2"
                                     onClick={() => handleEditTour(tour.tourId)}
                                 >
                                     <svg
@@ -454,7 +516,7 @@ const TourList = () => {
                                     <span>Sửa</span>
                                 </button>
                                 <button
-                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition duration-200 flex items-center justify-center space-x-1"
+                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-all duration-200 flex items-center justify-center space-x-2"
                                     onClick={() =>
                                         handleDeleteOrDraftTour(tour.tourId)
                                     }
@@ -480,12 +542,14 @@ const TourList = () => {
                     ))
                 )}
             </div>
+
+            {/* Pagination */}
             {totalPages > 1 && (
-                <div className="flex justify-center mt-8 space-x-2">
+                <div className="flex justify-center mt-12 space-x-3">
                     <button
                         onClick={handlePreviousPage}
                         disabled={currentPage === 1}
-                        className="px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-lg hover:from-gray-500 hover:to-gray-700 transition-all duration-300 shadow-md flex items-center disabled:opacity-50"
+                        className="px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 shadow-md flex items-center disabled:opacity-50"
                     >
                         <svg
                             className="w-5 h-5 mr-2"
@@ -507,9 +571,9 @@ const TourList = () => {
                         <button
                             key={index + 1}
                             onClick={() => handlePageChange(index + 1)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 ${
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                                 currentPage === index + 1
-                                    ? 'bg-indigo-600 text-white'
+                                    ? 'bg-indigo-600 text-white shadow-md'
                                     : 'bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-50'
                             }`}
                         >
@@ -519,7 +583,7 @@ const TourList = () => {
                     <button
                         onClick={handleNextPage}
                         disabled={currentPage === totalPages}
-                        className="px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-lg hover:from-blue-500 hover:to-blue-700 transition-all duration-300 shadow-md flex items-center disabled:opacity-50"
+                        className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all duration-300 shadow-md flex items-center disabled:opacity-50"
                     >
                         Sau
                         <svg

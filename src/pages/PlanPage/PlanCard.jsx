@@ -24,14 +24,16 @@ function PlanCard({ plan, onSelect }) {
                 ))}
             </ul>
 
-            <div className="mt-auto w-full">
-                <button
-                    onClick={() => onSelect(plan)}
-                    className="bg-black text-white w-full py-2 rounded hover:bg-gray-800 hover:cursor-pointer active:bg-gray-900 transition duration-300 ease-in-out"
-                >
-                    Chọn
-                </button>
-            </div>
+            {!['Free', 'Trial'].includes(plan.planName) && (
+                <div className="mt-auto w-full">
+                    <button
+                        onClick={() => onSelect(plan)}
+                        className="bg-black text-white w-full py-2 rounded hover:bg-blue-500 hover:cursor-pointer active:bg-blue-600 transition duration-300 ease-in-out"
+                    >
+                        Chọn
+                    </button>
+                </div>
+            )}
         </div>
     )
 }

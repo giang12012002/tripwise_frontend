@@ -1,13 +1,13 @@
 import React from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import Swal from 'sweetalert2'
 
 const PartnerDashboard = () => {
     const navigate = useNavigate()
+    const location = useLocation()
     const { isLoggedIn, isAuthLoading, logout } = useAuth()
 
-    // Kiểm tra đăng nhập
     React.useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
@@ -32,6 +32,12 @@ const PartnerDashboard = () => {
         navigate('/signin')
     }
 
+    const navItems = [
+        // { label: 'Trang Chủ', path: '/' },
+        { label: 'Danh Sách Tour', path: '/partner/listTour' }
+        // { label: 'Tạo Tour Mới', path: '/partner/createTour' }
+    ]
+
     return (
         <div className="flex min-h-screen bg-gray-100">
             {/* Sidebar */}
@@ -40,24 +46,22 @@ const PartnerDashboard = () => {
                     Quản Lý Đối Tác
                 </h2>
                 <nav className="space-y-2">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Trang Chủ
-                    </button>
-                    <button
-                        onClick={() => navigate('/partner/listTour')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Danh Sách Tour
-                    </button>
-                    <button
-                        onClick={() => navigate('/partner/createTour')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 rounded-lg transition duration-200"
-                    >
-                        Tạo Tour Mới
-                    </button>
+                    {navItems.map((item) => {
+                        const isActive = location.pathname.startsWith(item.path)
+                        return (
+                            <button
+                                key={item.path}
+                                onClick={() => navigate(item.path)}
+                                className={`w-full text-left px-4 py-2 rounded-lg transition duration-200 ${
+                                    isActive
+                                        ? 'bg-blue-500 text-white'
+                                        : 'text-gray-700 hover:bg-blue-100'
+                                }`}
+                            >
+                                {item.label}
+                            </button>
+                        )
+                    })}
                     <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 rounded-lg transition duration-200"

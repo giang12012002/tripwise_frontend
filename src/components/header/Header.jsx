@@ -1,12 +1,26 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/AuthContext'
+import { fetchRemainingRequests } from '@/stores/planSlice'
 import Swal from 'sweetalert2'
+import { useDispatch, useSelector } from 'react-redux'
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
-    const { isLoggedIn, username, logout } = useAuth()
+    const { isLoggedIn, username, logout, userId } = useAuth()
+
+    const dispatch = useDispatch()
+    const { remainingRequests } = useSelector((state) => state.plan)
+    // const { isLoggedIn, username, logout } = useAuth()
+
+    useEffect(() => {
+        if (isLoggedIn && userId) {
+            dispatch(fetchRemainingRequests(userId))
+        }
+        console.log('Remaining requests:', remainingRequests)
+        console.log('User ID:', userId)
+    }, [isLoggedIn, userId, dispatch])
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
     const toggleProfileDropdown = () =>
@@ -80,14 +94,32 @@ function Header() {
                     {isLoggedIn && (
                         <li>
                             <Link
-                                to="/mytour"
+                                to="/user/mytour"
                                 className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
                                 onClick={() => setIsMenuOpen(false)}
                             >
-                                Yêu thích
+                                Tour AI của bạn
                             </Link>
                         </li>
                     )}
+                    {/*<li>*/}
+                    {/*    <Link*/}
+                    {/*        to="/favoritetour"*/}
+                    {/*        className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"*/}
+                    {/*        onClick={() => setIsMenuOpen(false)}*/}
+                    {/*    >*/}
+                    {/*        Tour Yêu thích*/}
+                    {/*    </Link>*/}
+                    {/*</li>*/}
+                    <li>
+                        <Link
+                            to="/alltour"
+                            className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            Tour du lịch
+                        </Link>
+                    </li>
                     <li>
                         <Link
                             to="/connect"
@@ -97,20 +129,11 @@ function Header() {
                             Hợp tác với chúng tôi
                         </Link>
                     </li>
-                    <li>
-                        <Link
-                            to="/support"
-                            className="block hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Hỗ trợ
-                        </Link>
-                    </li>
 
                     {isLoggedIn && (
                         <li title="Subcription plan">
                             <Link
-                                to="/plans"
+                                to="/user/plans"
                                 className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-800 transition-colors duration-200"
                                 onClick={() => setIsMenuOpen(false)}
                             >
@@ -130,7 +153,7 @@ function Header() {
                                 </svg>
                                 {/* Badge (hiện tại là 0) */}
                                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                                    0
+                                    {remainingRequests}
                                 </span>
                             </Link>
                         </li>
@@ -165,7 +188,7 @@ function Header() {
                                     <ul className="absolute top-full right-0 bg-blue-700 text-white rounded shadow-md mt-2 w-48 z-20">
                                         <li>
                                             <Link
-                                                to="/view-Profile"
+                                                to="/user/view-Profile"
                                                 className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)
@@ -179,7 +202,21 @@ function Header() {
                                         </li>
                                         <li>
                                             <Link
-                                                to="/HistoryItinerary"
+                                                to="/user/favoritetour"
+                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                onClick={() => {
+                                                    setIsMenuOpen(false)
+                                                    setIsProfileDropdownOpen(
+                                                        false
+                                                    )
+                                                }}
+                                            >
+                                                Tour yêu thích
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                to="/user/HistoryItinerary"
                                                 className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)
@@ -193,7 +230,7 @@ function Header() {
                                         </li>
                                         <li>
                                             <Link
-                                                to="/payment-history"
+                                                to="/user/payment-history"
                                                 className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)

@@ -1,19 +1,30 @@
+import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import {
-    LineChart,
-    Line,
+    BarChart,
+    Bar,
     XAxis,
     YAxis,
     CartesianGrid,
     Tooltip,
     Legend,
     ResponsiveContainer,
-    BarChart,
-    Bar
+    PieChart,
+    Pie,
+    Cell
 } from 'recharts'
 
 const RevenueReport = ({ data, onExport, loading }) => {
     const { details, totals } = data
+    const [selectedMonth, setSelectedMonth] = useState('')
+    const [searchUserID, setSearchUserID] = useState('')
+
+    // Synchronize selectedMonth with totals when data is available
+    useEffect(() => {
+        if (totals.length > 0 && !selectedMonth) {
+            setSelectedMonth(totals[0].month || '')
+        }
+    }, [totals, selectedMonth])
 
     const formatCurrency = (amount) =>
         new Intl.NumberFormat('vi-VN', {
@@ -25,27 +36,40 @@ const RevenueReport = ({ data, onExport, loading }) => {
         return date && !isNaN(new Date(date).getTime())
     }
 
-    // Chuẩn bị dữ liệu cho biểu đồ tổng doanh thu (LineChart)
-    const totalChartData = totals.map((item) => ({
+    // Prepare data for bar chart of total combined revenue by month
+    const totalCombinedBarData = totals.map((item) => ({
         month: item.month || 'N/A',
-        totalTour: item.totalBookingRevenue || 0,
-        totalPlan: item.totalPlanRevenue || 0,
         totalCombined: item.totalCombinedRevenue || 0
     }))
 
-    // Chuẩn bị dữ liệu cho biểu đồ chi tiết (BarChart) - nhóm theo loại giao dịch
-    const detailChartData = details.reduce((acc, item) => {
-        const type = item.transactionType || 'N/A'
-        if (!acc[type]) acc[type] = 0
-        acc[type] += item.amount || 0
-        return acc
-    }, {})
-    const detailBarData = Object.entries(detailChartData).map(
-        ([type, amount]) => ({
-            type,
-            amount
-        })
-    )
+    // Prepare data for pie chart of tour vs plan revenue for the selected month
+    const getPieData = (month) => {
+        const selectedTotal = totals.find((item) => item.month === month)
+        if (!selectedTotal) {
+            return [
+                { name: 'Tổng Tour', value: 0, percentage: 0 },
+                { name: 'Tổng Gói', value: 0, percentage: 0 }
+            ]
+        }
+        const totalTour = selectedTotal.totalBookingRevenue || 0
+        const totalPlan = selectedTotal.totalPlanRevenue || 0
+        const total = totalTour + totalPlan
+        const tourPercentage = total ? (totalTour / total) * 100 : 0
+        const planPercentage = total ? (totalPlan / total) * 100 : 0
+        return [
+            { name: 'Tổng Tour', value: totalTour, percentage: tourPercentage },
+            { name: 'Tổng Gói', value: totalPlan, percentage: planPercentage }
+        ]
+    }
+
+    // Filter details based on exact match for searchUserID
+    const filteredDetails = details.filter((item) => {
+        if (!searchUserID) return true // Show all data if search input is empty
+        const userID = item.userID != null ? String(item.userID) : ''
+        return userID.toLowerCase() === searchUserID.toLowerCase()
+    })
+
+    const COLORS = ['#8884d8', '#82ca9d']
 
     return (
         <div className="space-y-6">
@@ -58,21 +82,21 @@ const RevenueReport = ({ data, onExport, loading }) => {
                     disabled={loading}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 disabled:bg-gray-400 transition duration-200"
                 >
-                    {loading ? 'Đang xuất...' : 'Xuất Excel'}
+                    {loading ? 'Đang tải...' : 'Tải xuống báo cáo'}
                 </button>
             </div>
             {loading && (
                 <p className="text-blue-600 font-medium">Đang tải dữ liệu...</p>
             )}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Biểu đồ Tổng Doanh Thu Theo Tháng */}
+                {/* Bar Chart for Total Combined Revenue by Month */}
                 <div className="bg-white p-4 rounded-lg shadow-md">
                     <h4 className="text-lg font-medium mb-4 text-gray-700">
-                        Xu Hướng Doanh Thu Theo Tháng
+                        Tổng Doanh Thu Theo Tháng
                     </h4>
                     {totals.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={totalChartData}>
+                            <BarChart data={totalCombinedBarData}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="month" />
                                 <YAxis />
@@ -80,51 +104,11 @@ const RevenueReport = ({ data, onExport, loading }) => {
                                     formatter={(value) => formatCurrency(value)}
                                 />
                                 <Legend />
-                                <Line
-                                    type="monotone"
-                                    dataKey="totalTour"
-                                    stroke="#8884d8"
-                                    name="Tổng Tour"
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="totalPlan"
-                                    stroke="#82ca9d"
-                                    name="Tổng Gói"
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="totalCombined"
-                                    stroke="#ff7300"
-                                    name="Tổng Cộng"
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <p className="text-red-500">
-                            Không có dữ liệu để hiển thị biểu đồ.
-                        </p>
-                    )}
-                </div>
-                {/* Biểu đồ Chi Tiết Doanh Thu */}
-                <div className="bg-white p-4 rounded-lg shadow-md">
-                    <h4 className="text-lg font-medium mb-4 text-gray-700">
-                        Phân Bổ Doanh Thu Theo Loại Giao Dịch
-                    </h4>
-                    {details.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={detailBarData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="type" />
-                                <YAxis />
-                                <Tooltip
-                                    formatter={(value) => formatCurrency(value)}
-                                />
-                                <Legend />
                                 <Bar
-                                    dataKey="amount"
-                                    fill="#8884d8"
-                                    name="Số Tiền"
+                                    barSize={40}
+                                    dataKey="totalCombined"
+                                    fill="#ff7300"
+                                    name="Tổng Cộng"
                                 />
                             </BarChart>
                         </ResponsiveContainer>
@@ -134,15 +118,91 @@ const RevenueReport = ({ data, onExport, loading }) => {
                         </p>
                     )}
                 </div>
+                {/* Pie Chart for Tour vs Plan Revenue by Selected Month */}
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                    <h4 className="text-lg font-medium mb-4 text-gray-700">
+                        Tỷ Lệ Doanh Thu Tour vs Gói Theo Từng Tháng
+                    </h4>
+                    <div className="mb-4">
+                        <label className="mr-2 text-gray-700">
+                            Chọn tháng:
+                        </label>
+                        <select
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(e.target.value)}
+                            className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            {totals.map((item) => (
+                                <option key={item.month} value={item.month}>
+                                    {item.month || 'N/A'}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {totals.length > 0 && selectedMonth ? (
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={getPieData(selectedMonth)}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={100}
+                                    label={({ name, percentage }) =>
+                                        `${name}: ${percentage.toFixed(1)}%`
+                                    }
+                                >
+                                    {getPieData(selectedMonth).map(
+                                        (entry, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={
+                                                    COLORS[
+                                                        index % COLORS.length
+                                                    ]
+                                                }
+                                            />
+                                        )
+                                    )}
+                                </Pie>
+                                <Tooltip
+                                    formatter={(value, name, props) => [
+                                        formatCurrency(value),
+                                        `${name} (${props.payload.percentage.toFixed(1)}%)`
+                                    ]}
+                                />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <p className="text-red-500">
+                            Không có dữ liệu để hiển thị biểu đồ.
+                        </p>
+                    )}
+                </div>
             </div>
-            {/* Bảng Chi Tiết */}
+            {/* Detailed Table */}
             <div className="overflow-x-auto bg-white rounded-lg shadow-md">
                 <h4 className="text-lg font-medium p-4 text-gray-700">
                     Chi Tiết Doanh Thu
                 </h4>
-                {details.length === 0 && !loading && (
+                <div className="p-4">
+                    <label className="mr-2 text-gray-700">
+                        Tìm kiếm theo Mã người dùng:
+                    </label>
+                    <input
+                        type="text"
+                        value={searchUserID}
+                        onChange={(e) => setSearchUserID(e.target.value)}
+                        placeholder="Nhập mã người dùng..."
+                        className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-md"
+                    />
+                </div>
+                {filteredDetails.length === 0 && !loading && (
                     <p className="text-red-500 p-4">
-                        Không có dữ liệu doanh thu cho khoảng thời gian này.
+                        Không có dữ liệu doanh thu cho khoảng thời gian này hoặc
+                        mã người dùng này.
                     </p>
                 )}
                 <table className="min-w-full divide-y divide-gray-200">
@@ -178,7 +238,7 @@ const RevenueReport = ({ data, onExport, loading }) => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {details.map((item, index) => (
+                        {filteredDetails.map((item, index) => (
                             <tr key={index} className="hover:bg-gray-50">
                                 <td className="py-4 px-6">{index + 1}</td>
                                 <td className="py-4 px-6">
@@ -215,7 +275,7 @@ const RevenueReport = ({ data, onExport, loading }) => {
                     </tbody>
                 </table>
             </div>
-            {/* Bảng Tổng Doanh Thu */}
+            {/* Total Revenue Table */}
             <div className="overflow-x-auto bg-white rounded-lg shadow-md">
                 <h4 className="text-lg font-medium p-4 text-gray-700">
                     Tổng Doanh Thu Theo Tháng

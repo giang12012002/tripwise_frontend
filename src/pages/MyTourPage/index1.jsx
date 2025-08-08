@@ -256,7 +256,7 @@ function MyTours() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-10">
                         <h2 className="text-3xl font-extrabold text-indigo-700 inline-block px-6 py-2 bg-indigo-50 rounded-full shadow-sm">
-                            Tour Yêu Thích Được Tạo Bằng AI
+                            Tours Được Tạo Bằng AI
                         </h2>
                     </div>
                     <div className="mb-5 flex flex-col sm:flex-row gap-4">
@@ -332,7 +332,7 @@ function MyTours() {
                                                     className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 flex items-center space-x-1"
                                                     onClick={() =>
                                                         navigate(
-                                                            `/TourDetail/${tour.tourId}`
+                                                            `/user/TourDetail/${tour.tourId}`
                                                         )
                                                     }
                                                     disabled={loading}

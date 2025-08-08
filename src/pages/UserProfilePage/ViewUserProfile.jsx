@@ -5,7 +5,7 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import Swal from 'sweetalert2'
 import { useAuth } from '@/AuthContext'
-import avatarImage from '@/assets/images/maleAvatar.png' // Import ảnh avatar
+import avatarImage from '@/assets/images/maleAvatar.png' // Default avatar image
 
 function ViewUserProfile() {
     const navigate = useNavigate()
@@ -13,33 +13,29 @@ function ViewUserProfile() {
     const [profile, setProfile] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    // Lưu và khôi phục vị trí cuộn
+    // Save and restore scroll position
     useEffect(() => {
-        // Khôi phục vị trí cuộn khi component mount
         const savedScrollPosition = localStorage.getItem('scrollPosition')
         if (savedScrollPosition) {
             window.scrollTo(0, parseInt(savedScrollPosition, 10))
         }
 
-        // Lưu vị trí cuộn khi trước khi trang unload (F5, đóng tab)
         const handleBeforeUnload = () => {
             localStorage.setItem('scrollPosition', window.scrollY)
         }
 
         window.addEventListener('beforeunload', handleBeforeUnload)
 
-        // Cleanup event listener
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload)
         }
     }, [])
 
-    // Kiểm tra trạng thái đăng nhập
+    // Check login status
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
                 icon: 'success',
-                // title: 'Thành công',
                 text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
                 timer: 1800
@@ -153,9 +149,12 @@ function ViewUserProfile() {
                         <div className="bg-blue-600 p-6 flex flex-col items-center">
                             <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg mb-4 bg-blue-500 flex items-center justify-center overflow-hidden">
                                 <img
-                                    src={avatarImage}
+                                    src={profile.avatar || avatarImage}
                                     alt="Avatar"
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.src = avatarImage // Fallback to default image on error
+                                    }}
                                 />
                             </div>
                             <h2 className="text-2xl font-semibold text-white">
@@ -234,7 +233,7 @@ function ViewUserProfile() {
                                 <div className="md:col-span-2 mt-6">
                                     <button
                                         onClick={() =>
-                                            navigate('/edit-Profile')
+                                            navigate('/user/edit-Profile')
                                         }
                                         className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md"
                                     >

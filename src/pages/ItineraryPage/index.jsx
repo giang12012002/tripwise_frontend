@@ -5,12 +5,16 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import { useAuth } from '@/AuthContext'
+import RelatedToursSection from './RelatedToursSection'
 
 function ItineraryDisplay() {
     const location = useLocation()
     const { isLoggedIn, isAuthLoading } = useAuth()
     const navigate = useNavigate()
     const itineraryData = location.state?.itineraryData || null
+    const relatedTours = location.state?.relatedTours || []
+    const relatedTourMessage = location.state?.relatedTourMessage || null
+
     const [openDays, setOpenDays] = useState({})
     const [saving, setSaving] = useState(false)
     const [loadingChunk, setLoadingChunk] = useState(false)
@@ -40,32 +44,6 @@ function ItineraryDisplay() {
             navigate('/')
         }
     }, [isLoggedIn, isAuthLoading, navigate])
-
-    const weatherTranslations = {
-        'clear sky': 'trời quang đãng',
-        'few clouds': 'ít mây',
-        'scattered clouds': 'mây rải rác',
-        'broken clouds': 'mây đứt quãng',
-        'overcast clouds': 'trời nhiều mây',
-        'light rain': 'mưa nhẹ',
-        'moderate rain': 'mưa vừa',
-        'heavy rain': 'mưa to',
-        'light snow': 'tuyết nhẹ',
-        snow: 'tuyết',
-        'heavy snow': 'tuyết dày',
-        mist: 'sương mù',
-        fog: 'sương mù dày',
-        thunderstorm: 'giông bão',
-        drizzle: 'mưa phùn'
-    }
-
-    const translateWeatherDescription = (description) => {
-        return (
-            weatherTranslations[description?.toLowerCase()] ||
-            description ||
-            'mây rải rác'
-        )
-    }
 
     const formatCurrency = (value) => {
         if (!value || isNaN(value)) return '0 đ'
@@ -102,7 +80,7 @@ function ItineraryDisplay() {
                 showConfirmButton: false,
                 timer: 1500
             })
-            navigate('/mytour')
+            navigate('/user/mytour')
         } catch (err) {
             Swal.fire({
                 icon: 'error',
@@ -130,17 +108,22 @@ function ItineraryDisplay() {
             })
             return
         }
-        // Pass the updated itinerary including all chunks
         const updatedItineraryData = {
             ...itineraryData,
-            itinerary: fullItinerary, // Use fullItinerary instead of itineraryData.itinerary
+            itinerary: fullItinerary,
             totalEstimatedCost,
             previousAddresses: usedPlaces,
             hasMore,
-            nextStartDate
+            nextStartDate,
+            relatedTours,
+            relatedTourMessage
         }
-        navigate('/chatbot-update', {
-            state: { itineraryData: updatedItineraryData }
+        navigate('/user/chatbot-update', {
+            state: {
+                itineraryData: updatedItineraryData,
+                relatedTours,
+                relatedTourMessage
+            }
         })
     }
 
@@ -221,7 +204,7 @@ function ItineraryDisplay() {
         }
     }
 
-    if (!itineraryData) {
+    if (!location.state || !itineraryData) {
         return (
             <div className="min-h-screen flex flex-col">
                 <Header />
@@ -327,7 +310,7 @@ function ItineraryDisplay() {
                         <div className="space-y-3">
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">📅</span>
-                                <strong>Ngày đi: &nbsp; </strong>
+                                <strong>Ngày đi:&nbsp;</strong>
                                 {itineraryData.travelDate
                                     ? new Date(
                                           itineraryData.travelDate
@@ -336,7 +319,7 @@ function ItineraryDisplay() {
                             </p>
                             <p className="flex items-center text-gray-700">
                                 <span className="mr-2">⏳</span>
-                                <strong>Số ngày:&nbsp; </strong>
+                                <strong>Số ngày:&nbsp;</strong>
                                 {itineraryData.days || 'Không xác định'}
                             </p>
                             <p className="flex items-center text-gray-700">
@@ -388,7 +371,7 @@ function ItineraryDisplay() {
                             {itineraryData.transportation && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🚗</span>
-                                    <strong>Phương tiện: &nbsp; </strong>
+                                    <strong>Phương tiện:&nbsp; </strong>
                                     {itineraryData.transportation}
                                 </p>
                             )}
@@ -402,14 +385,14 @@ function ItineraryDisplay() {
                             {itineraryData.accommodation && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🏨</span>
-                                    <strong>Chỗ ở:&nbsp;</strong>
+                                    <strong>Chỗ ở:&nbsp; </strong>
                                     {itineraryData.accommodation}
                                 </p>
                             )}
                             {itineraryData.suggestedAccommodation && (
                                 <p className="flex items-center text-gray-700">
                                     <span className="mr-2">🗺️</span>
-                                    <strong>Đề xuất chỗ ở:&nbsp;</strong>
+                                    <strong>Đề xuất chỗ ở:&nbsp; </strong>
                                     <a
                                         href={
                                             itineraryData.suggestedAccommodation
@@ -479,9 +462,7 @@ function ItineraryDisplay() {
                                             </p>
                                             <p className="text-gray-700">
                                                 <strong>Thời tiết: </strong>
-                                                {translateWeatherDescription(
-                                                    day.weatherDescription
-                                                )}
+                                                {day.weatherDescription}
                                             </p>
                                             <p className="text-gray-700">
                                                 <strong>Nhiệt độ: </strong>
@@ -514,18 +495,6 @@ function ItineraryDisplay() {
                                                                 <span className="absolute left-3 top-6 w-0.5 h-full bg-blue-200"></span>
                                                             )}
                                                             <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
-                                                                {activity.image && (
-                                                                    <img
-                                                                        src={
-                                                                            activity.image
-                                                                        }
-                                                                        alt={
-                                                                            activity.description ||
-                                                                            'Activity'
-                                                                        }
-                                                                        className="w-full h-48 object-cover rounded-lg mb-4"
-                                                                    />
-                                                                )}
                                                                 <p className="text-gray-700">
                                                                     <strong>
                                                                         Thời
@@ -593,6 +562,19 @@ function ItineraryDisplay() {
                                                                     {activity.placeDetail ||
                                                                         'Không xác định'}
                                                                 </p>
+
+                                                                {activity.image && (
+                                                                    <img
+                                                                        src={
+                                                                            activity.image
+                                                                        }
+                                                                        alt={
+                                                                            activity.description ||
+                                                                            'Activity'
+                                                                        }
+                                                                        className="w-full h-120 object-cover rounded-lg mb-6"
+                                                                    />
+                                                                )}
                                                             </div>
                                                         </li>
                                                     )
@@ -614,6 +596,7 @@ function ItineraryDisplay() {
                         </p>
                     )}
                 </div>
+
                 {hasMore && (
                     <div className="flex justify-center mt-8">
                         <button
@@ -646,12 +629,17 @@ function ItineraryDisplay() {
                                     Đang tải...
                                 </div>
                             ) : (
-                                'Tiếp tục'
+                                'Hiển thị các ngày tiếp theo'
                             )}
                         </button>
                     </div>
                 )}
             </div>
+            <RelatedToursSection
+                itineraryData={itineraryData}
+                relatedTours={relatedTours}
+                relatedTourMessage={relatedTourMessage}
+            />
             <Footer />
         </div>
     )

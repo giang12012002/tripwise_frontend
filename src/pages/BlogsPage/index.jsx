@@ -4,6 +4,7 @@ import Footer from '@/components/footer/Footer'
 import { useNavigate } from 'react-router-dom'
 import blogAPI from '@/apis/blogAPI'
 import { sortBlogsByLatest } from '@/utils/sort'
+import { formatDate } from '@/utils/format'
 
 function Index() {
     const [blogs, setBlogs] = useState([])
@@ -15,6 +16,7 @@ function Index() {
             const response = await blogAPI.fetchBlogs()
             if (response.status === 200 && response.data.data) {
                 setBlogs(sortBlogsByLatest(response.data.data))
+                console.log(response.data.data)
             } else {
                 setError(response.data.message || 'Không thể tải bài viết')
             }
@@ -70,7 +72,7 @@ function Index() {
                                         <div className="w-3/10 max-w-[30%] aspect-[4/3] bg-gray-200 overflow-hidden rounded-md flex items-center justify-center">
                                             <img
                                                 src={
-                                                    blog.blogImages
+                                                    blog.blogImages > 0
                                                         ? blog.blogImages[0]
                                                               .imageURL
                                                         : '/image.png'
@@ -88,7 +90,7 @@ function Index() {
                                                 {blog.blogName}
                                             </h2>
                                             <p className="mt-2 text-gray-600 line-clamp-3">
-                                                {blog.blogContent}
+                                                {formatDate(blog.createdDate)}
                                             </p>
                                         </div>
                                     </li>

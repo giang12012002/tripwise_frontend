@@ -27,6 +27,14 @@ const reviewAPI = {
             `/api/Review/tour-ai/${tourId}`
         )
         return response
+    },
+    fetch: async () => {
+        const response = await authorizedAxios.get('/api/Review/tour-ai')
+        return response
+    },
+    getAverageReview: async () => {
+        const response = await authorizedAxios.get('/api/Review/GetAVGReview')
+        return response
     }
 }
 

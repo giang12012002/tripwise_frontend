@@ -44,7 +44,6 @@ const UserManager = () => {
         try {
             const response = await userManagerApi.fetchAllUsers()
             setAllUsers(response.data)
-            console.log('Fetched all users:', response.data.length)
         } catch (err) {
             Swal.fire({
                 icon: 'error',
@@ -60,7 +59,6 @@ const UserManager = () => {
         try {
             const response = await userManagerApi.fetchNonActiveUsers()
             setNonActiveUsers(response.data)
-            console.log('Fetched non-active users:', response.data.length)
         } catch (err) {
             Swal.fire({
                 icon: 'error',
@@ -264,24 +262,6 @@ const UserManager = () => {
         startIndexNonActiveUsers,
         startIndexNonActiveUsers + usersPerPage
     )
-
-    // Debugging logs
-    console.log('Filtered All CustomersManager:', filteredAllUsers.length)
-    console.log('Total Pages All CustomersManager:', totalPagesAllUsers)
-    console.log('Current All CustomersManager:', currentAllUsers.length)
-    console.log(
-        'Filtered Non-Active CustomersManager:',
-        filteredNonActiveUsers.length
-    )
-    console.log(
-        'Total Pages Non-Active CustomersManager:',
-        totalPagesNonActiveUsers
-    )
-    console.log(
-        'Current Non-Active CustomersManager:',
-        currentNonActiveUsers.length
-    )
-    console.log('Current Page:', currentPage)
 
     const handlePageChange = (page) => {
         if (

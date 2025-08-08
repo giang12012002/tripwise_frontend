@@ -5,10 +5,27 @@ const getAllTours = async (status = '') => {
         const response = await authorizedAxios.get(
             `api/partner/tours${status ? `?status=${status}` : ''}`
         )
-        console.log('getAllTours response:', response.data)
+
         return response
     } catch (err) {
         console.error('API Error (getAllTours):', {
+            message: err.message,
+            response: err.response?.data,
+            status: err.response?.status,
+            errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
+        })
+        throw err
+    }
+}
+
+const getTopDestinations = async (top = 10) => {
+    try {
+        const response = await authorizedAxios.get(
+            `api/partner/tours/top-destinations?top=${top}`
+        )
+        return response
+    } catch (err) {
+        console.error('API Error (getTopDestinations):', {
             message: err.message,
             response: err.response?.data,
             status: err.response?.status,
@@ -49,10 +66,7 @@ const createActivity = async (itineraryId, dto) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             }
         )
-        console.log(
-            'Phản hồi createActivity:',
-            JSON.stringify(response.data, null, 2)
-        ) // Ghi log toàn bộ phản hồi
+
         return response
     } catch (err) {
         console.error('Lỗi API (createActivity):', {
@@ -75,10 +89,7 @@ const updateActivity = async (activityId, dto) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             }
         )
-        console.log(
-            'Phản hồi updateActivity:',
-            JSON.stringify(response.data, null, 2)
-        ) // Ghi log toàn bộ phản hồi
+
         return response
     } catch (err) {
         console.error('Lỗi API (updateActivity):', {
@@ -91,6 +102,7 @@ const updateActivity = async (activityId, dto) => {
         throw err
     }
 }
+
 const submitTour = async (tourId) => {
     try {
         const response = await authorizedAxios.post(
@@ -113,11 +125,9 @@ const getTourDetail = async (tourId) => {
         if (!tourId || isNaN(tourId) || parseInt(tourId) <= 0) {
             throw new Error('ID tour không hợp lệ')
         }
-        console.log('Sending request to API with tourId:', tourId)
         const response = await authorizedAxios.get(
             `api/partner/tours/${tourId}`
         )
-        console.log('getTourDetail response:', response.data)
         return response
     } catch (err) {
         console.error('API Error (getTourDetail):', {
@@ -139,10 +149,7 @@ const updateTour = async (tourId, dto) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             }
         )
-        console.log(
-            'Phản hồi updateTour:',
-            JSON.stringify(response.data, null, 2)
-        ) // Ghi log toàn bộ phản hồi
+
         return response
     } catch (err) {
         console.error('Lỗi API (updateTour):', {
@@ -321,6 +328,7 @@ const deleteOrDraftTour = async (tourId, action) => {
 
 export default {
     getAllTours,
+    getTopDestinations,
     createTour,
     submitTour,
     getTourDetail,

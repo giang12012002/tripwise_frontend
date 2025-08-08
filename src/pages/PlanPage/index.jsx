@@ -43,7 +43,7 @@ function Index() {
                 planId: plan.planId,
                 paymentMethod: method
             })
-            localStorage.setItem('vnpay-redirect', '/plans')
+            localStorage.setItem('vnpay-redirect', '/user/plans')
             window.location.href = res.data.url
         } else if (method === 'qr') {
             console.log('qr')

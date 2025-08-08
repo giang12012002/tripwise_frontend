@@ -11,23 +11,6 @@ function VNPayCallback() {
         const success = params.get('success')
         const message = params.get('message')
 
-        // if (success === 'true') {
-        //     toast.success(message)
-        //     setTimeout(() => {
-        //         const navigateTo = localStorage.getItem('vnpay-redirect')
-        //         if (navigateTo) navigate(navigateTo)
-        //         else navigate('/')
-        //         // navigate('/plans')
-        //     }, 1200)
-        // } else {
-        //     toast.error(message)
-        //     setTimeout(() => {
-        //         const navigateTo = localStorage.getItem('vnpay-redirect')
-        //         if (navigateTo) navigate(navigateTo)
-        //         else navigate('/')
-        //     }, 1200)
-        // }
-
         toast[success ? 'success' : 'error'](message)
 
         setTimeout(() => {

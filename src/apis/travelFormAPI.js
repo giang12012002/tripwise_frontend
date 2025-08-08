@@ -2,22 +2,23 @@ import authorizedAxios from './authorizedAxios'
 
 const createItinerary = async (formData) => {
     const payload = {
-        destination: formData.destination,
-        travelDate: formData.travelDate, // Chuỗi ISO (YYYY-MM-DD)
-        days: parseInt(formData.days, 10), // Số nguyên
+        destination: formData.destination.trim(),
+        travelDate: formData.travelDate,
+        days: parseInt(formData.days, 10),
         preferences: formData.preferences || 'General sightseeing',
-        budgetVND: Number(formData.budgetVND), // Số
+        budgetVND: Number(formData.budgetVND),
         transportation: formData.transportation || '',
         diningStyle: formData.diningStyle || '',
         groupType: formData.groupType || '',
         accommodation: formData.accommodation || ''
     }
-    console.log('Payload gửi đi:', payload)
+
     try {
         const response = await authorizedAxios.post(
             'api/AIGeneratePlan/CreateItinerary',
             payload
         )
+
         return response
     } catch (err) {
         console.error('API Error:', {
@@ -55,13 +56,10 @@ const saveTourFromGenerated = async (generatePlanId) => {
     const response = await authorizedAxios.post(
         `api/AIGeneratePlan/SaveTourFromGenerated/${generatePlanId}`
     )
-    console.log('saveTourFromGenerated response:', response.data)
-    return response
 }
 
 const updateItinerary = async (generatePlanId, message) => {
     try {
-        console.log('Payload gửi đi:', { Message: message, generatePlanId })
         const response = await authorizedAxios.post(
             `api/AIGeneratePlan/UpdateItinerary/${generatePlanId}`,
             { Message: message }
@@ -78,6 +76,7 @@ const updateItinerary = async (generatePlanId, message) => {
         throw err
     }
 }
+
 const updateItineraryChunk = async (
     generatePlanId,
     userMessage,
@@ -85,7 +84,6 @@ const updateItineraryChunk = async (
     chunkSize
 ) => {
     try {
-        console.log('Payload gửi đi:', { userMessage, startDay, chunkSize })
         const response = await authorizedAxios.post(
             `api/AIGeneratePlan/UpdateItineraryChunk/${generatePlanId}`,
             { userMessage, startDay, chunkSize }
@@ -102,6 +100,7 @@ const updateItineraryChunk = async (
         throw err
     }
 }
+
 const getToursByUserId = async (userId) => {
     return await authorizedAxios.get(
         `api/AIGeneratePlan/GetToursByUserId?userId=${userId}`
@@ -112,6 +111,32 @@ const deleteTour = async (tourId) => {
     return await authorizedAxios.delete(
         `api/AIGeneratePlan/DeleteTour/${tourId}`
     )
+}
+
+const deleteGenerateTravelPlans = async (id) => {
+    try {
+        const response = await authorizedAxios.delete(
+            `api/AIGeneratePlan/DeleteGenerateTravelPlan/${id}`
+        )
+
+        return response
+    } catch (err) {
+        console.error('API Error (deleteGenerateTravelPlans):', {
+            message: err.message,
+            response: err.response?.data || 'No response data',
+            status: err.response?.status || 'No status',
+            errors:
+                err.response?.data?.message ||
+                err.response?.data?.error ||
+                'Không có chi tiết lỗi',
+            travelPlanId: id,
+            requestUrl: `api/AIGeneratePlan/DeleteGenerateTravelPlan/${id}`,
+            accessToken: localStorage.getItem('accessToken')
+                ? 'Token present'
+                : 'No token'
+        })
+        throw err
+    }
 }
 
 const getTourDetailById = async (id) => {
@@ -151,6 +176,7 @@ const getHistoryDetail = async (id) => {
         const response = await authorizedAxios.get(
             `api/AIGeneratePlan/GetHistoryDetailById/${id}`
         )
+
         return response
     } catch (err) {
         console.error('API Error (getHistoryDetail):', {
@@ -172,5 +198,6 @@ export default {
     deleteTour,
     getTourDetailById,
     getHistory,
-    getHistoryDetail
+    getHistoryDetail,
+    deleteGenerateTravelPlans
 }

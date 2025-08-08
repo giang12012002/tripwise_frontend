@@ -8,6 +8,7 @@ import { useAuth } from '@/AuthContext'
 import { jwtDecode } from 'jwt-decode'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
+import { permissions } from '@/utils/authConfig'
 
 function SignIn() {
     const navigate = useNavigate()
@@ -22,9 +23,25 @@ function SignIn() {
         }
     }, [])
 
+    // useEffect(() => {
+    //     if (isLoggedIn) {
+    //         navigate('/')
+    //     }
+    // }, [isLoggedIn, navigate])
+
     useEffect(() => {
         if (isLoggedIn) {
-            navigate('/')
+            const role = jwtDecode(localStorage.getItem('accessToken'))[
+                'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+            ]
+
+            if (role === permissions.admin) {
+                navigate('/admin/system-stats')
+            } else if (role === permissions.partner) {
+                navigate('/partner/listTour')
+            } else {
+                navigate('/')
+            }
         }
     }, [isLoggedIn, navigate])
 
@@ -57,14 +74,25 @@ function SignIn() {
                 localStorage.setItem('refreshToken', refreshToken)
                 localStorage.setItem('deviceId', deviceId)
 
-                // Giải mã accessToken
                 const decodedToken = jwtDecode(accessToken)
                 const userId = decodedToken.UserId
                 const username = decodedToken.Username
-
+                const role =
+                    decodedToken[
+                        'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+                    ]
                 localStorage.setItem('userId', userId)
                 login(username, userId)
-                navigate('/')
+
+                if (role == permissions.admin) {
+                    navigate('/admin/system-stats')
+                } else if (role == permissions.partner) {
+                    navigate('/partner/listTour')
+                } else if (role == permissions.user) {
+                    navigate('/')
+                } else {
+                    navigate('/') // fallback nếu vai trò không khớp
+                }
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -107,14 +135,25 @@ function SignIn() {
                 localStorage.setItem('refreshToken', refreshToken)
                 localStorage.setItem('deviceId', deviceId)
 
-                // Giải mã accessToken
                 const decodedToken = jwtDecode(accessToken)
                 const userId = decodedToken.UserId
                 const username = decodedToken.Username
-
+                const role =
+                    decodedToken[
+                        'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+                    ]
                 localStorage.setItem('userId', userId)
                 login(username, userId)
-                navigate('/')
+
+                if (role === permissions.admin) {
+                    navigate('/admin/system-stats')
+                } else if (role === permissions.partner) {
+                    navigate('/partner/listTour')
+                } else if (role === permissions.user) {
+                    navigate('/')
+                } else {
+                    navigate('/') // fallback nếu vai trò không khớp
+                }
             } else {
                 Swal.fire({
                     icon: 'error',

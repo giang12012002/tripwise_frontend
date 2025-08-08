@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react'
-import { format, subDays } from 'date-fns'
+import { format, subDays, addDays } from 'date-fns'
 
 const DateRangePicker = ({ onDateChange }) => {
     const [fromDate, setFromDate] = useState(
-        format(subDays(new Date(), 30), 'yyyy-MM-dd')
+        format(subDays(new Date(), 1), 'yyyy-MM-dd')
     )
-    const [toDate, setToDate] = useState(format(new Date(), 'yyyy-MM-dd'))
+    const [toDate, setToDate] = useState(
+        format(addDays(new Date(), 1), 'yyyy-MM-dd')
+    )
 
     useEffect(() => {
-        onDateChange(fromDate, toDate)
-    }, [])
+        if (fromDate && toDate) {
+            onDateChange(fromDate, toDate)
+        }
+    }, [fromDate, toDate, onDateChange])
 
     const handleSubmit = () => {
         if (fromDate && toDate) {

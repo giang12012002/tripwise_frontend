@@ -1,5 +1,5 @@
 import AiTourCreateButton from './AiTourCreateButton.jsx'
-import HotToursSection from './HotToursSection'
+
 import WhyChooseUsSection from './WhyChooseUsSection'
 import AboutUsSection from './AboutUsSection'
 import BlogsSection from './BlogsSection'
@@ -8,6 +8,8 @@ import Footer from '@/components/footer/Footer'
 import ApprovedToursSection from '@/pages/HomePage/ApprovedToursSection.jsx'
 
 function HomePage() {
+    const token = localStorage.getItem('accessToken')
+
     return (
         <div className="min-h-screen bg-gray-100 font-sans">
             <Header />

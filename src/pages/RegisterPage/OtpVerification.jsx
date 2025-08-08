@@ -130,7 +130,7 @@ function OtpVerification() {
                     const extractedUserId = decodedToken.sub
                     const extractedUsername = decodedToken.name
                     login(extractedUsername, extractedUserId)
-                    navigate('/')
+                    navigate('/signin')
                 }
             } else {
                 Swal.fire({

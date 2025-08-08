@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
-import AdminManagerTourAPI from '@/apis/adminManagerTourAPI.js'
+import adminTourAPI from '@/apis/adminManagerTourAPI.js'
 import Swal from 'sweetalert2'
 
 const AdminTourDetail = () => {
@@ -14,7 +14,6 @@ const AdminTourDetail = () => {
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
-    const [rejectReason, setRejectReason] = useState('')
 
     const statusTranslations = {
         Draft: 'Bản Nháp',
@@ -37,6 +36,21 @@ const AdminTourDetail = () => {
     }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
+        const savedScrollPosition = localStorage.getItem('scrollPosition')
+        if (savedScrollPosition) {
+            window.scrollTo(0, parseInt(savedScrollPosition, 10))
+        }
+
+        const handleBeforeUnload = () => {
+            localStorage.setItem('scrollPosition', window.scrollY)
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload)
+        return () =>
+            window.removeEventListener('beforeunload', handleBeforeUnload)
+    }, [])
+
+    useEffect(() => {
         const fetchTour = async () => {
             if (!tourId || isNaN(parseInt(tourId))) {
                 setError('ID tour không hợp lệ.')
@@ -44,21 +58,29 @@ const AdminTourDetail = () => {
                 return
             }
             try {
-                console.log('Fetching tour with ID:', tourId)
-                const response = await AdminManagerTourAPI.getTourDetail(tourId)
-                console.log('Tour detail response:', response.data)
-                console.log(
-                    'ImageUrls:',
-                    response.data.imageUrls,
-                    'ImageIds:',
-                    response.data.imageIds
-                )
+                const response = await adminTourAPI.getTourDetail(tourId)
+
                 if (!response.data) {
                     setError('Không tìm thấy tour.')
                     setIsLoading(false)
                     return
                 }
-                setTour(response.data)
+                // Chuẩn hóa dữ liệu: đảm bảo activity.imageUrls là chuỗi
+                const normalizedTour = {
+                    ...response.data,
+                    itinerary: response.data.itinerary.map((day) => ({
+                        ...day,
+                        activities: day.activities.map((activity) => ({
+                            ...activity,
+                            imageUrls: Array.isArray(activity.imageUrls)
+                                ? activity.imageUrls.length > 0
+                                    ? activity.imageUrls[0]
+                                    : ''
+                                : activity.imageUrls || ''
+                        }))
+                    }))
+                }
+                setTour(normalizedTour)
                 setIsLoading(false)
             } catch (err) {
                 console.error('API Error (getTourDetail):', {
@@ -93,6 +115,30 @@ const AdminTourDetail = () => {
         }))
     }
 
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Không xác định'
+        try {
+            const date = new Date(dateString)
+            const hours = date.getHours()
+            const period = hours < 12 ? 'sáng' : 'tối'
+
+            const formattedDate = date.toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            })
+            const formattedTime = date.toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            })
+
+            return `${formattedTime} ${period} - ${formattedDate}`
+        } catch {
+            return dateString
+        }
+    }
+
     const formatTime = (time) => {
         if (!time) return 'Không xác định'
         try {
@@ -120,123 +166,62 @@ const AdminTourDetail = () => {
 
     const handleApproveTour = async () => {
         try {
-            await AdminManagerTourAPI.approveTour(tourId)
+            await adminTourAPI.approveTour(tourId)
             Swal.fire({
                 icon: 'success',
-                text: 'Tour đã được phê duyệt!',
+                text: 'Tour đã được duyệt!',
                 showConfirmButton: false,
                 timer: 1800
             })
             navigate('/admin/tours/pending')
         } catch (err) {
-            setError('Không thể phê duyệt tour. Vui lòng thử lại.')
+            console.error('API Error (approveTour):', {
+                message: err.message,
+                response: err.response?.data,
+                status: err.response?.status,
+                errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
+            })
+            setError('Không thể duyệt tour. Vui lòng thử lại.')
         }
     }
 
     const handleRejectTour = async () => {
-        const inputResult = await Swal.fire({
-            title: 'Từ chối tour',
-            text: `Nhập lý do từ chối tour "${tour.tourName}":`,
-            input: 'text',
-            inputPlaceholder: 'Lý do từ chối',
+        const { value: rejectReason } = await Swal.fire({
+            title: 'Lý do từ chối',
+            input: 'textarea',
+            inputPlaceholder: 'Vui lòng nhập lý do từ chối...',
             inputAttributes: {
-                autocapitalize: 'off',
-                autocorrect: 'off'
+                'aria-label': 'Lý do từ chối'
             },
             showCancelButton: true,
-            confirmButtonText: 'Tiếp tục',
+            confirmButtonText: 'Gửi',
             cancelButtonText: 'Hủy',
-            confirmButtonColor: '#2563eb',
-            cancelButtonColor: '#6b7280',
             inputValidator: (value) => {
-                const trimmedValue = value.trim()
-                if (!trimmedValue) {
-                    return 'Vui lòng nhập lý do từ chối'
-                }
-                if (trimmedValue.length < 5) {
-                    return 'Lý do từ chối phải có ít nhất 5 ký tự.'
+                if (!value) {
+                    return 'Vui lòng nhập lý do từ chối!'
                 }
             }
         })
 
-        if (inputResult.isConfirmed && inputResult.value) {
-            const trimmedReason = inputResult.value.trim()
-            setRejectReason(trimmedReason)
-
-            const confirmResult = await Swal.fire({
-                icon: 'warning',
-                title: 'Xác nhận từ chối',
-                text: `Bạn có chắc muốn từ chối tour "${tour.tourName}"? Lý do: ${trimmedReason}`,
-                showCancelButton: true,
-                confirmButtonColor: '#2563eb',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Từ chối',
-                cancelButtonText: 'Hủy'
-            })
-
-            if (confirmResult.isConfirmed) {
-                try {
-                    if (!tourId || isNaN(tourId) || parseInt(tourId) <= 0) {
-                        setError('ID tour không hợp lệ.')
-                        return
-                    }
-
-                    await AdminManagerTourAPI.rejectTour(tourId, trimmedReason)
-                    Swal.fire({
-                        icon: 'success',
-                        text: 'Tour đã bị từ chối thành công!',
-                        showConfirmButton: false,
-                        timer: 1800
-                    })
-                    navigate('/admin/tours/pending')
-                } catch (err) {
-                    console.error('Lỗi từ chối tour:', {
-                        message: err.message,
-                        status: err.response?.status,
-                        data: err.response?.data
-                    })
-
-                    const errorMessages = []
-                    if (err.response?.data?.errors) {
-                        if (err.response.data.errors.Reason) {
-                            errorMessages.push(
-                                ...err.response.data.errors.Reason
-                            )
-                        }
-                        if (err.response.data.errors['$']) {
-                            errorMessages.push(...err.response.data.errors['$'])
-                        }
-                        Object.keys(err.response.data.errors).forEach((key) => {
-                            if (
-                                key !== 'Reason' &&
-                                key !== '$' &&
-                                Array.isArray(err.response.data.errors[key])
-                            ) {
-                                errorMessages.push(
-                                    ...err.response.data.errors[key]
-                                )
-                            }
-                        })
-                    } else if (err.response?.status === 415) {
-                        errorMessages.push(
-                            'Lỗi định dạng dữ liệu. Vui lòng kiểm tra lý do từ chối.'
-                        )
-                    } else {
-                        errorMessages.push(
-                            err.response?.data?.message ||
-                                err.response?.data?.title ||
-                                'Không thể từ chối tour. Vui lòng thử lại sau.'
-                        )
-                    }
-
-                    const errorMessage =
-                        errorMessages.length > 0
-                            ? errorMessages.join(', ')
-                            : 'Không thể từ chối tour. Vui lòng kiểm tra lý do và thử lại.'
-                    setError(errorMessage)
-                } finally {
-                    setRejectReason('')
-                }
+        if (rejectReason) {
+            try {
+                await adminTourAPI.rejectTour(tourId, rejectReason)
+                Swal.fire({
+                    icon: 'success',
+                    text: 'Tour đã bị từ chối!',
+                    showConfirmButton: false,
+                    timer: 1800
+                })
+                navigate('/admin/tours/pending')
+            } catch (err) {
+                console.error('API Error (rejectTour):', {
+                    message: err.message,
+                    response: err.response?.data,
+                    status: err.response?.status,
+                    errors:
+                        err.response?.data?.errors || 'Không có chi tiết lỗi'
+                })
+                setError('Không thể từ chối tour. Vui lòng thử lại.')
             }
         }
     }
@@ -399,18 +384,30 @@ const AdminTourDetail = () => {
                             <hr className="border-t border-gray-300 my-4" />
                             <p className="text-gray-800 mb-3 flex items-center">
                                 <strong className="text-gray-900 font-semibold mr-2">
-                                    ▶ Giá mỗi ngày:
+                                    ▶ Ngày bắt đầu:
                                 </strong>{' '}
-                                <span className="text-indigo-700 font-semibold">
-                                    {formatCurrency(tour.pricePerDay)}
-                                </span>
+                                {formatDate(tour.startTime)}
                             </p>
                             <hr className="border-t border-gray-300 my-4" />
                             <p className="text-gray-800 mb-3 flex items-center">
                                 <strong className="text-gray-900 font-semibold mr-2">
-                                    ▶ Phương tiện:
+                                    ▶ Giá người lớn:
                                 </strong>{' '}
-                                Ô tô chất lượng cao
+                                {formatCurrency(tour.priceAdult)}
+                            </p>
+                            <hr className="border-t border-gray-300 my-4" />
+                            <p className="text-gray-800 mb-3 flex items-center">
+                                <strong className="text-gray-900 font-semibold mr-2">
+                                    ▶ Giá trẻ em 5-10 tuổi:
+                                </strong>{' '}
+                                {formatCurrency(tour.priceChild5To10)}
+                            </p>
+                            <hr className="border-t border-gray-300 my-4" />
+                            <p className="text-gray-800 mb-3 flex items-center">
+                                <strong className="text-gray-900 font-semibold mr-2">
+                                    ▶ Giá trẻ em dưới 5 tuổi:
+                                </strong>{' '}
+                                {formatCurrency(tour.priceChildUnder5)}
                             </p>
                         </div>
                     </div>
@@ -449,12 +446,13 @@ const AdminTourDetail = () => {
                 </h3>
                 <div className="space-y-4">
                     {tour.itinerary.map((day) => {
-                        const dayImage =
-                            day.activities.reduce(
-                                (acc, activity) =>
-                                    acc.concat(activity.imageUrls || []),
-                                []
-                            )[0] || tour.imageUrls[0]
+                        const dayImage = day.activities.find(
+                            (activity) => activity.imageUrls
+                        )
+                            ? day.activities.find(
+                                  (activity) => activity.imageUrls
+                              ).imageUrls
+                            : tour.imageUrls[0]
                         return (
                             <div
                                 key={day.itineraryId || day.dayNumber}
@@ -529,41 +527,34 @@ const AdminTourDetail = () => {
                                                                 </strong>{' '}
                                                                 {activity.startTime &&
                                                                 activity.endTime
-                                                                    ? `${formatTime(activity.startTime)} - ${formatTime(activity.endTime)}`
-                                                                    : 'N/A'}
+                                                                    ? `${formatTime(
+                                                                          activity.startTime
+                                                                      )} - ${formatTime(
+                                                                          activity.endTime
+                                                                      )}`
+                                                                    : 'Không xác định'}
                                                             </p>
-                                                            <p className="text-gray-800 mb-2 flex items-center">
-                                                                <strong className="text-gray-900 font-semibold mr-2">
+                                                            <p className="text-gray-800 mb-2">
+                                                                <strong className="text-gray-900 font-semibold">
                                                                     Địa điểm:
                                                                 </strong>{' '}
                                                                 {activity.address ||
-                                                                    'N/A'}
+                                                                    'Không xác định'}
                                                             </p>
-                                                            <p className="text-gray-800 mb-2 flex items-center">
-                                                                <strong className="text-gray-900 font-semibold mr-2">
+                                                            <p className="text-gray-800 mb-2">
+                                                                <strong className="text-gray-900 font-semibold">
                                                                     Hoạt động:
                                                                 </strong>{' '}
-                                                                {activity.description ||
-                                                                    'N/A'}
-                                                            </p>
-                                                            <p className="text-gray-800 mb-2 flex items-center">
-                                                                <strong className="text-gray-900 font-semibold mr-2">
-                                                                    Chi Tiết:
-                                                                </strong>{' '}
                                                                 {activity.placeDetail ||
-                                                                    'N/A'}
+                                                                    'Không có mô tả'}
                                                             </p>
-                                                            <p className="text-gray-800 mb-2 flex items-center">
-                                                                <strong className="text-gray-900 font-semibold mr-2">
-                                                                    Chi phí:
+                                                            <p className="text-gray-800 mb-2">
+                                                                <strong className="text-gray-900 font-semibold">
+                                                                    Chi tiết:
                                                                 </strong>{' '}
-                                                                <span className="text-indigo-700 font-semibold">
-                                                                    {formatCurrency(
-                                                                        activity.estimatedCost
-                                                                    )}
-                                                                </span>
+                                                                {activity.description ||
+                                                                    'Không có mô tả'}
                                                             </p>
-
                                                             {activity.mapUrl && (
                                                                 <p className="text-gray-800 mb-2 flex items-center">
                                                                     <strong className="text-gray-900 font-semibold mr-2">
@@ -583,44 +574,25 @@ const AdminTourDetail = () => {
                                                                     </a>
                                                                 </p>
                                                             )}
-                                                            {activity.imageUrls &&
-                                                                activity
-                                                                    .imageUrls
-                                                                    .length >
-                                                                    0 && (
-                                                                    <div>
-                                                                        {activity.imageUrls.map(
-                                                                            (
-                                                                                url,
-                                                                                imgIndex
-                                                                            ) => (
-                                                                                <div
-                                                                                    key={
-                                                                                        activity
-                                                                                            .imageIds[
-                                                                                            imgIndex
-                                                                                        ] ||
-                                                                                        imgIndex
-                                                                                    }
-                                                                                    className="relative"
-                                                                                >
-                                                                                    <img
-                                                                                        src={
-                                                                                            url
-                                                                                        }
-                                                                                        alt={`Activity ${index + 1} image ${imgIndex}`}
-                                                                                        className="w-full h-full object-cover rounded-lg shadow-md scale-90 hover:scale-100 transition-transform duration-300"
-                                                                                        onError={() =>
-                                                                                            console.error(
-                                                                                                `Failed to load activity image: ${url}`
-                                                                                            )
-                                                                                        }
-                                                                                    />
-                                                                                </div>
+                                                            {activity.imageUrls && (
+                                                                <div className="relative">
+                                                                    <img
+                                                                        src={
+                                                                            activity.imageUrls
+                                                                        }
+                                                                        alt={`Activity ${
+                                                                            index +
+                                                                            1
+                                                                        } image`}
+                                                                        className="w-full h-full object-cover rounded-lg shadow-md scale-90 hover:scale-100 transition-transform duration-300"
+                                                                        onError={() =>
+                                                                            console.error(
+                                                                                `Failed to load activity image: ${activity.imageUrls}`
                                                                             )
-                                                                        )}
-                                                                    </div>
-                                                                )}
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </li>
                                                 )
