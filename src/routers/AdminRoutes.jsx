@@ -15,13 +15,59 @@ import ReviewPage from '@/pages/Admin/Reviews'
 import ReviewDetail from '@/pages/Admin/Reviews/ReviewDetail'
 import SystemStatsPage from '@/pages/Admin/LandingReportPage/SystemStatsPage'
 
+import AdminLayout from '@/pages/Admin/AdminLayout'
+
 function AdminRoutes() {
     return (
-        <Routes>
-            <Route path="/" element={<AdminDashboard />}>
-                <Route index element={<Navigate to="system-stats" replace />} />
-                <Route path="blog/preview" element={<PreviewBlog />} />
+        // <Routes>
+        //     <Route path="/" element={<AdminDashboard />}>
+        //         <Route index element={<Navigate to="system-stats" replace />} />
+        //         <Route path="blog/preview" element={<PreviewBlog />} />
 
+        //         <Route path="blogs" element={<AdminBlogList />} />
+        //         <Route path="blogs/:id" element={<AdminBlogDetail />} />
+        //         <Route path="tours/pending" element={<AdminTourList />} />
+        //         <Route
+        //             path="tourDetail/:tourId"
+        //             element={<AdminTourDetail />}
+        //         />
+
+        //         <Route path="partners" element={<AdminManagerPartner />} />
+        //         <Route path="users" element={<AdminManagerUser />} />
+        //         <Route path="system-stats" element={<SystemStatsPage />} />
+        //         <Route path="reports" element={<ReportDashboard />}>
+        //             <Route
+        //                 index
+        //                 element={
+        //                     <Navigate to="/admin/reports/revenue" replace />
+        //                 }
+        //             />
+        //             <Route
+        //                 path="revenue"
+        //                 element={<ReportDashboard activeTab="revenue" />}
+        //             />
+        //             <Route
+        //                 path="partnerPerformance"
+        //                 element={<ReportDashboard activeTab="partner" />}
+        //             />
+        //             <Route
+        //                 path="tourBookingStats"
+        //                 element={<ReportDashboard activeTab="tour" />}
+        //             />
+        //         </Route>
+        //         <Route path="plans" element={<PlanAdminList />} />
+        //         <Route path="logs" element={<LogPage />} />
+        //         <Route path="reviews" element={<ReviewPage />} />
+        //         <Route path="review-detail" element={<ReviewDetail />} />
+        //     </Route>
+        //     <Route path="*" element={<Navigate to="/404" replace />} />
+        // </Routes>
+
+        <Routes>
+            <Route element={<AdminLayout />}>
+                <Route index path="/" element={<SystemStatsPage />} />
+                <Route path="blogs" element={<AdminBlogList />} />
+                <Route path="blog/preview" element={<PreviewBlog />} />
                 <Route path="blogs" element={<AdminBlogList />} />
                 <Route path="blogs/:id" element={<AdminBlogDetail />} />
                 <Route path="tours/pending" element={<AdminTourList />} />
@@ -32,7 +78,7 @@ function AdminRoutes() {
 
                 <Route path="partners" element={<AdminManagerPartner />} />
                 <Route path="users" element={<AdminManagerUser />} />
-                <Route path="system-stats" element={<SystemStatsPage />} />
+                {/* <Route path="system-stats" element={<SystemStatsPage />} /> */}
                 <Route path="reports" element={<ReportDashboard />}>
                     <Route
                         index

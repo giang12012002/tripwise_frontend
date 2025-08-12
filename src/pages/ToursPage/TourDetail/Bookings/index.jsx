@@ -62,8 +62,11 @@ function Index({ tour }) {
                 localStorage.setItem('vnpay-redirect', '/tour-detail/' + tourId)
                 window.location.href = response.data.url
             }
+            if (response.status === 400) {
+                toast.error(response.data)
+            }
         } catch (err) {
-            toast.error(err.message || 'Lỗi khi đặt chỗ.')
+            toast.error(err.response.data || 'Lỗi khi đặt chỗ.')
         }
     }
 

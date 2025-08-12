@@ -36,7 +36,7 @@ function SignIn() {
             ]
 
             if (role === permissions.admin) {
-                navigate('/admin/system-stats')
+                navigate('/admin')
             } else if (role === permissions.partner) {
                 navigate('/partner/listTour')
             } else {
@@ -85,7 +85,7 @@ function SignIn() {
                 login(username, userId)
 
                 if (role == permissions.admin) {
-                    navigate('/admin/system-stats')
+                    navigate('/admin')
                 } else if (role == permissions.partner) {
                     navigate('/partner/listTour')
                 } else if (role == permissions.user) {
@@ -146,7 +146,7 @@ function SignIn() {
                 login(username, userId)
 
                 if (role === permissions.admin) {
-                    navigate('/admin/system-stats')
+                    navigate('/admin')
                 } else if (role === permissions.partner) {
                     navigate('/partner/listTour')
                 } else if (role === permissions.user) {
