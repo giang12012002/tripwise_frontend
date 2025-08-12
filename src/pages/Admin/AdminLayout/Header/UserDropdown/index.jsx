@@ -8,6 +8,8 @@ import { userProfileAPI } from '@/apis'
 import { useAuth } from '@/AuthContext'
 import Swal from 'sweetalert2'
 
+import avatarImage from '@/assets/images/maleAvatar.png'
+
 function Index() {
     const navigate = useNavigate()
 
@@ -69,7 +71,7 @@ function Index() {
                 className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
             >
                 <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-                    <img src="/images/user/owner.jpg" alt="User" />
+                    <img src={avatarImage} alt="User" />
                 </span>
 
                 <span className="block mr-1 font-medium text-theme-sm">

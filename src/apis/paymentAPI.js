@@ -29,6 +29,10 @@ const paymentAPI = {
             '/api/payment/payment-history?status=' + status
         )
         return response
+    },
+    fetchBookingDetail: async ({ bookingId }) => {
+        const response = await authorizedAxios.get(`/api/payment/${bookingId}`)
+        return response
     }
 }
 
