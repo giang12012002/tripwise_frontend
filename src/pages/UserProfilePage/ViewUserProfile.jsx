@@ -168,10 +168,21 @@ function ViewUserProfile() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="flex items-center space-x-3">
                                     <span className="font-medium text-gray-700">
-                                        Họ tên:
+                                        Tên đăng nhập
                                     </span>
                                     <span className="text-gray-900">
                                         {profile.userName || 'Chưa cập nhật'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                    <span className="font-medium text-gray-700">
+                                        Họ tên:
+                                    </span>
+                                    <span className="text-gray-900">
+                                        {profile.lastName +
+                                            ' ' +
+                                            profile.firstName ||
+                                            'Chưa cập nhật'}
                                     </span>
                                 </div>
                                 <div className="flex items-center space-x-3">
