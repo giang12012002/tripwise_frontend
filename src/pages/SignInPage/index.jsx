@@ -9,7 +9,8 @@ import { jwtDecode } from 'jwt-decode'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import { permissions } from '@/utils/authConfig'
-
+import logoImage from '@/assets/images/logo2.png'
+//
 function SignIn() {
     const navigate = useNavigate()
     const [email, setEmail] = useState('')
@@ -210,11 +211,18 @@ function SignIn() {
             <Header />
             <div className="flex-grow min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-white-50">
                 <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-6 md:p-8 bg-white">
-                    <div className="w-full max-w-md space-y-6">
+                    <div className="w-full  max-w-md space-y-6">
                         <div className="text-center">
-                            <h1 className="text-4xl font-bold text-blue-600 mb-2">
-                                TRIPWISE
-                            </h1>
+                            <div className="flex items-center ">
+                                <img
+                                    src={logoImage}
+                                    alt="Tripwise Logo"
+                                    className="h-10 w-auto mr-3" // Adjusted height, auto width to maintain aspect ratio
+                                />
+                                <h1 className="text-4xl font-bold text-blue-600">
+                                    TRIPWISE
+                                </h1>
+                            </div>
                             <p className="text-lg mb-4">
                                 ĐI KHẮP VIỆT NAM – MỖI CHUYẾN ĐI, MỘT PHẦN CỦA
                                 BẠN.

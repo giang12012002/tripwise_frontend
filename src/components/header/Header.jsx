@@ -2,24 +2,37 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/AuthContext'
 import { fetchRemainingRequests } from '@/stores/planSlice'
+import userProfileAPI from '@/apis/userProfileAPI.js'
 import Swal from 'sweetalert2'
 import { useDispatch, useSelector } from 'react-redux'
+import avatarImage from '@/assets/images/maleAvatar.png'
+import logoImage from '@/assets/images/logoHEAER.png' //
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
     const { isLoggedIn, username, logout, userId } = useAuth()
-
+    const [avatar, setAvatar] = useState(avatarImage)
     const dispatch = useDispatch()
     const { remainingRequests } = useSelector((state) => state.plan)
-    // const { isLoggedIn, username, logout } = useAuth()
 
+    // Fetch user profile for avatar
     useEffect(() => {
         if (isLoggedIn && userId) {
             dispatch(fetchRemainingRequests(userId))
+            const fetchProfile = async () => {
+                try {
+                    const response = await userProfileAPI.getProfile()
+                    if (response.status === 200 && response.data?.avatar) {
+                        setAvatar(response.data.avatar)
+                    }
+                } catch (err) {
+                    console.error('Fetch profile error:', err)
+                    setAvatar(avatarImage) // Fallback to default avatar
+                }
+            }
+            fetchProfile()
         }
-        console.log('Remaining requests:', remainingRequests)
-        console.log('User ID:', userId)
     }, [isLoggedIn, userId, dispatch])
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
@@ -45,11 +58,15 @@ function Header() {
                 {/* Logo/Title */}
                 <Link
                     to="/"
-                    className="text-2xl font-bold uppercase tracking-wide"
+                    className="text-2xl font-bold uppercase tracking-wide flex items-center"
                 >
+                    <img
+                        src={logoImage}
+                        alt="Tripwise Logo"
+                        className="h-14 mr-2"
+                    />
                     TRIPWISE
                 </Link>
-
                 {/* Hamburger Menu for Mobile */}
                 <button
                     className="md:hidden focus:outline-none"
@@ -159,37 +176,35 @@ function Header() {
                         </li>
                     )}
 
-                    {/* Profile Icon */}
+                    {/* Profile/Avatar */}
                     <li className="relative">
                         {isLoggedIn ? (
                             <>
                                 <button
-                                    className="flex items-center hover:bg-blue-800 px-4 py-2 rounded transition-colors duration-200 text-base"
+                                    className="flex items-center space-x-2 hover:bg-blue-600 px-4 py-2 rounded-lg transition-colors duration-200"
                                     onClick={toggleProfileDropdown}
                                     aria-label="Toggle profile menu"
                                 >
-                                    <svg
-                                        className="w-5 h-5 mr-2"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-md">
+                                        <img
+                                            src={avatar}
+                                            alt="User Avatar"
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                e.target.src = avatarImage
+                                            }}
                                         />
-                                    </svg>
-                                    {username}
+                                    </div>
+                                    <span className="text-base font-medium">
+                                        {username}
+                                    </span>
                                 </button>
                                 {isProfileDropdownOpen && (
-                                    <ul className="absolute top-full right-0 bg-blue-700 text-white rounded shadow-md mt-2 w-48 z-20">
+                                    <ul className="absolute top-full right-0 bg-white text-gray-800 rounded-xl shadow-xl mt-2 w-56 z-20 transform transition-all duration-200 ease-in-out">
                                         <li>
                                             <Link
                                                 to="/user/view-Profile"
-                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                className="block hover:bg-gray-100 px-4 py-3 rounded-t-xl text-base font-medium"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)
                                                     setIsProfileDropdownOpen(
@@ -203,7 +218,7 @@ function Header() {
                                         <li>
                                             <Link
                                                 to="/user/favoritetour"
-                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                className="block hover:bg-gray-100 px-4 py-3 text-base font-medium"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)
                                                     setIsProfileDropdownOpen(
@@ -217,7 +232,7 @@ function Header() {
                                         <li>
                                             <Link
                                                 to="/user/HistoryItinerary"
-                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                className="block hover:bg-gray-100 px-4 py-3 text-base font-medium"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)
                                                     setIsProfileDropdownOpen(
@@ -231,7 +246,7 @@ function Header() {
                                         <li>
                                             <Link
                                                 to="/user/payment-history"
-                                                className="block hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                className="block hover:bg-gray-100 px-4 py-3 text-base font-medium"
                                                 onClick={() => {
                                                     setIsMenuOpen(false)
                                                     setIsProfileDropdownOpen(
@@ -244,7 +259,7 @@ function Header() {
                                         </li>
                                         <li>
                                             <button
-                                                className="block w-full text-left hover:bg-blue-800 px-4 py-2 rounded text-base"
+                                                className="block w-full text-left hover:bg-gray-100 px-4 py-3 rounded-b-xl text-base font-medium text-red-600"
                                                 onClick={handleLogout}
                                             >
                                                 Đăng xuất

@@ -7,6 +7,7 @@ import { jwtDecode } from 'jwt-decode'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import beachSunset from '@/assets/images/background.png'
+import logoImage from '@/assets/images/logo2.png'
 
 function OtpVerification() {
     const navigate = useNavigate()
@@ -222,9 +223,16 @@ function OtpVerification() {
             <div className="flex-grow min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-white-50">
                 <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-4 md:p-6 bg-white">
                     <div className="w-full max-w-md md:max-w-lg border border-gray-300 rounded-lg p-6 shadow-md">
-                        <h1 className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
-                            TRIPWISE
-                        </h1>
+                        <div className="flex items-center ">
+                            <img
+                                src={logoImage}
+                                alt="Tripwise Logo"
+                                className="h-10 w-auto mr-3" // Adjusted height, auto width to maintain aspect ratio
+                            />
+                            <h1 className="text-4xl font-bold text-blue-600">
+                                TRIPWISE
+                            </h1>
+                        </div>
                         <p className="text-lg md:text-xl mb-6">
                             XÁC MINH MÃ OTP
                         </p>

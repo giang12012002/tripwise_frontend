@@ -1,5 +1,5 @@
 import AiTourCreateButton from './AiTourCreateButton.jsx'
-
+import NewsImagesSlider from './NewsImagesSlider.jsx' // Import thành phần mới
 import WhyChooseUsSection from './WhyChooseUsSection'
 import AboutUsSection from './AboutUsSection'
 import BlogsSection from './BlogsSection'
@@ -16,7 +16,10 @@ function HomePage() {
             <div>
                 <AiTourCreateButton />
             </div>
-            <div className="my-8">
+            <div className="my-80">
+                <NewsImagesSlider /> {/* Thêm slider ảnh tin tức */}
+            </div>
+            <div className="my-0">
                 <ApprovedToursSection />
             </div>
             <div className="my-8">
