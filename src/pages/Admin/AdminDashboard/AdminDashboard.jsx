@@ -1,12 +1,14 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import Swal from 'sweetalert2'
+import logoImage from '@/assets/images/logoHEAER.png'
 
 const AdminDashboard = () => {
     const navigate = useNavigate()
     const location = useLocation()
     const { isLoggedIn, isAuthLoading, logout } = useAuth()
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
     React.useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
@@ -31,16 +33,21 @@ const AdminDashboard = () => {
         navigate('/signin')
     }
 
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen)
+    }
+
     const navItems = [
         {
             label: 'Trang Chủ',
             path: '/admin/system-stats',
             icon: (
                 <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-5 h-5 mr-2 transition-transform group-hover:scale-110"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                 >
                     <path
                         strokeLinecap="round"
@@ -56,10 +63,11 @@ const AdminDashboard = () => {
             path: '/admin/blogs',
             icon: (
                 <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-5 h-5 mr-2 transition-transform group-hover:scale-110"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                 >
                     <path
                         strokeLinecap="round"
@@ -75,10 +83,11 @@ const AdminDashboard = () => {
             path: '/admin/reports',
             icon: (
                 <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-5 h-5 mr-2 transition-transform group-hover:scale-110"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                 >
                     <path
                         strokeLinecap="round"
@@ -94,10 +103,11 @@ const AdminDashboard = () => {
             path: '/admin/tours/pending',
             icon: (
                 <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-5 h-5 mr-2 transition-transform group-hover:scale-110"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                 >
                     <path
                         strokeLinecap="round"
@@ -119,10 +129,11 @@ const AdminDashboard = () => {
             path: '/admin/partners',
             icon: (
                 <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-5 h-5 mr-2 transition-transform group-hover:scale-110"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                 >
                     <path
                         strokeLinecap="round"
@@ -138,10 +149,11 @@ const AdminDashboard = () => {
             path: '/admin/users',
             icon: (
                 <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-5 h-5 mr-2 transition-transform group-hover:scale-110"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                 >
                     <path
                         strokeLinecap="round"
@@ -157,10 +169,11 @@ const AdminDashboard = () => {
             path: '/admin/plans',
             icon: (
                 <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-5 h-5 mr-2 transition-transform group-hover:scale-110"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                 >
                     <path
                         strokeLinecap="round"
@@ -176,10 +189,11 @@ const AdminDashboard = () => {
             path: '/admin/logs',
             icon: (
                 <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-5 h-5 mr-2 transition-transform group-hover:scale-110"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                 >
                     <path
                         strokeLinecap="round"
@@ -195,10 +209,11 @@ const AdminDashboard = () => {
             path: '/admin/reviews',
             icon: (
                 <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-5 h-5 mr-2 transition-transform group-hover:scale-110"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                 >
                     <path
                         strokeLinecap="round"
@@ -212,24 +227,65 @@ const AdminDashboard = () => {
     ]
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="flex min-h-screen bg-gray-50 font-sans">
             {/* Sidebar */}
-            <div className="fixed w-64 h-screen bg-white shadow-lg p-6 overflow-y-auto">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                    Quản Lý Admin
+            <div
+                className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-blue-700 to-blue-900 text-white transform ${
+                    isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                } lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl p-6 overflow-x-hidden`}
+                role="navigation"
+                aria-label="Main navigation"
+            >
+                <div className="flex items-center justify-between mb-6 -ml-6">
+                    <div className="flex items-center space-x-1 pl-6">
+                        <img
+                            src={logoImage}
+                            alt="Tripwise Logo"
+                            className="h-12 w-12 object-contain flex-shrink-0"
+                        />
+                        <h1 className="text-xs font-extrabold tracking-tight">
+                            TW
+                        </h1>
+                    </div>
+                    <button
+                        className="lg:hidden text-white focus:outline-none flex-shrink-0"
+                        onClick={toggleSidebar}
+                        aria-label="Toggle sidebar"
+                    >
+                        <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
+                        </svg>
+                    </button>
+                </div>
+                <h2 className="text-3xl px-7 font-semibold text-gray-200 mb-4">
+                    Admin
                 </h2>
-                <nav className="space-y-2">
+                <nav className="space-y-1">
                     {navItems.map((item) => {
                         const isActive = location.pathname.startsWith(item.path)
                         return (
                             <button
                                 key={item.path}
-                                onClick={() => navigate(item.path)}
-                                className={`w-full text-left px-4 py-2 rounded-lg transition duration-200 flex items-center ${
+                                onClick={() => {
+                                    navigate(item.path)
+                                    setIsSidebarOpen(false)
+                                }}
+                                className={`w-full group text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center text-sm font-medium ${
                                     isActive
-                                        ? 'bg-blue-500 text-white'
-                                        : 'text-gray-700 hover:bg-blue-100'
-                                }`}
+                                        ? 'bg-blue-500 text-white shadow-md'
+                                        : 'text-gray-100 hover:bg-blue-600 hover:text-white'
+                                } focus:outline-none focus:ring-2 focus:ring-blue-400`}
+                                aria-current={isActive ? 'page' : undefined}
                             >
                                 {item.icon}
                                 {item.label}
@@ -237,14 +293,19 @@ const AdminDashboard = () => {
                         )
                     })}
                     <button
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 rounded-lg transition duration-200 flex items-center"
+                        onClick={() => {
+                            handleLogout()
+                            setIsSidebarOpen(false)
+                        }}
+                        className="w-full group text-left px-4 py-3 text-red-300 hover:bg-red-600 hover:text-white rounded-lg transition-all duration-200 flex items-center text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-400"
+                        aria-label="Log out"
                     >
                         <svg
-                            className="w-5 h-5 mr-2"
+                            className="w-5 h-5 mr-2 transition-transform group-hover:scale-110"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
+                            aria-hidden="true"
                         >
                             <path
                                 strokeLinecap="round"
@@ -258,9 +319,32 @@ const AdminDashboard = () => {
                 </nav>
             </div>
 
-            {/* Nội dung chính */}
-            <div className="flex-1 ml-64">
-                <Outlet />
+            {/* Mobile Sidebar Toggle Button */}
+            <button
+                className="lg:hidden fixed top-4 left-4 z-50 text-blue-700 focus:outline-none"
+                onClick={toggleSidebar}
+                aria-label="Open sidebar"
+            >
+                <svg
+                    className="w-8 h-8"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 6h16M4 12h16M4 18h16"
+                    />
+                </svg>
+            </button>
+
+            {/* Main Content */}
+            <div className="flex-1 lg:ml-64 p-6 transition-all duration-300">
+                <div className="max-w-7xl mx-auto">
+                    <Outlet />
+                </div>
             </div>
         </div>
     )

@@ -12,6 +12,18 @@ import {
     Legend,
     Filler
 } from 'chart.js'
+import {
+    FaUsers,
+    FaStar,
+    FaComments,
+    FaRegStar,
+    FaUsersCog,
+    FaMap,
+    FaBook,
+    FaShoppingCart,
+    FaTicketAlt,
+    FaShoppingBag
+} from 'react-icons/fa' // Thư viện react-icons
 
 ChartJS.register(
     CategoryScale,
@@ -27,24 +39,24 @@ ChartJS.register(
 const SystemStatsPage = () => {
     const [year, setYear] = useState(new Date().getFullYear())
     const [stats, setStats] = useState([])
+    const [dashboardStats, setDashboardStats] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [dashboardLoading, setDashboardLoading] = useState(false)
     const [error, setError] = useState(null)
+    const [dashboardError, setDashboardError] = useState(null)
 
-    // Format currency in VND
     const formatCurrency = (amount) =>
         new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
         }).format(amount)
 
-    // Fetch data when year changes
     useEffect(() => {
         const fetchStats = async () => {
             setLoading(true)
             setError(null)
             try {
                 const data = await reportSystemAPI.getAnnualAdminStats(year)
-                // Ensure 12 months of data, filling missing months with zeros
                 const monthlyStats = Array.from({ length: 12 }, (_, month) => {
                     const stat = data.find(
                         (s) => Number(s.month) === month + 1
@@ -66,7 +78,7 @@ const SystemStatsPage = () => {
                 setStats(monthlyStats)
             } catch (err) {
                 console.error('Error fetching stats:', err)
-                setError('Failed to fetch system statistics. Please try again.')
+                setError('Không thể tải thống kê hệ thống. Vui lòng thử lại.')
             } finally {
                 setLoading(false)
             }
@@ -74,13 +86,51 @@ const SystemStatsPage = () => {
         fetchStats()
     }, [year])
 
-    // Calculate total revenue for the year
+    useEffect(() => {
+        const fetchDashboardStats = async () => {
+            setDashboardLoading(true)
+            setDashboardError(null)
+            try {
+                const data = await reportSystemAPI.fetchDashboardStatistics()
+                console.log('Dashboard Stats Data:', data)
+                const stats = Array.isArray(data) ? data[0] || {} : data || {}
+                const normalizedStats = {
+                    TotalUsers: stats.TotalUsers || stats.totalUsers || 0,
+                    TotalReviews: stats.TotalReviews || stats.totalReviews || 0,
+                    TotalComments:
+                        stats.TotalComments || stats.totalComments || 0,
+                    TotalStarRatings:
+                        stats.TotalStarRatings || stats.totalStarRatings || 0,
+                    TotalPartners:
+                        stats.TotalPartners || stats.totalPartners || 0,
+                    TotalTours: stats.TotalTours || stats.totalTours || 0,
+                    TotalBlogs: stats.TotalBlogs || stats.totalBlogs || 0,
+                    TotalPlans: stats.TotalPlans || stats.totalPlans || 0,
+                    TotalTourBookings:
+                        stats.TotalTourBookings || stats.totalTourBookings || 0,
+                    TotalPlanPurchases:
+                        stats.TotalPlanPurchases ||
+                        stats.totalPlanPurchases ||
+                        0
+                }
+                setDashboardStats(normalizedStats)
+            } catch (err) {
+                console.error('Error fetching dashboard stats:', err)
+                setDashboardError(
+                    `Không thể tải thống kê tổng quan: ${err.message}. Vui lòng thử lại.`
+                )
+            } finally {
+                setDashboardLoading(false)
+            }
+        }
+        fetchDashboardStats()
+    }, [])
+
     const totalRevenue = stats.reduce(
         (sum, stat) => sum + stat.BookingRevenue + stat.PlanRevenue,
         0
     )
 
-    // Prepare chart data for revenue (BookingRevenue and PlanRevenue as separate lines)
     const chartData = {
         labels: stats.map((stat) => `Tháng ${stat.Month}`),
         datasets: [
@@ -141,19 +191,17 @@ const SystemStatsPage = () => {
         }
     }
 
-    // Handle year change
     const handleYearChange = (e) => {
         setYear(parseInt(e.target.value))
     }
 
-    // Generate year options (last 5 years)
     const yearOptions = Array.from(
         { length: 5 },
         (_, i) => new Date().getFullYear() - i
     )
 
     return (
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-6 bg-gray-100 min-h-screen">
             <h1 className="text-3xl font-bold mb-6 text-gray-800">Tổng Quan</h1>
 
             {/* Year Selector */}
@@ -178,14 +226,14 @@ const SystemStatsPage = () => {
                 </select>
             </div>
 
-            {/* Error Message */}
+            {/* Error Message for Annual Stats */}
             {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
                     {error}
                 </div>
             )}
 
-            {/* Loading State */}
+            {/* Loading State for Annual Stats */}
             {loading && (
                 <div className="text-center text-gray-600">
                     Đang tải thống kê...
@@ -196,7 +244,8 @@ const SystemStatsPage = () => {
             {!loading && stats.length > 0 && (
                 <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="bg-blue-500 text-white p-4 rounded-lg text-center">
-                        <h2 className="text-xl font-semibold">
+                        <FaMap className="mx-auto mb-2 text-2xl" />
+                        <h2 className="text-lg font-semibold">
                             Số lượng Tour đã bán
                         </h2>
                         <p className="text-2xl">
@@ -205,9 +254,11 @@ const SystemStatsPage = () => {
                                 0
                             )}
                         </p>
+                        <p className="text-sm text-gray-200">Tổng đặt tour</p>
                     </div>
-                    <div className="bg-yellow-400 text-white p-4 rounded-lg text-center">
-                        <h2 className="text-xl font-semibold">
+                    <div className="bg-yellow-500 text-white p-4 rounded-lg shadow-md text-center">
+                        <FaShoppingCart className="mx-auto mb-2 text-2xl" />
+                        <h2 className="text-lg font-semibold">
                             Số lượng gói đã bán
                         </h2>
                         <p className="text-2xl">
@@ -216,6 +267,7 @@ const SystemStatsPage = () => {
                                 0
                             )}
                         </p>
+                        <p className="text-sm text-gray-200">Tổng gói</p>
                     </div>
                 </div>
             )}
@@ -228,64 +280,163 @@ const SystemStatsPage = () => {
                 </div>
             )}
 
-            {/*/!* Table *!/*/}
-            {/*{!loading && stats.length > 0 && (*/}
-            {/*    <div className="overflow-x-auto mb-8">*/}
-            {/*        <table className="min-w-full bg-white border border-gray-200">*/}
-            {/*            <thead>*/}
-            {/*                <tr className="bg-gray-100">*/}
-            {/*                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">*/}
-            {/*                        Tháng*/}
-            {/*                    </th>*/}
-            {/*                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">*/}
-            {/*                        Doanh Thu Đặt Tour (VND)*/}
-            {/*                    </th>*/}
-            {/*                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">*/}
-            {/*                        Doanh Thu Bán Gói (VND)*/}
-            {/*                    </th>*/}
-            {/*                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">*/}
-            {/*                        Số Lượng Tour Đã Đặt*/}
-            {/*                    </th>*/}
-            {/*                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">*/}
-            {/*                        Số Lượng Gói Đã Bán*/}
-            {/*                    </th>*/}
-            {/*                </tr>*/}
-            {/*            </thead>*/}
-            {/*            <tbody>*/}
-            {/*                {stats.map((stat) => (*/}
-            {/*                    <tr key={stat.Month} className="border-t">*/}
-            {/*                        <td className="px-4 py-2 text-sm text-gray-600">*/}
-            {/*                            {stat.Month}*/}
-            {/*                        </td>*/}
-            {/*                        <td className="px-4 py-2 text-sm text-gray-600">*/}
-            {/*                            {formatCurrency(*/}
-            {/*                                stat.BookingRevenue || 0*/}
-            {/*                            )}*/}
-            {/*                        </td>*/}
-            {/*                        <td className="px-4 py-2 text-sm text-gray-600">*/}
-            {/*                            {formatCurrency(stat.PlanRevenue || 0)}*/}
-            {/*                        </td>*/}
-            {/*                        <td className="px-4 py-2 text-sm text-gray-600">*/}
-            {/*                            {stat.TotalBookings || 0}*/}
-            {/*                        </td>*/}
-            {/*                        <td className="px-4 py-2 text-sm text-gray-600">*/}
-            {/*                            {stat.TotalPlans || 0}*/}
-            {/*                        </td>*/}
-            {/*                    </tr>*/}
-            {/*                ))}*/}
-            {/*            </tbody>*/}
-            {/*        </table>*/}
-            {/*    </div>*/}
-            {/*)}*/}
-
             {/* Chart */}
             {!loading && stats.length > 0 && (
-                <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                     <Line data={chartData} options={chartOptions} />
                 </div>
             )}
 
-            {/* No Data Message */}
+            {/* Dashboard Statistics */}
+            <div className="mb-6">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800">
+                    Thống Kê Tổng Quan Hệ Thống
+                </h2>
+
+                {/* Error Message for Dashboard Stats */}
+                {dashboardError && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                        {dashboardError}
+                    </div>
+                )}
+
+                {/* Loading State for Dashboard Stats */}
+                {dashboardLoading && (
+                    <div className="text-center text-gray-600">
+                        Đang tải thống kê tổng quan...
+                    </div>
+                )}
+
+                {/* Dashboard Stats Grid */}
+                {!dashboardLoading && dashboardStats && (
+                    <div className="space-y-6">
+                        {/* Khách Hàng Section */}
+                        <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                                Khách Hàng
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                <div className="bg-gray-50 p-6 rounded-lg text-center hover:scale-105 transition duration-200">
+                                    <FaUsers className="mx-auto mb-3 text-4xl text-blue-500" />
+                                    <h4 className="text-base font-semibold text-gray-800">
+                                        Tổng Khách Hàng
+                                    </h4>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                                        {dashboardStats.TotalUsers}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Khách Hàng
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-6 rounded-lg text-center hover:scale-105 transition duration-200">
+                                    <FaComments className="mx-auto mb-3 text-4xl text-green-500" />
+                                    <h4 className="text-base font-semibold text-gray-800">
+                                        Tổng Bình Luận
+                                    </h4>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                                        {dashboardStats.TotalComments}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Bình Luận
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-6 rounded-lg text-center hover:scale-105 transition duration-200">
+                                    <FaStar className="mx-auto mb-3 text-4xl text-yellow-500" />
+                                    <h4 className="text-base font-semibold text-gray-800">
+                                        Tổng Đánh Giá
+                                    </h4>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                                        {dashboardStats.TotalReviews}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Đánh Giá
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Đối Tác Section */}
+                        <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                                Đối Tác
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="bg-gray-50 p-6 rounded-lg text-center hover:scale-105 transition duration-200">
+                                    <FaUsersCog className="mx-auto mb-3 text-4xl text-indigo-500" />
+                                    <h4 className="text-base font-semibold text-gray-800">
+                                        Tổng Đối Tác
+                                    </h4>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                                        {dashboardStats.TotalPartners}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Đối Tác
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-6 rounded-lg text-center hover:scale-105 transition duration-200">
+                                    <FaMap className="mx-auto mb-3 text-4xl text-teal-500" />
+                                    <h4 className="text-base font-semibold text-gray-800">
+                                        Tổng Tour
+                                    </h4>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                                        {dashboardStats.TotalTours}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Tour
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Other Section */}
+                        <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                                Khác
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                <div className="bg-gray-50 p-6 rounded-lg text-center hover:scale-105 transition duration-200">
+                                    <FaBook className="mx-auto mb-3 text-4xl text-purple-500" />
+                                    <h4 className="text-base font-semibold text-gray-800">
+                                        Tổng Bài Blog
+                                    </h4>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                                        {dashboardStats.TotalBlogs}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Bài Viết
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-6 rounded-lg text-center hover:scale-105 transition duration-200">
+                                    <FaShoppingCart className="mx-auto mb-3 text-4xl text-gray-600" />
+                                    <h4 className="text-base font-semibold text-gray-800">
+                                        Tổng Gói
+                                    </h4>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                                        {dashboardStats.TotalPlans}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Gói
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-6 rounded-lg text-center hover:scale-105 transition duration-200">
+                                    <FaRegStar className="mx-auto mb-3 text-4xl text-amber-500" />
+                                    <h4 className="text-base font-semibold text-gray-800">
+                                        Tổng Điểm Đánh Giá
+                                    </h4>
+                                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                                        {dashboardStats.TotalStarRatings}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Điểm Số
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* No Data Message for Annual Stats */}
             {!loading && stats.length === 0 && !error && (
                 <div className="text-center text-gray-600">
                     Không có thống kê cho năm được chọn.
