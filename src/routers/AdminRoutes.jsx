@@ -1,6 +1,5 @@
 import { Route, Routes, Navigate } from 'react-router-dom'
 
-import AdminDashboard from '@/pages/Admin/AdminDashboard/AdminDashboard.jsx'
 import AdminBlogList from '@/pages/Admin/Blogs'
 import AdminBlogDetail from '@/pages/Admin/Blogs/id'
 import PreviewBlog from '@/pages/Admin/Blogs/AddBlog/PreviewBlog'
