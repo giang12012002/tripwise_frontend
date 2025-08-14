@@ -6,7 +6,7 @@ const logAPI = {
         return response
     },
     get: async ({ page = 1, pageSize = 1000 } = {}) => {
-        const response = await authorizedAxios.get('/api/logs/raw', {
+        const response = await authorizedAxios.get('/api/logs/filtered', {
             params: { page, pageSize }
         })
         return response

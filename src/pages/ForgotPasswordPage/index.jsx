@@ -4,7 +4,7 @@ import beachSunset from '@/assets/images/background.png'
 import { authAPI } from '@/apis'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
-
+import logoImage from '@/assets/images/logo2.png'
 import EmailVerification from './EmailVerification'
 import OtpVerification from './OtpVerification'
 import ResetPassword from './ResetPassword'
@@ -73,9 +73,16 @@ function ForgotPassword() {
             <div className="flex-grow min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-white-50">
                 <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-4 md:p-6 bg-white">
                     <div className="w-full max-w-md md:max-w-lg">
-                        <h1 className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
-                            TRIPWISE
-                        </h1>
+                        <div className="flex items-center ">
+                            <img
+                                src={logoImage}
+                                alt="Tripwise Logo"
+                                className="h-10 w-auto mr-3" // Adjusted height, auto width to maintain aspect ratio
+                            />
+                            <h1 className="text-4xl font-bold text-blue-600">
+                                TRIPWISE
+                            </h1>
+                        </div>
                         <p className="text-lg md:text-xl mb-6">
                             ĐI KHẮP VIỆT NAM – MỖI CHUYẾN ĐI, MỘT PHẦN CỦA BẠN.
                         </p>

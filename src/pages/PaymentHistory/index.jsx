@@ -3,6 +3,8 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import { paymentAPI } from '@/apis'
 
+import BookingDetailDialog from './BookingDetailDialog'
+
 function Index() {
     const [payments, setPayments] = useState([])
     const [filteredPayments, setFilteredPayments] = useState([])
@@ -10,6 +12,25 @@ function Index() {
     const [sortType, setSortType] = useState('all')
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
+
+    const [showBookingDetailDialog, setShowBookingDetailDialog] =
+        useState(false)
+    const [selectedPayment, setSelectedPayment] = useState(null)
+
+    const handleOpenBookingDetailDialog = async ({ bookingId, tourId }) => {
+        try {
+            const payment = await paymentAPI.fetchBookingDetail({ bookingId })
+            if (payment.status === 200) {
+                setSelectedPayment({
+                    ...payment.data,
+                    tourId
+                })
+                setShowBookingDetailDialog(true)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     const fetchPaymentHistory = async () => {
         try {
@@ -29,6 +50,7 @@ function Index() {
 
     useEffect(() => {
         fetchPaymentHistory()
+        console.log('Payments:', payments)
     }, [])
 
     useEffect(() => {
@@ -125,12 +147,20 @@ function Index() {
                                             </td>
                                             <td className="p-3 border">
                                                 {item.planName === null ? (
-                                                    <a
-                                                        href={`/tour-detail/${item.tourId}`}
-                                                        className="text-blue-600 hover:underline"
+                                                    <button
+                                                        onClick={() =>
+                                                            handleOpenBookingDetailDialog(
+                                                                {
+                                                                    bookingId:
+                                                                        item?.bookingId,
+                                                                    tourId: item?.tourId
+                                                                }
+                                                            )
+                                                        }
+                                                        className="text-blue-600 hover:underline cursor-pointer text-left"
                                                     >
                                                         {item.tourName}
-                                                    </a>
+                                                    </button>
                                                 ) : (
                                                     item.planName
                                                 )}
@@ -188,6 +218,15 @@ function Index() {
                 </div>
             </main>
             <Footer />
+
+            <BookingDetailDialog
+                isOpen={showBookingDetailDialog}
+                onClose={() => {
+                    setShowBookingDetailDialog(false)
+                    setSelectedPayment(null)
+                }}
+                payment={selectedPayment}
+            />
         </div>
     )
 }

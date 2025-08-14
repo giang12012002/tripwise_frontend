@@ -9,14 +9,18 @@ import {
     Legend,
     ResponsiveContainer
 } from 'recharts'
-import DateRangePicker from './DateRangePicker' // Import DateRangePicker
 
 const PartnerPerformanceReport = ({
     data,
     onExport,
     loading,
-    onDateRangeChange // Callback cho DateRangePicker
+    onMonthChange
 }) => {
+    const [selectedMonth, setSelectedMonth] = useState(
+        new Date().toISOString().slice(0, 7)
+    ) // Mặc định là tháng hiện tại (YYYY-MM)
+    const [searchPartnerID, setSearchPartnerID] = useState('')
+
     const formatCurrency = (amount) => {
         const validAmount =
             typeof amount === 'number' && !isNaN(amount) ? amount : 0
@@ -26,31 +30,49 @@ const PartnerPerformanceReport = ({
         }).format(validAmount)
     }
 
-    // Chuẩn bị dữ liệu cho biểu đồ
+    // Chuẩn bị dữ liệu cho biểu đồ (BarChart)
     const chartData = data.map((item) => ({
         name: item.partnerName || 'N/A',
         totalBookings: item.totalBookings || 0,
         totalRevenue: item.totalRevenue || 0
     }))
 
-    // Xử lý thay đổi khoảng thời gian
-    const handleDateRangeChange = (fromDate, toDate) => {
-        if (onDateRangeChange) {
-            onDateRangeChange(fromDate, toDate) // Gọi callback để lấy dữ liệu mới
+    // Danh sách tháng/năm để chọn
+    const generateMonthOptions = () => {
+        const options = []
+        const currentDate = new Date()
+        for (let i = 0; i < 12; i++) {
+            const date = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth() - i,
+                1
+            )
+            const value = date.toISOString().slice(0, 7) // YYYY-MM
+            const label = `Tháng ${date.getMonth() + 1}/${date.getFullYear()}`
+            options.push({ value, label })
         }
+        return options
     }
 
-    // Format khoảng thời gian để hiển thị
-    const formatDateRange = (fromDate, toDate) => {
-        if (!fromDate || !toDate) return 'N/A'
-        return `${fromDate.replace('-', '/')} - ${toDate.replace('-', '/')}`
+    // Filter data based on searchPartnerID
+    const filteredData = data.filter((item) => {
+        const partnerID = item.partnerID != null ? String(item.partnerID) : ''
+        return partnerID.toLowerCase().includes(searchPartnerID.toLowerCase())
+    })
+
+    const handleMonthChange = (e) => {
+        const newMonth = e.target.value
+        setSelectedMonth(newMonth)
+        if (onMonthChange) {
+            onMonthChange(newMonth) // Gọi callback để lấy dữ liệu mới từ backend
+        }
     }
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h3 className="text-xl font-semibold text-gray-800">
-                    Hiệu Suất Đối Tác Theo Khoảng Thời Gian
+                    Hiệu Suất Đối Tác Theo Tháng
                 </h3>
                 <div className="flex items-center space-x-4">
                     <button
@@ -62,16 +84,13 @@ const PartnerPerformanceReport = ({
                     </button>
                 </div>
             </div>
-            <DateRangePicker onDateChange={handleDateRangeChange} />{' '}
-            {/* Bộ lọc duy nhất */}
             {loading && (
                 <p className="text-blue-600 font-medium">Đang tải dữ liệu...</p>
             )}
             {/* Biểu đồ */}
             <div className="bg-white p-4 rounded-lg shadow-md">
                 <h4 className="text-lg font-medium mb-4 text-gray-700">
-                    So Sánh Hiệu Suất Đối Tác -{' '}
-                    {formatDateRange(data?.[0]?.fromDate, data?.[0]?.toDate)}
+                    So Sánh Hiệu Suất Đối Tác
                 </h4>
                 {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
@@ -101,20 +120,45 @@ const PartnerPerformanceReport = ({
                     </ResponsiveContainer>
                 ) : (
                     <p className="text-red-500">
-                        Không có dữ liệu để hiển thị biểu đồ cho khoảng thời
-                        gian này.
+                        Không có dữ liệu để hiển thị biểu đồ cho tháng{' '}
+                        {selectedMonth.replace('-', '/')}
                     </p>
                 )}
             </div>
             {/* Bảng */}
             <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-                {data.length === 0 && !loading && (
+                <div className="p-4">
+                    <div className="relative w-full max-w-md">
+                        <input
+                            type="text"
+                            value={searchPartnerID}
+                            onChange={(e) => setSearchPartnerID(e.target.value)}
+                            placeholder="Nhập mã đối tác..."
+                            className="p-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                        />
+                        <svg
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            />
+                        </svg>
+                    </div>
+                </div>
+                {filteredData.length === 0 && !loading && (
                     <p className="text-red-500 p-4">
-                        Không có dữ liệu hiệu suất đối tác cho khoảng thời gian
-                        này.
+                        Không có dữ liệu hiệu suất đối tác cho tháng{' '}
+                        {selectedMonth.replace('-', '/')} hoặc mã đối tác này.
                     </p>
                 )}
-                {data.length > 0 && (
+                {filteredData.length > 0 && (
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
@@ -139,7 +183,7 @@ const PartnerPerformanceReport = ({
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {data.map((item, index) => (
+                            {filteredData.map((item, index) => (
                                 <tr key={index} className="hover:bg-gray-50">
                                     <td className="py-4 px-6">{index + 1}</td>
                                     <td className="py-4 px-6">

@@ -9,6 +9,8 @@ const TourList = () => {
     const [topDestinations, setTopDestinations] = useState([])
     const [status, setStatus] = useState('')
     const [searchTerm, setSearchTerm] = useState('')
+    const [monthFilter, setMonthFilter] = useState('')
+    const [yearFilter, setYearFilter] = useState('')
     const [error, setError] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const toursPerPage = 6
@@ -28,6 +30,19 @@ const TourList = () => {
         Approved: 'bg-green-200 text-green-900',
         Rejected: 'bg-red-200 text-red-900'
     }
+
+    // Generate month options (1-12)
+    const monthOptions = Array.from({ length: 12 }, (_, i) => ({
+        value: i + 1,
+        label: `Tháng ${i + 1}`
+    }))
+
+    // Generate year options (current year and previous 5 years)
+    const currentYear = new Date().getFullYear()
+    const yearOptions = Array.from({ length: 6 }, (_, i) => ({
+        value: currentYear - i,
+        label: currentYear - i
+    }))
 
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
@@ -108,6 +123,16 @@ const TourList = () => {
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value)
+        setCurrentPage(1)
+    }
+
+    const handleMonthChange = (e) => {
+        setMonthFilter(e.target.value)
+        setCurrentPage(1)
+    }
+
+    const handleYearChange = (e) => {
+        setYearFilter(e.target.value)
         setCurrentPage(1)
     }
 
@@ -227,9 +252,19 @@ const TourList = () => {
         }
     }
 
-    const filteredTours = tours.filter((tour) =>
-        tour.location?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filteredTours = tours.filter((tour) => {
+        const matchesSearch = tour.location
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        const tourDate = new Date(tour.createdDate)
+        const matchesMonth = monthFilter
+            ? tourDate.getMonth() + 1 === parseInt(monthFilter)
+            : true
+        const matchesYear = yearFilter
+            ? tourDate.getFullYear() === parseInt(yearFilter)
+            : true
+        return matchesSearch && matchesMonth && matchesYear
+    })
 
     const totalPages = Math.ceil(filteredTours.length / toursPerPage)
     const indexOfLastTour = currentPage * toursPerPage
@@ -262,35 +297,68 @@ const TourList = () => {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-gray-50">
-            {/* Top Destinations Section */}
-            <section className="mb-12 bg-white rounded-2xl shadow-lg p-8">
-                <h2 className="text-2xl text-center font-bold text-gray-900 mb-6">
+            <section className="mb-12 bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-3xl text-center font-extrabold text-gray-900 mb-8 tracking-tight">
                     Top các thành phố được khách hàng quan tâm khi sử dụng AI
                     của TripWise
                 </h2>
                 {topDestinations.length === 0 ? (
-                    <p className="text-gray-500 text-center text-lg">
+                    <p className="text-gray-500 text-center text-lg font-medium">
                         Không có dữ liệu địa điểm hàng đầu.
                     </p>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {topDestinations.map((destination, index) => (
                             <div
                                 key={index}
-                                className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300"
+                                className={`relative p-6 rounded-xl shadow-md transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl ${
+                                    index === 0
+                                        ? 'bg-gradient-to-r from-yellow-100 via-yellow-200 to-yellow-300'
+                                        : index === 1
+                                          ? 'bg-gradient-to-r from-gray-100 via-gray-200 to-gray-400'
+                                          : index === 2
+                                            ? 'bg-gradient-to-r from-orange-100 via-orange-200 to-orange-300'
+                                            : 'bg-gradient-to-r from-indigo-50 via-blue-100 to-blue-200'
+                                }`}
                             >
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                        <span className="text-indigo-600 font-bold text-lg">
-                                            {index + 1}.
+                                    <div className="flex items-center space-x-4">
+                                        <span
+                                            className={`font-bold ${
+                                                index === 0
+                                                    ? 'text-yellow-600'
+                                                    : index === 1
+                                                      ? 'text-gray-500'
+                                                      : index === 2
+                                                        ? 'text-orange-400'
+                                                        : 'text-indigo-600'
+                                            }`}
+                                        >
+                                            {index < 3 ? (
+                                                <svg
+                                                    className={`inline-block mr-2 ${
+                                                        index === 0
+                                                            ? 'w-8 h-8'
+                                                            : index === 1
+                                                              ? 'w-7 h-7'
+                                                              : 'w-6 h-6'
+                                                    }`}
+                                                    fill="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2Z" />
+                                                </svg>
+                                            ) : (
+                                                `${index + 1}.`
+                                            )}
                                         </span>
-                                        <span className="text-gray-800 font-medium">
+                                        <span className="text-gray-800 font-semibold text-xl">
                                             {destination.location || 'N/A'}
                                         </span>
                                     </div>
-                                    <span className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full">
-                                        {destination.count || 0} tours
-                                    </span>
+                                    {/*<span className="text-sm text-gray-600 bg-white px-4 py-1 rounded-full shadow-sm font-medium">*/}
+                                    {/*    {destination.count || 0} tours*/}
+                                    {/*</span>*/}
                                 </div>
                             </div>
                         ))}
@@ -336,19 +404,59 @@ const TourList = () => {
 
             {/* Search and Filter */}
             <div className="mb-8 flex flex-col sm:flex-row gap-4">
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm theo địa điểm..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    className="flex-1 p-4 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white shadow-sm"
-                />
+                <div className="relative flex-1">
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm theo địa điểm..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        className="w-full p-4 pl-12 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white shadow-sm"
+                    />
+                    <svg
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                    </svg>
+                </div>
+                <select
+                    value={monthFilter}
+                    onChange={handleMonthChange}
+                    className="p-4 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white shadow-sm"
+                >
+                    <option value="">Tháng</option>
+                    {monthOptions.map((month) => (
+                        <option key={month.value} value={month.value}>
+                            {month.label}
+                        </option>
+                    ))}
+                </select>
+                <select
+                    value={yearFilter}
+                    onChange={handleYearChange}
+                    className="p-4 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white shadow-sm"
+                >
+                    <option value="">Năm</option>
+                    {yearOptions.map((year) => (
+                        <option key={year.value} value={year.value}>
+                            {year.label}
+                        </option>
+                    ))}
+                </select>
                 <select
                     value={status}
                     onChange={handleStatusChange}
                     className="p-4 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white shadow-sm"
                 >
-                    <option value="">Tất cả</option>
+                    <option value="">Trạng thái</option>
                     <option value="Draft">Bản Nháp</option>
                     <option value="PendingApproval">Chờ duyệt</option>
                     <option value="Approved">Đã duyệt</option>
@@ -361,8 +469,8 @@ const TourList = () => {
                 {currentTours.length === 0 ? (
                     <div className="col-span-full text-center bg-white p-12 rounded-2xl shadow-lg">
                         <p className="text-lg text-gray-600">
-                            {searchTerm
-                                ? 'Không tìm thấy tour phù hợp với địa điểm.'
+                            {searchTerm || monthFilter || yearFilter
+                                ? 'Không tìm thấy tour phù hợp với tiêu chí.'
                                 : 'Không có tour nào.'}
                         </p>
                     </div>

@@ -4,7 +4,7 @@ import userProfileAPI from '@/apis/userProfileAPI.js'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import Swal from 'sweetalert2'
-import avatarImage from '@/assets/images/maleAvatar.png'
+import avatarImage from '@/assets/images/avatar.png'
 import { useAuth } from '@/AuthContext'
 
 function EditUserProfile() {
@@ -13,6 +13,8 @@ function EditUserProfile() {
     const [profile, setProfile] = useState(null)
     const [formData, setFormData] = useState({
         userName: '',
+        firstName: '', // Đã thêm trường firstName
+        lastName: '', // Đã thêm trường lastName
         phoneNumber: '',
         country: '',
         city: '',
@@ -45,6 +47,8 @@ function EditUserProfile() {
                     setProfile(response.data)
                     setFormData({
                         userName: response.data.userName || '',
+                        firstName: response.data.firstName || '',
+                        lastName: response.data.lastName || '',
                         phoneNumber: response.data.phoneNumber || '',
                         country: response.data.country || '',
                         city: response.data.city || '',
@@ -115,6 +119,9 @@ function EditUserProfile() {
         try {
             const formDataToSend = new FormData()
             formDataToSend.append('userName', formData.userName)
+            // Thêm các trường firstName và lastName vào FormData
+            formDataToSend.append('firstName', formData.firstName)
+            formDataToSend.append('lastName', formData.lastName)
             formDataToSend.append('phoneNumber', formData.phoneNumber)
             formDataToSend.append('country', formData.country)
             formDataToSend.append('city', formData.city)
@@ -226,7 +233,33 @@ function EditUserProfile() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="flex flex-col">
                                         <span className="font-medium text-gray-700 mb-2">
-                                            Họ tên:
+                                            Họ:
+                                        </span>
+                                        <input
+                                            type="text"
+                                            name="lastName"
+                                            value={formData.lastName}
+                                            onChange={handleInputChange}
+                                            className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="Nhập họ"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="font-medium text-gray-700 mb-2">
+                                            Tên:
+                                        </span>
+                                        <input
+                                            type="text"
+                                            name="firstName"
+                                            value={formData.firstName}
+                                            onChange={handleInputChange}
+                                            className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="Nhập tên"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="font-medium text-gray-700 mb-2">
+                                            Tên người dùng:
                                         </span>
                                         <input
                                             type="text"
@@ -234,7 +267,7 @@ function EditUserProfile() {
                                             value={formData.userName}
                                             onChange={handleInputChange}
                                             className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Nhập họ tên"
+                                            placeholder="Nhập tên người dùng"
                                         />
                                     </div>
                                     <div className="flex flex-col">

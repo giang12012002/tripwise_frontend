@@ -36,13 +36,12 @@ const WishlistPage = () => {
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem danh sách yêu thích.',
+                icon: 'success',
+                text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 1800
             })
-            navigate('/signin')
+            navigate('/')
             return
         }
 
@@ -213,13 +212,29 @@ const WishlistPage = () => {
                         <h2 className="text-3xl font-bold text-gray-800">
                             Danh Sách Yêu Thích
                         </h2>
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm theo tên tour hoặc địa điểm..."
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                            className="w-full max-w-md p-2 mt-4 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
+                        <div className="relative w-full mt-4">
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm theo tên tour hoặc địa điểm..."
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                className="w-full p-2 pl-10 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <svg
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                />
+                            </svg>
+                        </div>
                     </div>
                     {loading || isAuthLoading ? (
                         <div className="col-span-full text-center bg-white p-6 rounded-xl shadow-lg">
