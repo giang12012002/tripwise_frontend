@@ -326,6 +326,13 @@ const deleteOrDraftTour = async (tourId, action) => {
     }
 }
 
+const createOrGet = async ({ tourId }) => {
+    const response = await authorizedAxios.post(
+        `/api/partner/tours/${tourId}/create-or-get`
+    )
+    return response
+}
+
 export default {
     getAllTours,
     getTopDestinations,
@@ -343,5 +350,6 @@ export default {
     deleteActivity,
     deleteActivityImage,
     deleteMultipleActivityImages,
-    deleteOrDraftTour
+    deleteOrDraftTour,
+    createOrGet
 }

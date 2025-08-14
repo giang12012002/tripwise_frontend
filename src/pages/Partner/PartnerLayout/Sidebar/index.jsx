@@ -21,6 +21,11 @@ const navItems = [
         icon: <FaHome />,
         name: 'Danh Sách Tour',
         path: '/partner'
+    },
+    {
+        icon: <FaChartLine />,
+        name: 'Tổng Quan Booking',
+        path: '/partner/bookings'
     }
 ]
 

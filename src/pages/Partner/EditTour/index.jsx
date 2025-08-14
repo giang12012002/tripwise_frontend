@@ -1,10 +1,11 @@
+// UpdateTour.jsx
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import partnerTourAPI from '@/apis/partnerTourAPI'
 import Swal from 'sweetalert2'
 
-const EditTour = () => {
+const Index = () => {
     const { tourId } = useParams()
     const [tour, setTour] = useState(null)
     const [error, setError] = useState('')
@@ -85,7 +86,7 @@ const EditTour = () => {
             try {
                 const response = await partnerTourAPI.getTourDetail(tourId)
                 const tourData = response.data
-                console.log('Fetch tour response:', tourData)
+                console.log('Fetch tour response in EditTour:', tourData)
 
                 const imageUrls = tourData.imageUrls || []
                 const imageIds = tourData.imageIds || []
@@ -97,6 +98,7 @@ const EditTour = () => {
                     }))
                 )
 
+                // ✅ Fix: luôn convert imageUrls và imageIds của activity thành mảng
                 setActivityImages(
                     tourData.itinerary?.reduce(
                         (acc, day, dayIndex) => ({
@@ -104,11 +106,24 @@ const EditTour = () => {
                             ...day.activities.reduce(
                                 (actAcc, act, actIndex) => ({
                                     ...actAcc,
-                                    [`${dayIndex}-${actIndex}`]:
-                                        act.imageUrls.map((url, i) => ({
+                                    [`${dayIndex}-${actIndex}`]: (Array.isArray(
+                                        act.imageUrls
+                                    )
+                                        ? act.imageUrls
+                                        : [act.imageUrls]
+                                    )
+                                        .filter(Boolean)
+                                        .map((url, i) => ({
                                             preview: url,
                                             type: 'existing',
-                                            id: act.imageIds[i] || null
+                                            id: Array.isArray(act.imageIds)
+                                                ? (Array.isArray(act.imageIds)
+                                                      ? act.imageIds
+                                                      : [act.imageIds])[i] ||
+                                                  null
+                                                : act.imageIds
+                                                  ? act.imageIds
+                                                  : null
                                         }))
                                 }),
                                 {}
@@ -123,7 +138,9 @@ const EditTour = () => {
                     description: tourData.description || '',
                     duration: tourData.days?.toString() || '1',
                     price: tourData.totalEstimatedCost || 0,
-                    pricePerDay: tourData.pricePerDay || 0,
+                    priceAdult: tourData.priceAdult || 0,
+                    priceChild5To10: tourData.priceChild5To10 || 0,
+                    priceChildUnder5: tourData.priceChildUnder5 || 0,
                     location: tourData.location || '',
                     maxGroupSize: tourData.maxGroupSize || 1,
                     category: tourData.preferences || '',
@@ -151,8 +168,12 @@ const EditTour = () => {
                                     mapUrl: act.mapUrl || '',
                                     category: act.category || '',
                                     imageFiles: [],
-                                    imageUrls: act.imageUrls || [],
-                                    imageIds: act.imageIds || []
+                                    imageUrls: Array.isArray(act.imageUrls)
+                                        ? act.imageUrls
+                                        : [act.imageUrls].filter(Boolean),
+                                    imageIds: Array.isArray(act.imageIds)
+                                        ? act.imageIds
+                                        : [act.imageIds].filter(Boolean)
                                 })) || []
                         })) || []
                 })
@@ -177,7 +198,9 @@ const EditTour = () => {
         const newValue =
             name === 'price' ||
             name === 'maxGroupSize' ||
-            name === 'pricePerDay'
+            name === 'priceAdult' ||
+            name === 'priceChild5To10' ||
+            name === 'priceChildUnder5'
                 ? parseFloat(value) || 0
                 : value
         setTour({ ...tour, [name]: newValue })
@@ -686,8 +709,12 @@ const EditTour = () => {
         )
             return 'Thời gian phải là số lớn hơn 0.'
         if (isNaN(tour.price) || tour.price < 0) return 'Giá không được âm.'
-        if (isNaN(tour.pricePerDay) || tour.pricePerDay < 0)
-            return 'Giá mỗi ngày không được âm.'
+        if (isNaN(tour.priceAdult) || tour.priceAdult < 0)
+            return 'Giá người lớn không được âm.'
+        if (isNaN(tour.priceChild5To10) || tour.priceChild5To10 < 0)
+            return 'Giá trẻ em (5-10 tuổi) không được âm.'
+        if (isNaN(tour.priceChildUnder5) || tour.priceChildUnder5 < 0)
+            return 'Giá trẻ em (dưới 5 tuổi) không được âm.'
         if (isNaN(tour.maxGroupSize) || tour.maxGroupSize <= 0)
             return 'Số người tối đa phải lớn hơn 0.'
         if (tourImages.length === 0)
@@ -724,13 +751,25 @@ const EditTour = () => {
         }
 
         try {
+            if (tour.status !== 'Draft') {
+                await partnerTourAPI.createOrGet({ tourId })
+            }
+
             // Cập nhật thông tin tour
             const formData = new FormData()
             formData.append('TourName', tour.tourName)
             formData.append('Description', tour.description)
             formData.append('Duration', parseInt(tour.duration) || 1)
             formData.append('Price', parseFloat(tour.price) || 0)
-            formData.append('PricePerDay', parseFloat(tour.pricePerDay) || 0)
+            formData.append('PriceAdult', parseFloat(tour.priceAdult) || 0)
+            formData.append(
+                'PriceChild5To10',
+                parseFloat(tour.priceChild5To10) || 0
+            )
+            formData.append(
+                'PriceChildUnder5',
+                parseFloat(tour.priceChildUnder5) || 0
+            )
             formData.append('Location', tour.location)
             formData.append('MaxGroupSize', parseInt(tour.maxGroupSize) || 1)
             formData.append('Category', tour.category)
@@ -1022,7 +1061,9 @@ const EditTour = () => {
                 description: updatedTourData.description || '',
                 duration: updatedTourData.days?.toString() || '1',
                 price: updatedTourData.totalEstimatedCost || 0,
-                pricePerDay: updatedTourData.pricePerDay || 0,
+                priceAdult: updatedTourData.priceAdult || 0,
+                priceChild5To10: updatedTourData.priceChild5To10 || 0,
+                priceChildUnder5: updatedTourData.priceChildUnder5 || 0,
                 location: updatedTourData.location || '',
                 maxGroupSize: updatedTourData.maxGroupSize || 1,
                 category: updatedTourData.preferences || '',
@@ -1058,10 +1099,16 @@ const EditTour = () => {
 
             // Cập nhật tourImages
             setTourImages(
-                updatedTourData.imageUrls.map((url, index) => ({
+                (Array.isArray(updatedTourData.imageUrls)
+                    ? updatedTourData.imageUrls
+                    : [updatedTourData.imageUrls].filter(Boolean)
+                ).map((url, index) => ({
                     preview: url,
                     type: 'existing',
-                    id: updatedTourData.imageIds[index] || null
+                    id:
+                        (Array.isArray(updatedTourData.imageIds)
+                            ? updatedTourData.imageIds
+                            : [updatedTourData.imageIds])[index] || null
                 }))
             )
 
@@ -1073,13 +1120,19 @@ const EditTour = () => {
                         ...day.activities.reduce(
                             (actAcc, act, actIndex) => ({
                                 ...actAcc,
-                                [`${dayIndex}-${actIndex}`]: act.imageUrls.map(
-                                    (url, i) => ({
-                                        preview: url,
-                                        type: 'existing',
-                                        id: act.imageIds[i] || null
-                                    })
+                                [`${dayIndex}-${actIndex}`]: (Array.isArray(
+                                    act.imageUrls
                                 )
+                                    ? act.imageUrls
+                                    : [act.imageUrls].filter(Boolean)
+                                ).map((url, i) => ({
+                                    preview: url,
+                                    type: 'existing',
+                                    id:
+                                        (Array.isArray(act.imageIds)
+                                            ? act.imageIds
+                                            : [act.imageIds])[i] || null
+                                }))
                             }),
                             {}
                         )
@@ -1282,17 +1335,47 @@ const EditTour = () => {
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Giá Mỗi Ngày (VND)
+                            Giá Người Lớn (VND)
                         </label>
                         <input
                             type="number"
-                            name="pricePerDay"
-                            value={tour.pricePerDay}
+                            name="priceAdult"
+                            value={tour.priceAdult}
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                             min="0"
-                            placeholder="Giá mỗi ngày"
+                            placeholder="Giá người lớn"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-800 font-semibold text-lg mb-2">
+                            Giá Trẻ Em (5-10 tuổi) (VND)
+                        </label>
+                        <input
+                            type="number"
+                            name="priceChild5To10"
+                            value={tour.priceChild5To10}
+                            onChange={handleTourChange}
+                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                            min="0"
+                            placeholder="Giá trẻ em 5-10 tuổi"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-800 font-semibold text-lg mb-2">
+                            Giá Trẻ Em (dưới 5 tuổi) (VND)
+                        </label>
+                        <input
+                            type="number"
+                            name="priceChildUnder5"
+                            value={tour.priceChildUnder5}
+                            onChange={handleTourChange}
+                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                            min="0"
+                            placeholder="Giá trẻ em dưới 5 tuổi"
                         />
                     </div>
                     <div>
@@ -1935,4 +2018,4 @@ const EditTour = () => {
     )
 }
 
-export default EditTour
+export default Index

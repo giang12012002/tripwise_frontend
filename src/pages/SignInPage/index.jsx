@@ -23,12 +23,6 @@ function SignIn() {
         }
     }, [])
 
-    // useEffect(() => {
-    //     if (isLoggedIn) {
-    //         navigate('/')
-    //     }
-    // }, [isLoggedIn, navigate])
-
     useEffect(() => {
         if (isLoggedIn) {
             const role = jwtDecode(localStorage.getItem('accessToken'))[

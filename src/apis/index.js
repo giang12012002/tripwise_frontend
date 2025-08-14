@@ -9,6 +9,7 @@ import reviewAPI from './reviewAPI'
 import tourUserAPI from './TourUserAPI'
 import logAPI from './logAPI'
 import userProfileAPI from './userProfileAPI'
+import bookingTourAPI from './bookingTourAPI'
 
 export {
     authAPI,
@@ -21,5 +22,6 @@ export {
     reviewAPI,
     tourUserAPI,
     logAPI,
-    userProfileAPI
+    userProfileAPI,
+    bookingTourAPI
 }

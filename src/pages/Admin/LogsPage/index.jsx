@@ -98,18 +98,21 @@ function Index() {
             {currentLogs.length > 0 ? (
                 <div className="bg-white shadow rounded-lg overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm text-left">
-                            <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                        <table className="min-w-full text-sm">
+                            <thead className="bg-gray-50 text-gray-600 uppercase text-xs text-center">
                                 <tr>
                                     <th className="px-6 py-3">ID</th>
-                                    <th className="px-6 py-3">User ID</th>
-                                    <th className="px-6 py-3">User Name</th>
-                                    <th className="px-6 py-3">Action</th>
-                                    <th className="px-6 py-3">Status Code</th>
-                                    <th className="px-6 py-3">Message</th>
+                                    <th className="px-6 py-3">Mã người dùng</th>
+                                    <th className="px-6 py-3">
+                                        Tên người dùng
+                                    </th>
+                                    <th className="px-6 py-3">Hành động</th>
+                                    <th className="px-6 py-3">Mã</th>
+                                    <th className="px-6 py-3">Nội dung</th>
+                                    <th className="px-6 py-3">Thời gian</th>
                                 </tr>
                             </thead>
-                            <tbody className="text-gray-700">
+                            <tbody className="text-gray-700 text-center">
                                 {currentLogs.map((log, index) => (
                                     <tr
                                         key={log.id}
@@ -132,10 +135,24 @@ function Index() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {log.statusCode}
+                                            <span
+                                                className={`px-2 py-1 rounded-full text-xs ${
+                                                    log.statusCode >= 200 &&
+                                                    log.statusCode < 300
+                                                        ? 'bg-green-100 text-green-600'
+                                                        : 'bg-red-100 text-red-600'
+                                                }`}
+                                            >
+                                                {log.statusCode}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             {log.message}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {new Date(
+                                                log.dateTime
+                                            ).toLocaleString('vi-VN')}
                                         </td>
                                     </tr>
                                 ))}
