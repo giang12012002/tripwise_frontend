@@ -37,7 +37,7 @@ function History() {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem lịch sử lịch trình.',
+                text: 'Vui lòng đăng nhập để xem lịch sử  trình.',
                 showConfirmButton: false,
                 timer: 1500
             })
@@ -99,7 +99,7 @@ function History() {
             const errorMessage =
                 err.response?.data?.error ||
                 err.message ||
-                'Không thể tải lịch sử lịch trình.'
+                'Không thể tải hành trình.'
             console.error('Error in fetchHistory:', {
                 errorMessage,
                 status: err.response?.status,
@@ -374,20 +374,36 @@ function History() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-10">
                         <h2 className="text-3xl font-extrabold text-indigo-700 inline-block px-6 py-2 bg-indigo-50 rounded-full shadow-sm">
-                            Lịch Sử Lịch Trình AI
+                            Lịch Sử Hành Trình AI
                         </h2>
                     </div>
                     <div className="mb-5 flex flex-col sm:flex-row gap-4">
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm theo địa điểm..."
-                            value={searchTerm}
-                            onChange={(e) => {
-                                setSearchTerm(e.target.value)
-                                setCurrentPage(1)
-                            }}
-                            className="flex-1 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        />
+                        <div className="relative flex-1">
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm theo địa điểm..."
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value)
+                                    setCurrentPage(1)
+                                }}
+                                className="w-full p-3 pl-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                            <svg
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                />
+                            </svg>
+                        </div>
                         <select
                             value={selectedMonth}
                             onChange={(e) => {
@@ -490,10 +506,10 @@ function History() {
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
                                                             strokeWidth="2"
-                                                            d="M6 18L18 6M6 6l12 12"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0h4m-7 4h12"
                                                         />
                                                     </svg>
-                                                    <span>Xóa</span>
+                                                    {/*<span>Xóa</span>*/}
                                                 </button>
                                             </div>
                                         </div>

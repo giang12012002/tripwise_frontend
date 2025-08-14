@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 
 const TourFilter = ({
-                        priceFilter,
-                        setPriceFilter,
-                        cityFilter,
-                        setCityFilter
-                    }) => {
+    priceFilter,
+    setPriceFilter,
+    cityFilter,
+    setCityFilter
+}) => {
     const allCities = [
         'Phú Quốc',
         'Đà Nẵng',
@@ -31,7 +31,7 @@ const TourFilter = ({
     }
 
     return (
-        <aside className="w-full text-left bg-gray-50 shadow-md rounded-xl p-4">
+        <aside className="w-full max-h-fit text-left bg-gray-50 shadow-md rounded-xl p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-3 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
                 Lọc Tour
             </h3>

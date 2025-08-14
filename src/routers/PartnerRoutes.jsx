@@ -8,6 +8,7 @@ import PartnerBookings from '@/pages/Partner/Bookings'
 import PartnerBookingDetail from '@/pages/Partner/Bookings/BookingDetail'
 
 import PartnerLayout from '@/pages/Partner/PartnerLayout'
+import PartnerStatsPage from '@/pages/Partner/PartnerStatsPage/PartnerStatsPage.jsx'
 
 function PartnerRoutes() {
     return (
@@ -22,6 +23,7 @@ function PartnerRoutes() {
                     path="bookings/:bookingId"
                     element={<PartnerBookingDetail />}
                 />
+                <Route path="stats" element={<PartnerStatsPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>

@@ -4,7 +4,7 @@ import userProfileAPI from '@/apis/userProfileAPI.js'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import Swal from 'sweetalert2'
-import avatarImage from '@/assets/images/maleAvatar.png'
+import avatarImage from '@/assets/images/avatar.png'
 import { useAuth } from '@/AuthContext'
 
 function EditUserProfile() {

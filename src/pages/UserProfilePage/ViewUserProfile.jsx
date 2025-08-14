@@ -5,7 +5,7 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import Swal from 'sweetalert2'
 import { useAuth } from '@/AuthContext'
-import avatarImage from '@/assets/images/maleAvatar.png' // Default avatar image
+import avatarImage from '@/assets/images/avatar.png' // Default avatar image
 
 function ViewUserProfile() {
     const navigate = useNavigate()
