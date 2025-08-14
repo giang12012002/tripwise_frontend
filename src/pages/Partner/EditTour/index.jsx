@@ -136,6 +136,14 @@ const Index = () => {
                 setTour({
                     tourName: tourData.tourName || '',
                     description: tourData.description || '',
+                    startTime:
+                        tourData.startTime || tourData.StartTime
+                            ? (tourData.startTime || tourData.StartTime).slice(
+                                  0,
+                                  16
+                              ) // giữ nguyên ngày + giờ local
+                            : '',
+
                     duration: tourData.days?.toString() || '1',
                     price: tourData.totalEstimatedCost || 0,
                     priceAdult: tourData.priceAdult || 0,
@@ -234,14 +242,16 @@ const Index = () => {
         setTourImages([...tourImages, ...newFiles])
         setTour({
             ...tour,
-            imageFiles: [...tour.imageFiles, ...validFiles],
-            imageUrls: tourImages
-                .filter((img) => img.type === 'existing')
-                .map((img) => img.preview),
-            imageIds: tourImages
-                .filter((img) => img.type === 'existing')
-                .map((img) => img.id)
+            imageFiles: [...tour.imageFiles, ...validFiles], // giữ cả ảnh mới
+            imageUrls: [
+                ...tour.imageUrls, // giữ URL cũ
+                ...tourImages
+                    .filter((img) => img.type === 'url')
+                    .map((img) => img.preview)
+            ],
+            imageIds: tour.imageIds // giữ nguyên
         })
+
         console.log(
             'Tour imageFiles added:',
             validFiles.map((f) => ({ name: f.name, size: f.size }))
@@ -292,7 +302,7 @@ const Index = () => {
         console.log('Tour imageUrls added:', validUrls)
     }
 
-    const removeTourImage = (index) => {
+    const removeTourImage = async (index) => {
         const removedImage = tourImages[index]
         setTourImages(tourImages.filter((_, i) => i !== index))
         if (removedImage.type === 'new') {
@@ -307,18 +317,26 @@ const Index = () => {
                             .indexOf(removedImage)
                 )
             })
-        } else if (removedImage.type === 'existing') {
-            setTour({
-                ...tour,
-                imageUrls: tour.imageUrls.filter(
-                    (_, i) =>
-                        i !==
-                        tourImages
-                            .filter((img) => img.type === 'existing')
-                            .indexOf(removedImage)
-                ),
-                imageIds: tour.imageIds.filter((id) => id !== removedImage.id)
-            })
+        } else if (removedImage.type === 'existing' && removedImage.id) {
+            try {
+                await partnerTourAPI.deleteMultipleTourImages([removedImage.id])
+                setTour({
+                    ...tour,
+                    imageUrls: tour.imageUrls.filter(
+                        (_, i) =>
+                            i !==
+                            tourImages
+                                .filter((img) => img.type === 'existing')
+                                .indexOf(removedImage)
+                    ),
+                    imageIds: tour.imageIds.filter(
+                        (id) => id !== removedImage.id
+                    )
+                })
+            } catch (err) {
+                setError('Không thể xóa ảnh. Vui lòng thử lại.')
+                console.error('Failed to delete tour image:', err)
+            }
         } else {
             setTour({
                 ...tour,
@@ -334,7 +352,18 @@ const Index = () => {
         console.log(`Removed tour image at index ${index}`)
     }
 
-    const clearTourImages = () => {
+    const clearTourImages = async () => {
+        const existingImageIds = tourImages
+            .filter((img) => img.type === 'existing' && img.id)
+            .map((img) => img.id)
+        if (existingImageIds.length > 0) {
+            try {
+                await partnerTourAPI.deleteMultipleTourImages(existingImageIds)
+            } catch (err) {
+                setError('Không thể xóa tất cả ảnh. Vui lòng thử lại.')
+                console.error('Failed to clear tour images:', err)
+            }
+        }
         tourImages.forEach(
             (img) => img.type === 'new' && URL.revokeObjectURL(img.preview)
         )
@@ -473,7 +502,7 @@ const Index = () => {
         )
     }
 
-    const removeActivityImage = (dayIndex, activityIndex, index) => {
+    const removeActivityImage = async (dayIndex, activityIndex, index) => {
         const key = `${dayIndex}-${activityIndex}`
         const removedImage = activityImages[key][index]
         setActivityImages({
@@ -493,21 +522,29 @@ const Index = () => {
                             .filter((img) => img.type === 'new')
                             .indexOf(removedImage)
                 )
-        } else if (removedImage.type === 'existing') {
-            newItinerary[dayIndex].activities[activityIndex].imageUrls =
-                newItinerary[dayIndex].activities[
-                    activityIndex
-                ].imageUrls.filter(
-                    (_, i) =>
-                        i !==
-                        activityImages[key]
-                            .filter((img) => img.type === 'existing')
-                            .indexOf(removedImage)
-                )
-            newItinerary[dayIndex].activities[activityIndex].imageIds =
-                newItinerary[dayIndex].activities[
-                    activityIndex
-                ].imageIds.filter((id) => id !== removedImage.id)
+        } else if (removedImage.type === 'existing' && removedImage.id) {
+            try {
+                await partnerTourAPI.deleteMultipleActivityImages([
+                    removedImage.id
+                ])
+                newItinerary[dayIndex].activities[activityIndex].imageUrls =
+                    newItinerary[dayIndex].activities[
+                        activityIndex
+                    ].imageUrls.filter(
+                        (_, i) =>
+                            i !==
+                            activityImages[key]
+                                .filter((img) => img.type === 'existing')
+                                .indexOf(removedImage)
+                    )
+                newItinerary[dayIndex].activities[activityIndex].imageIds =
+                    newItinerary[dayIndex].activities[
+                        activityIndex
+                    ].imageIds.filter((id) => id !== removedImage.id)
+            } catch (err) {
+                setError('Không thể xóa ảnh hoạt động. Vui lòng thử lại.')
+                console.error('Failed to delete activity image:', err)
+            }
         } else {
             newItinerary[dayIndex].activities[activityIndex].imageUrls =
                 newItinerary[dayIndex].activities[
@@ -526,8 +563,23 @@ const Index = () => {
         )
     }
 
-    const clearActivityImages = (dayIndex, activityIndex) => {
+    const clearActivityImages = async (dayIndex, activityIndex) => {
         const key = `${dayIndex}-${activityIndex}`
+        const existingImageIds = activityImages[key]
+            ?.filter((img) => img.type === 'existing' && img.id)
+            .map((img) => img.id)
+        if (existingImageIds?.length > 0) {
+            try {
+                await partnerTourAPI.deleteMultipleActivityImages(
+                    existingImageIds
+                )
+            } catch (err) {
+                setError(
+                    'Không thể xóa tất cả ảnh hoạt động. Vui lòng thử lại.'
+                )
+                console.error('Failed to clear activity images:', err)
+            }
+        }
         activityImages[key]?.forEach(
             (img) => img.type === 'new' && URL.revokeObjectURL(img.preview)
         )
@@ -758,6 +810,7 @@ const Index = () => {
             // Cập nhật thông tin tour
             const formData = new FormData()
             formData.append('TourName', tour.tourName)
+            formData.append('StartTime', tour.startTime || '')
             formData.append('Description', tour.description)
             formData.append('Duration', parseInt(tour.duration) || 1)
             formData.append('Price', parseFloat(tour.price) || 0)
@@ -776,9 +829,12 @@ const Index = () => {
             formData.append('TourNote', tour.tourNote || '')
             formData.append('TourInfo', tour.tourInfo || '')
 
-            tour.imageFiles.forEach((file) =>
-                formData.append('ImageFile', file)
-            )
+            tourImages
+                .filter((img) => img.type === 'existing')
+                .forEach((img) => formData.append('ImageIds', img.id))
+            tourImages
+                .filter((img) => img.type === 'new' && img.file)
+                .forEach((img) => formData.append('ImageFiles', img.file))
             tour.imageUrls.forEach((url) => formData.append('Image', url))
 
             console.log(
@@ -868,6 +924,29 @@ const Index = () => {
                     const activityKey = `${dayIndex}-${activityIndex}`
                     const currentActivityImages =
                         activityImages[activityKey] || []
+
+                    // Chỉ gửi một ảnh cho hoạt động (mới hoặc URL)
+                    if (currentActivityImages.length > 0) {
+                        const latestImage = currentActivityImages[0] // Lấy ảnh đầu tiên (giới hạn 1 ảnh)
+                        if (latestImage.type === 'new' && latestImage.file) {
+                            activityFormData.append(
+                                'ImageFiles',
+                                latestImage.file
+                            )
+                        } else if (
+                            latestImage.type === 'url' ||
+                            latestImage.type === 'existing'
+                        ) {
+                            activityFormData.append(
+                                'Image',
+                                latestImage.preview
+                            )
+                        }
+                        if (latestImage.type === 'existing' && latestImage.id) {
+                            activityFormData.append('ImageIds', latestImage.id)
+                        }
+                    }
+
                     console.log(
                         `Dữ liệu gửi lên cho hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
                         {
@@ -887,315 +966,58 @@ const Index = () => {
                         }
                     )
 
-                    const newImageFiles = currentActivityImages
-                        .filter((img) => img.type === 'new')
-                        .map((img) => img.file)
-                        .filter(Boolean)
-                    const existingImageUrls = currentActivityImages
-                        .filter(
-                            (img) =>
-                                img.type === 'url' || img.type === 'existing'
-                        )
-                        .map((img) => img.preview)
-                        .filter(Boolean)
-                    const existingImageIds = currentActivityImages
-                        .filter((img) => img.type === 'existing' && img.id)
-                        .map((img) => img.id)
-                        .filter(Boolean)
-
-                    newImageFiles.forEach((file) =>
-                        activityFormData.append('ImageFile', file)
-                    )
-                    existingImageUrls.forEach((url) =>
-                        activityFormData.append('Image', url)
-                    )
-                    existingImageIds.forEach((id) =>
-                        activityFormData.append('ImageIds', id)
-                    )
-
-                    console.log(
-                        `Activity FormData cho ngày ${day.dayNumber}, hoạt động ${activityIndex + 1}:`,
-                        Array.from(activityFormData.entries())
-                    )
-
-                    let activityResponse
-                    try {
-                        if (activity.attractionId) {
-                            console.log(
-                                `Cập nhật hoạt động với ID: ${activity.attractionId}`
-                            )
-                            activityResponse =
-                                await partnerTourAPI.updateActivity(
-                                    activity.attractionId,
-                                    activityFormData
-                                )
-                            console.log(
-                                `Phản hồi cập nhật hoạt động cho ngày ${day.dayNumber}, hoạt động ${activityIndex + 1}:`,
-                                activityResponse.data
-                            )
-                        } else {
-                            console.log(
-                                `Tạo hoạt động mới cho ngày ${day.dayNumber}, hoạt động ${activityIndex + 1}`
-                            )
-                            activityResponse =
-                                await partnerTourAPI.createActivity(
-                                    itineraryId,
-                                    activityFormData
-                                )
-                            console.log(
-                                `Phản hồi tạo hoạt động cho ngày ${day.dayNumber}, hoạt động ${activityIndex + 1}:`,
-                                activityResponse.data
-                            )
-                            newItinerary[dayIndex].activities[
-                                activityIndex
-                            ].attractionId = activityResponse.data.data
-                        }
-
-                        const receivedImageUrls = Array.isArray(
-                            activityResponse.data.imageUrls
-                        )
-                            ? activityResponse.data.imageUrls
-                            : []
-                        const receivedImageIds = Array.isArray(
-                            activityResponse.data.imageIds
-                        )
-                            ? activityResponse.data.imageIds
-                            : []
-                        newItinerary[dayIndex].activities[
-                            activityIndex
-                        ].imageUrls = [
-                            ...existingImageUrls,
-                            ...receivedImageUrls
-                        ]
-                        newItinerary[dayIndex].activities[
-                            activityIndex
-                        ].imageIds = receivedImageIds
-
+                    if (activity.attractionId) {
                         console.log(
-                            `Phản hồi API cho hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
-                            {
-                                imageUrls: receivedImageUrls,
-                                imageIds: receivedImageIds
-                            }
+                            `Cập nhật hoạt động với ID: ${activity.attractionId}`,
+                            Array.from(activityFormData.entries())
                         )
-                    } catch (err) {
-                        console.error(
-                            `Lỗi API cho hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
-                            {
-                                message: err.message,
-                                response: err.response?.data,
-                                status: err.response?.status,
-                                errors:
-                                    err.response?.data?.errors ||
-                                    'Không có chi tiết lỗi'
-                            }
-                        )
-                        setError(
-                            `Không thể cập nhật/tạo hoạt động trong ngày ${day.dayNumber}. Vui lòng thử lại.`
-                        )
-                        return
-                    }
-                }
-            }
-
-            // Làm mới dữ liệu tour sau khi cập nhật
-            const updatedTourResponse =
-                await partnerTourAPI.getTourDetail(tourId)
-            console.log(
-                'Dữ liệu tour được làm mới:',
-                JSON.stringify(updatedTourResponse.data, null, 2)
-            )
-            const updatedTourData = updatedTourResponse.data
-
-            if (!updatedTourData.imageIds) {
-                console.warn(
-                    'imageIds không được trả về trong dữ liệu tour cập nhật'
-                )
-            }
-
-            // Kiểm tra và log ảnh hoạt động sau khi cập nhật
-            updatedTourData.itinerary?.forEach((day, dayIndex) => {
-                day.activities?.forEach((act, actIndex) => {
-                    const activityKey = `${dayIndex}-${actIndex}`
-                    const sentImageUrls =
-                        newItinerary[dayIndex].activities[actIndex].imageUrls ||
-                        []
-                    const receivedImageUrls = act.imageUrls || []
-                    console.log(
-                        `So sánh ảnh hoạt động (Ngày ${day.dayNumber}, Hoạt động ${actIndex + 1}):`,
-                        {
-                            sentImageUrls,
-                            receivedImageUrls,
-                            receivedImageIds: act.imageIds || []
-                        }
-                    )
-                    if (
-                        sentImageUrls.length > 0 &&
-                        receivedImageUrls.length === 0
-                    ) {
-                        console.error(
-                            `Lỗi: Tất cả ảnh hoạt động bị mất (Ngày ${day.dayNumber}, Hoạt động ${actIndex + 1})`,
-                            { sentImageUrls }
+                        const updateActivityResponse =
+                            await partnerTourAPI.updateActivity(
+                                activity.attractionId,
+                                activityFormData
+                            )
+                        console.log(
+                            `Phản hồi cập nhật hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
+                            updateActivityResponse.data
                         )
                     } else {
-                        const filteredSentUrls = sentImageUrls.filter(
-                            (url) => !url.startsWith('blob:')
+                        console.log(
+                            `Tạo hoạt động mới cho ngày ${day.dayNumber}:`,
+                            Array.from(activityFormData.entries())
                         )
-                        const missingImages = filteredSentUrls.filter(
-                            (url) => !receivedImageUrls.includes(url)
-                        )
-
-                        if (missingImages.length > 0) {
-                            console.error(
-                                `Lỗi: Một số ảnh hoạt động bị mất (Ngày ${day.dayNumber}, Hoạt động ${actIndex + 1})`,
-                                { missingImages }
+                        const createActivityResponse =
+                            await partnerTourAPI.createActivity(
+                                itineraryId,
+                                activityFormData
                             )
-                        }
-                    }
-                })
-            })
-
-            // Cập nhật trạng thái tour
-            setTour({
-                tourName: updatedTourData.tourName || '',
-                description: updatedTourData.description || '',
-                duration: updatedTourData.days?.toString() || '1',
-                price: updatedTourData.totalEstimatedCost || 0,
-                priceAdult: updatedTourData.priceAdult || 0,
-                priceChild5To10: updatedTourData.priceChild5To10 || 0,
-                priceChildUnder5: updatedTourData.priceChildUnder5 || 0,
-                location: updatedTourData.location || '',
-                maxGroupSize: updatedTourData.maxGroupSize || 1,
-                category: updatedTourData.preferences || '',
-                tourNote: updatedTourData.tourNote || '',
-                tourInfo: updatedTourData.tourInfo || '',
-                status: updatedTourData.status || 'Draft',
-                rejectReason: updatedTourData.rejectReason || '',
-                imageFiles: [],
-                imageUrls: updatedTourData.imageUrls || [],
-                imageIds: updatedTourData.imageIds || [],
-                itinerary:
-                    updatedTourData.itinerary?.map((day) => ({
-                        itineraryId: day.itineraryId || null,
-                        dayNumber: day.dayNumber || 1,
-                        title: day.title || '',
-                        activities:
-                            day.activities?.map((act) => ({
-                                attractionId: act.attractionId || null,
-                                description: act.description || '',
-                                address: act.address || '',
-                                placeDetail: act.placeDetail || '',
-                                estimatedCost: act.estimatedCost || 0,
-                                startTime: act.startTime || '',
-                                endTime: act.endTime || '',
-                                mapUrl: act.mapUrl || '',
-                                category: act.category || '',
-                                imageFiles: [],
-                                imageUrls: act.imageUrls || [],
-                                imageIds: act.imageIds || []
-                            })) || []
-                    })) || []
-            })
-
-            // Cập nhật tourImages
-            setTourImages(
-                (Array.isArray(updatedTourData.imageUrls)
-                    ? updatedTourData.imageUrls
-                    : [updatedTourData.imageUrls].filter(Boolean)
-                ).map((url, index) => ({
-                    preview: url,
-                    type: 'existing',
-                    id:
-                        (Array.isArray(updatedTourData.imageIds)
-                            ? updatedTourData.imageIds
-                            : [updatedTourData.imageIds])[index] || null
-                }))
-            )
-
-            // Cập nhật activityImages từ dữ liệu API
-            const newActivityImages =
-                updatedTourData.itinerary?.reduce(
-                    (acc, day, dayIndex) => ({
-                        ...acc,
-                        ...day.activities.reduce(
-                            (actAcc, act, actIndex) => ({
-                                ...actAcc,
-                                [`${dayIndex}-${actIndex}`]: (Array.isArray(
-                                    act.imageUrls
-                                )
-                                    ? act.imageUrls
-                                    : [act.imageUrls].filter(Boolean)
-                                ).map((url, i) => ({
-                                    preview: url,
-                                    type: 'existing',
-                                    id:
-                                        (Array.isArray(act.imageIds)
-                                            ? act.imageIds
-                                            : [act.imageIds])[i] || null
-                                }))
-                            }),
-                            {}
+                        console.log(
+                            `Phản hồi tạo hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
+                            createActivityResponse.data
                         )
-                    }),
-                    {}
-                ) || {}
-            setActivityImages(newActivityImages)
-
-            // Log nếu activityImages bị thay đổi không mong muốn
-            Object.keys(newActivityImages).forEach((key) => {
-                const [dayIndex, actIndex] = key.split('-').map(Number)
-                const oldImages = activityImages[key] || []
-                const newImages = newActivityImages[key] || []
-                if (oldImages.length > 0 && newImages.length === 0) {
-                    console.error(
-                        `Lỗi: Tất cả ảnh hoạt động bị mất sau khi cập nhật (Ngày ${dayIndex + 1}, Hoạt động ${actIndex + 1})`,
-                        { oldImages: oldImages.map((img) => img.preview) }
-                    )
-                } else if (oldImages.length !== newImages.length) {
-                    const missingImages = oldImages
-                        .filter(
-                            (oldImg) =>
-                                !newImages.some(
-                                    (newImg) =>
-                                        newImg.preview === oldImg.preview
-                                )
-                        )
-                        .map((img) => img.preview)
-                    if (missingImages.length > 0) {
-                        console.error(
-                            `Lỗi: Một số ảnh hoạt động bị mất sau khi cập nhật (Ngày ${dayIndex + 1}, Hoạt động ${actIndex + 1})`,
-                            { missingImages }
-                        )
+                        newItinerary[dayIndex].activities[
+                            activityIndex
+                        ].attractionId = createActivityResponse.data.data
                     }
                 }
-            })
+            }
 
-            // Đặt lại tempUrlInput
-            setTempUrlInput({ tour: '' })
-
+            setTour({ ...tour, itinerary: newItinerary })
             Swal.fire({
                 icon: 'success',
+                title: 'Thành công',
                 text: 'Cập nhật tour thành công!',
                 showConfirmButton: false,
-                timer: 1800
+                timer: 1500
             })
-            // navigate('/partner/listTour');
+            navigate('/partner/tours')
         } catch (err) {
-            console.error('Lỗi API (updateTour):', {
+            setError('Không thể cập nhật tour. Vui lòng thử lại.')
+            console.error('API Error (handleUpdate):', {
                 message: err.message,
                 response: err.response?.data,
                 status: err.response?.status,
                 errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
             })
-            let errorMessage = 'Không thể cập nhật tour. Vui lòng thử lại.'
-            if (err.response?.data?.errors) {
-                errorMessage = Array.isArray(err.response.data.errors)
-                    ? err.response.data.errors.join(', ')
-                    : typeof err.response.data.errors === 'string'
-                      ? err.response.data.errors
-                      : JSON.stringify(err.response.data.errors)
-            }
-            setError(errorMessage)
         }
     }
 
@@ -1301,6 +1123,19 @@ const Index = () => {
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                             placeholder="Nhập chủ đề tour"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-800 font-semibold text-lg mb-2">
+                            Thời Gian Bắt Đầu Tour
+                        </label>
+                        <input
+                            type="datetime-local"
+                            name="startTime"
+                            value={tour.startTime}
+                            onChange={handleTourChange}
+                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
                         />
                     </div>
                     <div>

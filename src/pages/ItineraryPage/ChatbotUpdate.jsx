@@ -118,8 +118,8 @@ function ChatbotUpdate() {
     const [messages, setMessages] = useState([
         {
             text: [
-                'Xin chào! Bạn muốn thay đổi gì trong lịch trình? Xem lịch trình hiện tại bên trái.',
-                'Để cập nhật một hoạt động cụ thể bạn cần ghi rõ thời gian và ngày của hoạt động, nhập: "ngày 1, 07:00 - 08:00 đi ăn bánh mì".'
+                'Xin chào! Bạn muốn thay đổi gì trong hành trình? Xem hành trình hiện tại bên trái.',
+                'Để cập nhật một hoạt động cụ thể bạn cần ghi rõ ngày, thời giai của hoạt động, nhập: "ngày 1, 07:00 - 08:00 đi ăn bánh mì".'
             ],
             sender: 'bot',
             timestamp: new Date()
@@ -321,8 +321,8 @@ function ChatbotUpdate() {
                 ...prev,
                 {
                     text: isChunkUpdate
-                        ? `Lịch trình từ ngày ${startDay} đến ngày ${startDay + chunkSize - 1} đã được cập nhật! Bạn có muốn xem lịch trình mới hoặc tiếp tục chỉnh sửa?`
-                        : 'Lịch trình đã được cập nhật! Bạn có muốn xem lịch trình mới hoặc tiếp tục chỉnh sửa?',
+                        ? `Hành trình từ ngày ${startDay} đến ngày ${startDay + chunkSize - 1} đã được cập nhật! Bạn có muốn xem  trình mới hoặc tiếp tục chỉnh sửa?`
+                        : 'Hành trình đã được cập nhật! Bạn có muốn xem  trình mới hoặc tiếp tục chỉnh sửa?',
                     sender: 'bot',
                     timestamp: new Date(),
                     updatedItinerary
@@ -332,7 +332,7 @@ function ChatbotUpdate() {
             setMessages((prev) => [
                 ...prev,
                 {
-                    text: 'Có lỗi xảy ra khi cập nhật lịch trình. Vui lòng thử lại.',
+                    text: 'Có lỗi xảy ra khi cập nhật hành trình. Vui lòng thử lại.',
                     sender: 'bot',
                     timestamp: new Date()
                 }
@@ -376,10 +376,10 @@ function ChatbotUpdate() {
                 <Header />
                 <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
                     <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">
-                        Không tìm thấy lịch trình
+                        Không tìm thấy hành trình
                     </h2>
                     <p className="text-gray-600 mt-4">
-                        Vui lòng quay lại trang lịch trình để tiếp tục.
+                        Vui lòng quay lại trang ành trình để tiếp tục.
                     </p>
                 </div>
                 <Footer />
@@ -392,13 +392,13 @@ function ChatbotUpdate() {
             <Header />
             <div className="flex-grow max-w-7xl w-full mx-auto p-10 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-10">
                 <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight mb-8 text-center">
-                    Cập nhật lịch trình du lịch tại{' '}
+                    Cập nhật hành trình du lịch tại{' '}
                     {normalizedItineraryData.destination || 'Không xác định'}
                 </h2>
                 <div className="flex flex-col md:flex-row gap-8">
                     <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-8 h-[80vh] overflow-y-auto">
                         <h3 className="text-xl font-semibold text-blue-800 mb-4">
-                            Lịch trình hiện tại
+                            trình hiện tại
                         </h3>
                         <hr className="border-t border-gray-300 mb-4" />
                         <div className="grid grid-cols-1 gap-8 mb-8">
@@ -565,7 +565,7 @@ function ChatbotUpdate() {
                         </div>
                         <hr className="border-t border-gray-300 mb-4" />
                         <h4 className="text-lg font-semibold text-blue-800 mb-6">
-                            Chi tiết lịch trình
+                            Chi tiết ành trình
                         </h4>
                         <div className="space-y-6">
                             {normalizedItineraryData.itinerary &&
@@ -772,15 +772,14 @@ function ChatbotUpdate() {
                                 })
                             ) : (
                                 <p className="text-gray-600 text-sm leading-6">
-                                    Không có chi tiết lịch trình nào để hiển
-                                    thị.
+                                    Không có chi tiết h trình nào để hiển thị.
                                 </p>
                             )}
                         </div>
                     </div>
                     <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-8 h-[80vh] flex flex-col">
                         <h3 className="text-xl font-semibold text-blue-800 mb-4 text-center">
-                            Cập nhật lịch trình cùng TripWiseAl
+                            Cập nhật trình cùng TripWiseAl
                         </h3>
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
                             {messages.map((msg, index) => (
@@ -817,7 +816,7 @@ function ChatbotUpdate() {
                                                     }
                                                     className="mt-2 px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300"
                                                 >
-                                                    Xem lịch trình mới
+                                                    Xem hành trình mới
                                                 </button>
                                             )}
                                     </div>

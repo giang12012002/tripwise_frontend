@@ -10,12 +10,6 @@ const PartnerDashboard = () => {
 
     React.useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
-            Swal.fire({
-                icon: 'success',
-                text: 'Đăng xuất thành công!',
-                showConfirmButton: false,
-                timer: 1800
-            })
             navigate('/signin')
         }
     }, [isLoggedIn, isAuthLoading, navigate])
