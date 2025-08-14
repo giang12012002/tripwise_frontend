@@ -26,6 +26,11 @@ const navItems = [
         icon: <FaChartLine />,
         name: 'Tổng Quan Booking',
         path: '/partner/bookings'
+    },
+    {
+        icon: <FaClipboardCheck />,
+        name: 'Thống Kê',
+        path: '/partner/stats'
     }
 ]
 
