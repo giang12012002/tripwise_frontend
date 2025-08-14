@@ -8,6 +8,8 @@ import appSettingAPI from './appSettingAPI'
 import reviewAPI from './reviewAPI'
 import tourUserAPI from './TourUserAPI'
 import logAPI from './logAPI'
+import userProfileAPI from './userProfileAPI'
+import bookingTourAPI from './bookingTourAPI'
 
 export {
     authAPI,
@@ -19,5 +21,7 @@ export {
     appSettingAPI,
     reviewAPI,
     tourUserAPI,
-    logAPI
+    logAPI,
+    userProfileAPI,
+    bookingTourAPI
 }

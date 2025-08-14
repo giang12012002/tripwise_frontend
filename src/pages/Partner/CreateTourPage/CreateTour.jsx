@@ -712,7 +712,7 @@ const CreateTour = () => {
                 showConfirmButton: false,
                 timer: 1800
             })
-            navigate('/partner/listTour')
+            navigate('/partner')
         } catch (err) {
             console.error('API Error (handleSubmit):', {
                 message: err.message,

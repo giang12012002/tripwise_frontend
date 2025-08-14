@@ -15,19 +15,33 @@ const paymentAPI = {
         numChildrenUnder5,
         paymentMethod
     }) => {
-        const response = await authorizedAxios.post('/api/payment/booking', {
-            tourId,
-            numAdults,
-            numChildren5To10,
-            numChildrenUnder5,
-            paymentMethod
-        })
+        const response = await authorizedAxios.post(
+            '/api/payment/create-draft',
+            {
+                tourId,
+                numAdults,
+                numChildren5To10,
+                numChildrenUnder5,
+                paymentMethod
+            }
+        )
+        return response
+    },
+    updateBookingRequest: async () => {},
+    confirmAndPay: async ({ bookingId }) => {
+        const response = await authorizedAxios.post(
+            '/api/payment/confirm-and-pay/' + bookingId
+        )
         return response
     },
     fetchPaymentHistory: async ({ status }) => {
         const response = await authorizedAxios.get(
             '/api/payment/payment-history?status=' + status
         )
+        return response
+    },
+    fetchBookingDetail: async ({ bookingId }) => {
+        const response = await authorizedAxios.get(`/api/payment/${bookingId}`)
         return response
     }
 }

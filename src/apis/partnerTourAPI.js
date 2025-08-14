@@ -325,6 +325,28 @@ const deleteOrDraftTour = async (tourId, action) => {
         throw err
     }
 }
+const getStatistics = async () => {
+    try {
+        const response = await authorizedAxios.get(
+            'api/partner/tours/statistics'
+        )
+        return response
+    } catch (err) {
+        console.error('API Error (getStatistics):', {
+            message: err.message,
+            response: err.response?.data,
+            status: err.response?.status,
+            errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
+        })
+        throw err
+    }
+}
+const createOrGet = async ({ tourId }) => {
+    const response = await authorizedAxios.post(
+        `/api/partner/tours/${tourId}/create-or-get`
+    )
+    return response
+}
 
 export default {
     getAllTours,
@@ -343,5 +365,7 @@ export default {
     deleteActivity,
     deleteActivityImage,
     deleteMultipleActivityImages,
-    deleteOrDraftTour
+    deleteOrDraftTour,
+    getStatistics,
+    createOrGet
 }

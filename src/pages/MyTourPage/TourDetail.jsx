@@ -232,8 +232,8 @@ function TourDetail() {
     }
 
     useEffect(() => {
-        if (!loading && tourDetail) {
-        }
+        // if (!loading && tourDetail) {
+        // }
     }, [loading, tourDetail, relatedTours, relatedTourMessage])
 
     return (

@@ -12,6 +12,7 @@ function Index({ tourId }) {
     const isPressed = async () => {
         try {
             const response = await reviewAPI.fetchTourAIReview(tourId)
+            console.log('Reviews:', response.data)
             if (response.status === 200 && response.data?.length > 0) {
                 setIsReviewed(true)
                 setReviews(response.data)

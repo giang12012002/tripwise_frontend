@@ -11,9 +11,8 @@ const PartnerDashboard = () => {
     React.useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
             Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để truy cập trang quản lý.',
+                icon: 'success',
+                text: 'Đăng xuất thành công!',
                 showConfirmButton: false,
                 timer: 1800
             })
@@ -33,9 +32,8 @@ const PartnerDashboard = () => {
     }
 
     const navItems = [
-        // { label: 'Trang Chủ', path: '/' },
+        { label: 'Thống Kê', path: '/partner/stats' },
         { label: 'Danh Sách Tour', path: '/partner/listTour' }
-        // { label: 'Tạo Tour Mới', path: '/partner/createTour' }
     ]
 
     return (

@@ -93,7 +93,7 @@ const DetailTour = () => {
                 if (err.response?.status === 404) {
                     setError('Tour không tồn tại hoặc đã bị xóa.')
                     setTimeout(() => {
-                        navigate('/partner/listTour')
+                        navigate('/partner')
                     }, 1800)
                 } else {
                     setError('Không thể tải chi tiết tour. Vui lòng thử lại.')
@@ -616,7 +616,6 @@ const DetailTour = () => {
                                     </div>
                                 )}
                             </div>
-                            {/* Repeat similar upgrades for other sections */}
                             <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <button
                                     onClick={() =>
@@ -648,8 +647,19 @@ const DetailTour = () => {
                                 {openSections['gia-tour-khong-bao-gom'] && (
                                     <div className="p-6 bg-gray-50">
                                         <p className="text-gray-800">
-                                            Nội dung chi tiết về giá tour không
-                                            bao gồ...
+                                            <p className="text-gray-800 mb-2 ">
+                                                - Hành lý ký gửi quá quy định.
+                                            </p>
+                                            <p className="text-gray-800 mb-2 ">
+                                                - Chi phí cá nhân, hành lý quá
+                                                cước và các chi phí phát sinh
+                                                ngoài chương trình.
+                                            </p>
+                                            <p className="text-gray-800 mb-2 ">
+                                                - Chi phí dời ngày về, đổi hành
+                                                trình về (đổi chặng), nâng hạng
+                                                vé máy bay.
+                                            </p>
                                         </p>
                                     </div>
                                 )}
@@ -685,120 +695,21 @@ const DetailTour = () => {
                                 {openSections['luu-y-gia-tre-em'] && (
                                     <div className="p-6 bg-gray-50">
                                         <p className="text-gray-800">
-                                            Nội dung lưu ý về giá trẻ em...
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                <button
-                                    onClick={() =>
-                                        toggleSection('dieu-kien-thanh-toan')
-                                    }
-                                    className="flex justify-between items-center w-full p-6 text-left bg-gradient-to-r from-white to-gray-50 hover:from-gray-50 hover:to-gray-100 transition-colors duration-300"
-                                >
-                                    <span className="text-lg text-gray-900 font-medium">
-                                        Điều kiện thanh toán
-                                    </span>
-                                    <span
-                                        className={`transition-transform duration-300 ${openSections['dieu-kien-thanh-toan'] ? 'rotate-180' : ''}`}
-                                    >
-                                        <svg
-                                            className="w-6 h-6 text-gray-600"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    </span>
-                                </button>
-                                {openSections['dieu-kien-thanh-toan'] && (
-                                    <div className="p-6 bg-gray-50">
-                                        <p className="text-gray-800">
-                                            Nội dung điều kiện thanh toán...
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                <button
-                                    onClick={() =>
-                                        toggleSection('dieu-kien-dang-ky')
-                                    }
-                                    className="flex justify-between items-center w-full p-6 text-left bg-gradient-to-r from-white to-gray-50 hover:from-gray-50 hover:to-gray-100 transition-colors duration-300"
-                                >
-                                    <span className="text-lg text-gray-900 font-medium">
-                                        Điều kiện đăng ký
-                                    </span>
-                                    <span
-                                        className={`transition-transform duration-300 ${openSections['dieu-kien-dang-ky'] ? 'rotate-180' : ''}`}
-                                    >
-                                        <svg
-                                            className="w-6 h-6 text-gray-600"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    </span>
-                                </button>
-                                {openSections['dieu-kien-dang-ky'] && (
-                                    <div className="p-6 bg-gray-50">
-                                        <p className="text-gray-800">
-                                            Nội dung điều kiện đăng ký...
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                <button
-                                    onClick={() =>
-                                        toggleSection(
-                                            'luu-y-ve-chuyen-hoac-huy-tour'
-                                        )
-                                    }
-                                    className="flex justify-between items-center w-full p-6 text-left bg-gradient-to-r from-white to-gray-50 hover:from-gray-50 hover:to-gray-100 transition-colors duration-300"
-                                >
-                                    <span className="text-lg text-gray-900 font-medium">
-                                        Lưu ý về chuyến hoặc hủy tour
-                                    </span>
-                                    <span
-                                        className={`transition-transform duration-300 ${openSections['luu-y-ve-chuyen-hoac-huy-tour'] ? 'rotate-180' : ''}`}
-                                    >
-                                        <svg
-                                            className="w-6 h-6 text-gray-600"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    </span>
-                                </button>
-                                {openSections[
-                                    'luu-y-ve-chuyen-hoac-huy-tour'
-                                ] && (
-                                    <div className="p-6 bg-gray-50">
-                                        <p className="text-gray-800">
-                                            Nội dung lưu ý về chuyến hoặc hủy
-                                            tour...
+                                            <p className="text-gray-800 mb-2 ">
+                                                Giá Trẻ Em:
+                                            </p>
+                                            <p className="text-gray-800 mb-2 ">
+                                                - Trẻ dưới 5 tuổi: Giá như trên
+                                                website.
+                                            </p>
+                                            <p className="text-gray-800 mb-2 ">
+                                                - Trẻ từ 5 - dưới 10 tuổi: Giá
+                                                như trên website.
+                                            </p>
+                                            <p className="text-gray-800 mb-2 ">
+                                                - Trẻ từ 10 tuổi trở lên: 100%
+                                                giá người lớn.
+                                            </p>
                                         </p>
                                     </div>
                                 )}
@@ -807,16 +718,11 @@ const DetailTour = () => {
                         <div className="space-y-4">
                             <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <button
-                                    onClick={() =>
-                                        toggleSection(
-                                            'cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'
-                                        )
-                                    }
+                                    onClick={() => toggleSection('huy-doi')}
                                     className="flex justify-between items-center w-full p-6 text-left bg-gradient-to-r from-white to-gray-50 hover:from-gray-50 hover:to-gray-100 transition-colors duration-300"
                                 >
                                     <span className="text-lg text-gray-900 font-medium">
-                                        Các điều kiện hủy tour đối với ngày
-                                        thường
+                                        Hủy đổi
                                     </span>
                                     <span
                                         className={`transition-transform duration-300 ${openSections['cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'] ? 'rotate-180' : ''}`}
@@ -836,98 +742,16 @@ const DetailTour = () => {
                                         </svg>
                                     </span>
                                 </button>
-                                {openSections[
-                                    'cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'
-                                ] && (
+                                {openSections['huy-doi'] && (
                                     <div className="p-6 bg-gray-50">
                                         <p className="text-gray-800">
-                                            Nội dung điều kiện hủy tour với ngày
-                                            thường...
+                                            - Huỷ hoặc đổi tour vui lòng liên hệ
+                                            Zalo: 0339.805.402
                                         </p>
                                     </div>
                                 )}
                             </div>
-                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                <button
-                                    onClick={() =>
-                                        toggleSection(
-                                            'cac-dieu-kien-huy-tour-doi-voi-ngay-le-tet'
-                                        )
-                                    }
-                                    className="flex justify-between items-center w-full p-6 text-left bg-gradient-to-r from-white to-gray-50 hover:from-gray-50 hover:to-gray-100 transition-colors duration-300"
-                                >
-                                    <span className="text-lg text-gray-900 font-medium">
-                                        Các điều kiện hủy tour đối với ngày lễ,
-                                        Tết
-                                    </span>
-                                    <span
-                                        className={`transition-transform duration-300 ${openSections['cac-dieu-kien-huy-tour-doi-voi-ngay-le-tet'] ? 'rotate-180' : ''}`}
-                                    >
-                                        <svg
-                                            className="w-6 h-6 text-gray-600"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    </span>
-                                </button>
-                                {openSections[
-                                    'cac-dieu-kien-huy-tour-doi-voi-ngay-le-tet'
-                                ] && (
-                                    <div className="p-6 bg-gray-50">
-                                        <p className="text-gray-800">
-                                            Nội dung điều kiện hủy tour với ngày
-                                            lễ, Tết...
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                <button
-                                    onClick={() =>
-                                        toggleSection(
-                                            'truong-hop-bat-khi-khang'
-                                        )
-                                    }
-                                    className="flex justify-between items-center w-full p-6 text-left bg-gradient-to-r from-white to-gray-50 hover:from-gray-50 hover:to-gray-100 transition-colors duration-300"
-                                >
-                                    <span className="text-lg text-gray-900 font-medium">
-                                        Trường hợp bắt buộc hủy khẩn
-                                    </span>
-                                    <span
-                                        className={`transition-transform duration-300 ${openSections['truong-hop-bat-khi-khang'] ? 'rotate-180' : ''}`}
-                                    >
-                                        <svg
-                                            className="w-6 h-6 text-gray-600"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    </span>
-                                </button>
-                                {openSections['truong-hop-bat-khi-khang'] && (
-                                    <div className="p-6 bg-gray-50">
-                                        <p className="text-gray-800">
-                                            Nội dung trường hợp bắt buộc hủy
-                                            khẩn...
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
+
                             <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <button
                                     onClick={() => toggleSection('lien-he')}
@@ -957,7 +781,19 @@ const DetailTour = () => {
                                 {openSections['lien-he'] && (
                                     <div className="p-6 bg-gray-50">
                                         <p className="text-gray-800">
-                                            Nội dung liên hệ...
+                                            <p className="text-gray-800 mb-2 ">
+                                                - Mọi chi tiết vui lòng liên hệ:
+                                            </p>
+                                            <p className="text-gray-800 mb-2 ">
+                                                - Hòa Lạc, Việt Nam
+                                            </p>
+                                            <p className="text-gray-800 mb-2 ">
+                                                - Điện thoại: 0339.805.402 .
+                                            </p>
+                                            <p className="text-gray-800 mb-2 ">
+                                                - TRIPWISE KÍNH CHÚC QUÝ KHÁCH
+                                                MỘT CHUYẾN DU LỊCH VUI VẺ!
+                                            </p>
                                         </p>
                                     </div>
                                 )}
@@ -970,10 +806,10 @@ const DetailTour = () => {
                                     className="flex justify-between items-center w-full p-6 text-left bg-gradient-to-r from-white to-gray-50 hover:from-gray-50 hover:to-gray-100 transition-colors duration-300"
                                 >
                                     <span className="text-lg text-gray-900 font-medium">
-                                        Thông tin Visa
+                                        Hướng dẫn viên
                                     </span>
                                     <span
-                                        className={`transition-transform duration-300 ${openSections['thong-tin-visa'] ? 'rotate-180' : ''}`}
+                                        className={`transition-transform duration-300 ${openSections['huong-dan-vien'] ? 'rotate-180' : ''}`}
                                     >
                                         <svg
                                             className="w-6 h-6 text-gray-600"
@@ -993,7 +829,14 @@ const DetailTour = () => {
                                 {openSections['thong-tin-visa'] && (
                                     <div className="p-6 bg-gray-50">
                                         <p className="text-gray-800">
-                                            Nội dung thông tin Visa...
+                                            <p className="text-gray-800 mb-2 ">
+                                                - Hướng Dẫn Viên (HDV) sẽ liên
+                                                lạc với Quý Khách khoảng 2-3
+                                                ngày trước khi khởi hành để sắp
+                                                xếp giờ đón và cung cấp các
+                                                thông tin cần thiết cho chuyển
+                                                đi.
+                                            </p>
                                         </p>
                                     </div>
                                 )}

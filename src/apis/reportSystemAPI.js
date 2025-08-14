@@ -66,6 +66,13 @@ const reportSystemAPI = {
             }
         )
         return response.data
+    },
+
+    fetchDashboardStatistics: async () => {
+        const response = await authorizedAxios.get(
+            '/api/reports/get-dashboard-statistics'
+        )
+        return response.data
     }
 }
 
