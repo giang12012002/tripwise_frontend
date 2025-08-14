@@ -30,10 +30,9 @@ function Index({ tour }) {
             const price1ChildUnder10 = tour.priceChild5To10
             const price1ChildUnder5 = tour.priceChildUnder5
 
-            const adultTotal = adultNum * price1Adult * dayNum
-            const childUnder9Total =
-                childUnder10Num * price1ChildUnder10 * dayNum
-            const childUnder3Total = childUnder5Num * price1ChildUnder5 * dayNum
+            const adultTotal = adultNum * price1Adult
+            const childUnder9Total = childUnder10Num * price1ChildUnder10
+            const childUnder3Total = childUnder5Num * price1ChildUnder5
 
             setAdultCost(adultTotal)
             setChildUnder10Cost(childUnder9Total)

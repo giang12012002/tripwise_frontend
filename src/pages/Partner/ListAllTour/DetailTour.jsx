@@ -93,7 +93,7 @@ const DetailTour = () => {
                 if (err.response?.status === 404) {
                     setError('Tour không tồn tại hoặc đã bị xóa.')
                     setTimeout(() => {
-                        navigate('/partner/listTour')
+                        navigate('/partner')
                     }, 1800)
                 } else {
                     setError('Không thể tải chi tiết tour. Vui lòng thử lại.')
