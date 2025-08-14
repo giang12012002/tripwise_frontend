@@ -132,6 +132,109 @@ const CreateTour = () => {
                 'Tour imageFiles added:',
                 validFiles.map((f) => ({ name: f.name, size: f.size }))
             )
+        } else if (name === 'duration') {
+            // Cho phép giá trị rỗng tạm thời khi người dùng xóa
+            if (value === '') {
+                setTour((prev) => ({ ...prev, duration: '' }))
+                return
+            }
+            const newDuration = parseInt(value)
+            if (isNaN(newDuration) || newDuration < 1) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Số ngày phải lớn hơn hoặc bằng 1.',
+                    showConfirmButton: false,
+                    timer: 1800
+                })
+                return
+            }
+            setTour((prev) => {
+                let newItinerary = [...prev.itinerary]
+                const currentDays = newItinerary.length
+
+                if (newDuration > currentDays) {
+                    // Thêm ngày mới
+                    const daysToAdd = newDuration - currentDays
+                    const newDays = Array.from(
+                        { length: daysToAdd },
+                        (_, i) => ({
+                            dayNumber: currentDays + i + 1,
+                            title: '',
+                            itineraryId: null,
+                            activities: [
+                                {
+                                    placeDetail: '',
+                                    description: '',
+                                    address: '',
+                                    estimatedCost: 0,
+                                    startTime: '',
+                                    endTime: '',
+                                    mapUrl: '',
+                                    category: '',
+                                    imageFiles: [],
+                                    imageUrls: [],
+                                    imageIds: [],
+                                    attractionId: null
+                                }
+                            ]
+                        })
+                    )
+                    newItinerary = [...newItinerary, ...newDays]
+                    setOpenDays((prevOpenDays) => {
+                        const newOpenDays = { ...prevOpenDays }
+                        newDays.forEach((_, i) => {
+                            newOpenDays[currentDays + i] = true
+                        })
+                        return newOpenDays
+                    })
+                } else if (newDuration < currentDays) {
+                    // Xóa các ngày thừa
+                    newItinerary = newItinerary.slice(0, newDuration)
+                    setOpenDays((prevOpenDays) => {
+                        const newOpenDays = {}
+                        for (let i = 0; i < newDuration; i++) {
+                            if (prevOpenDays[i] !== undefined) {
+                                newOpenDays[i] = prevOpenDays[i]
+                            }
+                        }
+                        return newOpenDays
+                    })
+                    setActivityPreviews((prevPreviews) => {
+                        const newPreviews = {}
+                        Object.keys(prevPreviews).forEach((key) => {
+                            const [dayIndex] = key.split('-').map(Number)
+                            if (dayIndex < newDuration) {
+                                newPreviews[key] = prevPreviews[key]
+                            }
+                        })
+                        return newPreviews
+                    })
+                    setTempUrlInput((prevTemp) => {
+                        const newTemp = { tour: prevTemp.tour }
+                        Object.keys(prevTemp).forEach((key) => {
+                            if (key !== 'tour') {
+                                const [dayIndex] = key.split('-').map(Number)
+                                if (dayIndex < newDuration) {
+                                    newTemp[key] = prevTemp[key]
+                                }
+                            }
+                        })
+                        return newTemp
+                    })
+                }
+
+                // Cập nhật dayNumber cho tất cả các ngày
+                newItinerary.forEach((day, index) => {
+                    day.dayNumber = index + 1
+                })
+
+                return {
+                    ...prev,
+                    duration: value,
+                    itinerary: newItinerary
+                }
+            })
         } else {
             const newValue =
                 name === 'priceAdult' ||
@@ -428,6 +531,30 @@ const CreateTour = () => {
             delete newOpenDays[dayIndex]
             return newOpenDays
         })
+        setActivityPreviews((prev) => {
+            const newPreviews = {}
+            Object.keys(prev).forEach((key) => {
+                const [day] = key.split('-').map(Number)
+                if (day !== dayIndex) {
+                    const newDay = day > dayIndex ? day - 1 : day
+                    newPreviews[`${newDay}-${key.split('-')[1]}`] = prev[key]
+                }
+            })
+            return newPreviews
+        })
+        setTempUrlInput((prev) => {
+            const newTemp = { tour: prev.tour }
+            Object.keys(prev).forEach((key) => {
+                if (key !== 'tour') {
+                    const [day] = key.split('-').map(Number)
+                    if (day !== dayIndex) {
+                        const newDay = day > dayIndex ? day - 1 : day
+                        newTemp[`${newDay}-${key.split('-')[1]}`] = prev[key]
+                    }
+                }
+            })
+            return newTemp
+        })
         console.log(`Removed day ${dayIndex + 1}`)
     }
 
@@ -508,8 +635,8 @@ const CreateTour = () => {
             return 'Giá trẻ em dưới 5 tuổi không được vượt quá giá người lớn.'
         if (isNaN(tour.maxGroupSize) || tour.maxGroupSize <= 0)
             return 'Số người tối đa phải lớn hơn 0.'
-        if (tour.itinerary.length > parseInt(tour.duration))
-            return `Số ngày trong lịch trình (${tour.itinerary.length}) không được vượt quá thời gian tour (${tour.duration} ngày).`
+        if (tour.itinerary.length !== parseInt(tour.duration))
+            return `Số ngày trong lịch trình (${tour.itinerary.length}) phải bằng thời gian tour (${tour.duration} ngày).`
         if (tour.imageFiles.length + tour.imageUrls.length === 0)
             return 'Phải cung cấp ít nhất một hình ảnh cho tour.'
         let totalEstimatedCost = 0
@@ -826,7 +953,8 @@ const CreateTour = () => {
                             name="location"
                             value={tour.location}
                             onChange={handleTourChange}
-                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full border border-gray-300 p-3 rounded-lg focusBryan
+focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                             placeholder="Nhập địa điểm"
                         />
