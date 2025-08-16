@@ -46,13 +46,6 @@ const TourList = () => {
 
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem danh sách tour.',
-                showConfirmButton: false,
-                timer: 1800
-            })
             navigate('/signin')
         }
     }, [isLoggedIn, isAuthLoading, navigate])

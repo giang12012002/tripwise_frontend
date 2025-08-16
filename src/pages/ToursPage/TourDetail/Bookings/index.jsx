@@ -16,7 +16,6 @@ function Index({ tour }) {
     const [adultCost, setAdultCost] = useState(0)
     const [childUnder10Cost, setChildUnder10Cost] = useState(0)
     const [childUnder5Cost, setChildUnder5Cost] = useState(0)
-    console.log('tour', tour)
 
     useEffect(() => {
         if (
@@ -71,18 +70,10 @@ function Index({ tour }) {
                 }
                 navigate('/user/booking', { state: bookingData })
             } else {
-                toast.error(response.data)
+                toast.error(response.data.message || 'Lỗi khi đặt chỗ.')
             }
-
-            // if (response.status === 200) {
-            //     localStorage.setItem('vnpay-redirect', '/tour-detail/' + tourId)
-            //     window.location.href = response.data.url
-            // }
-            // if (response.status === 400) {
-            //     toast.error(response.data)
-            // }
         } catch (err) {
-            toast.error(err.response.data || 'Lỗi khi đặt chỗ.')
+            toast.error(err.response.data.message || 'Lỗi khi đặt chỗ.')
         }
     }
 

@@ -137,16 +137,25 @@ const AdminTourList = () => {
         }
     }
 
-    const handleApproveTour = async (tourId) => {
+    const handleApproveTour = async (tour) => {
         try {
-            await AdminManagerTourAPI.approveTour(tourId)
+            let response
+            if (tour.originalTourId !== null) {
+                response = await AdminManagerTourAPI.approveTourUpdate(
+                    tour.originalTourId
+                )
+            } else {
+                response = await AdminManagerTourAPI.approveTour(tour.tourId)
+            }
+
             Swal.fire({
                 icon: 'success',
-                text: 'Tour đã được phê duyệt!',
+                text: response.data.message || 'Tour đã được phê duyệt!',
                 showConfirmButton: false,
                 timer: 1800
             })
-            setTours(tours.filter((tour) => tour.tourId !== tourId))
+            // setTours(tours.filter((tour) => tour.tourId !== tour.tourId))
+            handleFilterApply()
         } catch (err) {
             console.error('Lỗi khi phê duyệt tour:', err)
             Swal.fire({
@@ -159,7 +168,7 @@ const AdminTourList = () => {
         }
     }
 
-    const handleRejectTour = async (tourId) => {
+    const handleRejectTour = async (tour) => {
         const { value: rejectReason } = await Swal.fire({
             title: 'Lý do từ chối',
             input: 'textarea',
@@ -181,17 +190,26 @@ const AdminTourList = () => {
 
         if (rejectReason) {
             try {
-                await AdminManagerTourAPI.rejectTour(
-                    tourId,
-                    rejectReason.trim()
-                )
+                if (tour.originalTourId !== null) {
+                    await AdminManagerTourAPI.rejectTourUpdate(
+                        tour.originalTourId,
+                        rejectReason
+                    )
+                } else {
+                    await AdminManagerTourAPI.rejectTour(
+                        tour.tourId,
+                        rejectReason
+                    )
+                }
+
                 Swal.fire({
                     icon: 'success',
                     text: 'Tour đã bị từ chối thành công!',
                     showConfirmButton: false,
                     timer: 1800
                 })
-                setTours(tours.filter((tour) => tour.tourId !== tourId))
+                // setTours(tours.filter((tour) => tour.tourId !== tourId))
+                handleFilterApply()
             } catch (err) {
                 console.error('Lỗi khi từ chối tour:', err)
                 Swal.fire({
@@ -451,9 +469,7 @@ const AdminTourList = () => {
                                                 <button
                                                     className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-2"
                                                     onClick={() =>
-                                                        handleApproveTour(
-                                                            tour.tourId
-                                                        )
+                                                        handleApproveTour(tour)
                                                     }
                                                 >
                                                     <svg
@@ -474,9 +490,7 @@ const AdminTourList = () => {
                                                 <button
                                                     className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition duration-200 flex items-center justify-center space-x-2"
                                                     onClick={() =>
-                                                        handleRejectTour(
-                                                            tour.tourId
-                                                        )
+                                                        handleRejectTour(tour)
                                                     }
                                                 >
                                                     <svg

@@ -81,6 +81,7 @@ const DetailTour = () => {
                     }))
                 }
                 setTour(normalizedTour)
+                console.log('API Response:', response.data)
                 setIsLoading(false)
             } catch (err) {
                 console.error('API Error (getTourDetail):', {
@@ -173,7 +174,7 @@ const DetailTour = () => {
                 showConfirmButton: false,
                 timer: 1800
             })
-            navigate('/partner/listTour')
+            navigate('/partner')
         } catch (err) {
             console.error('API Error (submitTour):', {
                 message: err.message,
@@ -205,6 +206,22 @@ const DetailTour = () => {
             return () => clearInterval(interval)
         }
     }, [tour, currentImageIndex])
+
+    const handleNavigateToEdit = async () => {
+        try {
+            if (tour.status === 'Approved') {
+                const response = await partnerTourAPI.createOrGet({ tourId })
+                console.log('CreateOrGet: ', response.data)
+                if (response.status === 200) {
+                    navigate(`/partner/edit/${response.data.tourId}`)
+                }
+            } else {
+                navigate(`/partner/edit/${tourId}`)
+            }
+        } catch (err) {
+            console.log(err)
+        }
+    }
 
     if (isLoading) {
         return (
@@ -276,6 +293,40 @@ const DetailTour = () => {
                         {error}
                     </p>
                 )}
+
+                {tour.rejectReason && (
+                    <div
+                        className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4"
+                        role="alert"
+                    >
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg
+                                    className="h-5 w-5 text-red-400"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm">
+                                    Lý do từ chối:{' '}
+                                    <span className="font-medium">
+                                        {tour.rejectReason}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {tour.imageUrls && tour.imageUrls.length > 0 && (
                     <div className="flex flex-col md:flex-row bg-white p-6 rounded-2xl shadow-2xl mb-8 border border-blue-100">
                         <div className="relative md:w-1/2">
@@ -378,6 +429,7 @@ const DetailTour = () => {
                     <p className="text-gray-800 mb-4 leading-relaxed">
                         {tour.description}
                     </p>
+
                     <hr className="border-t border-gray-300 my-4" />
                     <p className="text-gray-800 mb-4">
                         <strong className="text-gray-900 font-semibold">
@@ -869,7 +921,7 @@ const DetailTour = () => {
                     )}
                     <button
                         className="px-6 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 shadow-lg flex items-center text-lg font-semibold"
-                        onClick={() => navigate(`/partner/edit/${tourId}`)}
+                        onClick={handleNavigateToEdit}
                     >
                         <svg
                             className="w-6 h-6 mr-3"

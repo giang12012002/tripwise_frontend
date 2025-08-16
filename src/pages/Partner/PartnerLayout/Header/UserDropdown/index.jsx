@@ -32,13 +32,6 @@ function Index() {
 
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để truy cập trang quản lý.',
-                showConfirmButton: false,
-                timer: 1800
-            })
             navigate('/signin')
         }
     }, [isLoggedIn, isAuthLoading, navigate])
@@ -102,15 +95,6 @@ function Index() {
                 onClose={closeDropdown}
                 className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
             >
-                <div>
-                    <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-                        Musharof Chowdhury
-                    </span>
-                    <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-                        randomuser@pimjo.com
-                    </span>
-                </div>
-
                 {/* Hidden */}
                 <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800 hidden">
                     <li>

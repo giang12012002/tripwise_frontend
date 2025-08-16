@@ -10,6 +10,7 @@ import tourUserAPI from './TourUserAPI'
 import logAPI from './logAPI'
 import userProfileAPI from './userProfileAPI'
 import bookingTourAPI from './bookingTourAPI'
+import partnerTourAPI from './partnerTourAPI'
 
 export {
     authAPI,
@@ -23,5 +24,6 @@ export {
     tourUserAPI,
     logAPI,
     userProfileAPI,
-    bookingTourAPI
+    bookingTourAPI,
+    partnerTourAPI
 }
