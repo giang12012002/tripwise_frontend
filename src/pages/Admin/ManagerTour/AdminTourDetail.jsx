@@ -60,6 +60,7 @@ const AdminTourDetail = () => {
             try {
                 const response = await adminTourAPI.getTourDetail(tourId)
 
+                console.log('API Response:', response.data)
                 if (!response.data) {
                     setError('Không tìm thấy tour.')
                     setIsLoading(false)
@@ -81,6 +82,7 @@ const AdminTourDetail = () => {
                     }))
                 }
                 setTour(normalizedTour)
+                console.log('Normalized Tour:', normalizedTour)
                 setIsLoading(false)
             } catch (err) {
                 console.error('API Error (getTourDetail):', {
@@ -166,21 +168,24 @@ const AdminTourDetail = () => {
 
     const handleApproveTour = async () => {
         try {
-            await adminTourAPI.approveTour(tourId)
+            let response
+            if (tour.originalTourId !== null) {
+                response = await adminTourAPI.approveTourUpdate(
+                    tour.originalTourId
+                )
+            } else {
+                response = await adminTourAPI.approveTour(tourId)
+            }
+
             Swal.fire({
                 icon: 'success',
-                text: 'Tour đã được duyệt!',
+                text: response.data.message || 'Tour đã được duyệt!',
                 showConfirmButton: false,
                 timer: 1800
             })
             navigate('/admin/tours/pending')
         } catch (err) {
-            console.error('API Error (approveTour):', {
-                message: err.message,
-                response: err.response?.data,
-                status: err.response?.status,
-                errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
-            })
+            console.error('Lỗi approve:', err)
             setError('Không thể duyệt tour. Vui lòng thử lại.')
         }
     }
@@ -205,7 +210,14 @@ const AdminTourDetail = () => {
 
         if (rejectReason) {
             try {
-                await adminTourAPI.rejectTour(tourId, rejectReason)
+                if (tour.originalTourId !== null) {
+                    await adminTourAPI.rejectTourUpdate(
+                        tour.originalTourId,
+                        rejectReason
+                    )
+                } else {
+                    await adminTourAPI.rejectTour(tourId, rejectReason)
+                }
                 Swal.fire({
                     icon: 'success',
                     text: 'Tour đã bị từ chối!',

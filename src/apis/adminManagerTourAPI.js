@@ -119,10 +119,33 @@ const rejectTour = async (tourId, reason) => {
     }
 }
 
+const approveTourUpdate = async (tourId) => {
+    const response = await authorizedAxios.post(
+        `api/admin/tours/${tourId}/submitupdatedraft`
+    )
+    return response
+}
+
+const rejectTourUpdate = async (tourId, reason) => {
+    const response = await authorizedAxios.post(
+        `api/admin/tours/reject-update?tourId=${tourId}`,
+        reason,
+        {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+    )
+
+    return response
+}
+
 export default {
     getAllTours,
     getPendingTours,
     getTourDetail,
     approveTour,
-    rejectTour
+    rejectTour,
+    approveTourUpdate,
+    rejectTourUpdate
 }

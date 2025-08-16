@@ -4,6 +4,7 @@ import PartnerCreateTour from '@/pages/Partner/CreateTourPage/CreateTour.jsx'
 import ListAllTour from '@/pages/Partner/ListAllTour/TourList.jsx'
 import DetailTour from '@/pages/Partner/ListAllTour/DetailTour.jsx'
 import EditTour from '@/pages/Partner/EditTour'
+import EditTour2 from '@/pages/Partner/EditTour/index2'
 import PartnerBookings from '@/pages/Partner/Bookings'
 import PartnerBookingDetail from '@/pages/Partner/Bookings/BookingDetail'
 
@@ -18,6 +19,7 @@ function PartnerRoutes() {
                 <Route path="createTour" element={<PartnerCreateTour />} />
                 <Route path="detailTour/:tourId" element={<DetailTour />} />
                 <Route path="edit/:tourId" element={<EditTour />} />
+                <Route path="edit2/:tourId" element={<EditTour2 />} />
                 <Route path="bookings" element={<PartnerBookings />} />
                 <Route
                     path="bookings/:bookingId"
