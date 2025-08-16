@@ -321,7 +321,7 @@ function ChatbotUpdate() {
                 ...prev,
                 {
                     text: isChunkUpdate
-                        ? `Hành trình từ ngày ${startDay} đến ngày ${startDay + chunkSize - 1} đã được cập nhật! Bạn có muốn xem lịch trình mới hoặc tiếp tục chỉnh sửa?`
+                        ? `Hành trình từ ngày ${startDay} đến ngày ${startDay + chunkSize - 1} đã được cập nhật! Bạn có muốn xem  trình mới hoặc tiếp tục chỉnh sửa?`
                         : 'Hành trình đã được cập nhật! Bạn có muốn xem  trình mới hoặc tiếp tục chỉnh sửa?',
                     sender: 'bot',
                     timestamp: new Date(),
@@ -332,7 +332,7 @@ function ChatbotUpdate() {
             setMessages((prev) => [
                 ...prev,
                 {
-                    text: 'Có lỗi xảy ra khi cập nhật lịch trình. Vui lòng thử lại.',
+                    text: 'Có lỗi xảy ra khi cập nhật hành trình. Vui lòng thử lại.',
                     sender: 'bot',
                     timestamp: new Date()
                 }
@@ -376,7 +376,7 @@ function ChatbotUpdate() {
                 <Header />
                 <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
                     <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">
-                        Không tìm thấy lịch trình
+                        Không tìm thấy hành trình
                     </h2>
                     <p className="text-gray-600 mt-4">
                         Vui lòng quay lại trang ành trình để tiếp tục.
