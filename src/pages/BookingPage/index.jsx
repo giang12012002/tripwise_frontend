@@ -42,11 +42,7 @@ function Index() {
                 bookingId: bookingData.bookingId,
                 firstName: editedData.firstName,
                 lastName: editedData.lastName,
-                userEmail: editedData.userEmail,
                 phoneNumber: editedData.phoneNumber,
-                priceAdult: bookingData.priceAdult,
-                priceChild5To10: bookingData.priceChild5To10,
-                priceChildUnder5: bookingData.priceChildUnder5,
                 numAdults: parseInt(editedData.numAdults),
                 numChildren5To10: parseInt(editedData.numChildren5To10),
                 numChildrenUnder5: parseInt(editedData.numChildrenUnder5)
@@ -177,8 +173,8 @@ function Index() {
                                                 type="email"
                                                 name="userEmail"
                                                 value={editedData.userEmail}
-                                                onChange={handleEdit}
-                                                className="border rounded p-2"
+                                                className="border rounded p-2 bg-gray-100 text-gray-500 cursor-not-allowed focus:ring-0 focus:border-gray-300"
+                                                readOnly
                                             />
                                         </div>
                                         <div className="flex flex-col">

@@ -31,11 +31,7 @@ const paymentAPI = {
         bookingId,
         firstName,
         lastName,
-        userEmail,
         phoneNumber,
-        priceAdult,
-        priceChild5To10,
-        priceChildUnder5,
         numAdults,
         numChildren5To10,
         numChildrenUnder5
@@ -46,11 +42,7 @@ const paymentAPI = {
                 bookingId,
                 firstName,
                 lastName,
-                userEmail,
                 phoneNumber,
-                priceAdult,
-                priceChild5To10,
-                priceChildUnder5,
                 numAdults,
                 numChildren5To10,
                 numChildrenUnder5
