@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import partnerTourAPI from '@/apis/partnerTourAPI'
 import Swal from 'sweetalert2'
+import TimePicker from '@/components/ui/TimePicker'
 
 const CreateTour = () => {
     const [tour, setTour] = useState({
@@ -1395,7 +1396,7 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         placeholder="Chi phí"
                                                     />
                                                 </div>
-                                                <div>
+                                                {/* <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
                                                         Giờ Bắt Đầu
                                                     </label>
@@ -1433,6 +1434,43 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         }
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         placeholder="Giờ kết thúc"
+                                                    />
+                                                </div> */}
+
+                                                <div>
+                                                    <label className="block text-gray-700 font-medium mb-2">
+                                                        Giờ Bắt Đầu
+                                                    </label>
+                                                    <TimePicker
+                                                        value={
+                                                            activity.startTime
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleActivityChange(
+                                                                dayIndex,
+                                                                activityIndex,
+                                                                'startTime',
+                                                                e
+                                                            )
+                                                        }
+                                                        placeholder="Chọn giờ bắt đầu"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-gray-700 font-medium mb-2">
+                                                        Giờ Kết Thúc
+                                                    </label>
+                                                    <TimePicker
+                                                        value={activity.endTime}
+                                                        onChange={(e) =>
+                                                            handleActivityChange(
+                                                                dayIndex,
+                                                                activityIndex,
+                                                                'endTime',
+                                                                e
+                                                            )
+                                                        }
+                                                        placeholder="Chọn giờ kết thúc"
                                                     />
                                                 </div>
                                                 <div>
