@@ -190,21 +190,21 @@ const AdminTourList = () => {
 
         if (rejectReason) {
             try {
+                let response
                 if (tour.originalTourId !== null) {
-                    await AdminManagerTourAPI.rejectTourUpdate(
+                    response = await AdminManagerTourAPI.rejectTourUpdate(
                         tour.originalTourId,
                         rejectReason
                     )
                 } else {
-                    await AdminManagerTourAPI.rejectTour(
+                    response = await AdminManagerTourAPI.rejectTour(
                         tour.tourId,
                         rejectReason
                     )
                 }
-
                 Swal.fire({
                     icon: 'success',
-                    text: 'Tour đã bị từ chối thành công!',
+                    text: response.data || 'Tour đã bị từ chối thành công!',
                     showConfirmButton: false,
                     timer: 1800
                 })
