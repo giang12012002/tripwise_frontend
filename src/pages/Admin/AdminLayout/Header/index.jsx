@@ -83,10 +83,10 @@ const Index = () => {
 
                     <Link to="/" className="lg:hidden">
                         <img
-                            src="./logo/logo.png"
+                            src="./logo/logo-brand.png"
                             alt="Logo"
-                            width={40}
-                            height={40}
+                            width={150}
+                            height={50}
                         />
                     </Link>
 

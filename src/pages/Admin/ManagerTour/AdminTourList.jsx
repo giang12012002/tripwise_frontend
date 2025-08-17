@@ -436,9 +436,9 @@ const AdminTourList = () => {
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="p-6 pt-0 flex space-x-3">
+                                    <div className="p-6 pt-0 flex space-x-3 w-full">
                                         <button
-                                            className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition duration-200 flex items-center justify-center space-x-2"
+                                            className="flex-grow px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition duration-200 flex items-center justify-center space-x-2"
                                             onClick={() =>
                                                 handleViewDetail(tour.tourId)
                                             }
@@ -467,7 +467,7 @@ const AdminTourList = () => {
                                         {tour.status === 'PendingApproval' && (
                                             <>
                                                 <button
-                                                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-2"
+                                                    className="flex-grow px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-2"
                                                     onClick={() =>
                                                         handleApproveTour(tour)
                                                     }
@@ -488,7 +488,7 @@ const AdminTourList = () => {
                                                     <span>Phê duyệt</span>
                                                 </button>
                                                 <button
-                                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition duration-200 flex items-center justify-center space-x-2"
+                                                    className="flex-grow px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition duration-200 flex items-center justify-center space-x-2"
                                                     onClick={() =>
                                                         handleRejectTour(tour)
                                                     }
