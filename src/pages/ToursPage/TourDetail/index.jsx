@@ -343,9 +343,9 @@ const Index = () => {
                                         <hr className="border-t border-gray-300 my-4" />
                                         <p className="text-gray-800 mb-3 flex items-center">
                                             <strong className="text-gray-900 font-semibold mr-2">
-                                                ▶ Phương tiện:
+                                                ▶ Chỗ còn trống:
                                             </strong>{' '}
-                                            Ô tô chất lượng cao
+                                            {tour.availableSlots}
                                         </p>
                                     </div>
                                 </div>

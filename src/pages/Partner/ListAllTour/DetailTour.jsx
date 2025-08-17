@@ -16,10 +16,14 @@ const DetailTour = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
     const statusTranslations = {
-        Draft: 'Bản Nháp',
-        PendingApproval: 'Chờ duyệt',
-        Approved: 'Đã duyệt',
-        Rejected: 'Bị từ chối'
+        Draft: { name: 'Draft', text: 'Bản Nháp', color: 'bg-yellow-400' },
+        PendingApproval: {
+            name: 'PendingApproval',
+            text: 'Chờ duyệt',
+            color: 'bg-blue-400'
+        },
+        Approved: { name: 'Approved', text: 'Đã duyệt', color: 'bg-green-400' },
+        Rejected: { name: 'Rejected', text: 'Bị từ chối', color: 'bg-red-400' }
     }
 
     useEffect(() => {
@@ -167,7 +171,16 @@ const DetailTour = () => {
 
     const handleSubmitTour = async () => {
         try {
-            await partnerTourAPI.submitTour(tourId)
+            const originalTourId = tour.originalTourId
+            if (tour.status === 'Approved') return
+            else if (tour.status === 'Rejected') {
+                await partnerTourAPI.resubmitTourRejected({
+                    tourId: originalTourId
+                })
+            } else {
+                await partnerTourAPI.submitTour(tourId)
+            }
+
             Swal.fire({
                 icon: 'success',
                 text: 'Tour đã được gửi để duyệt!',
@@ -377,6 +390,23 @@ const DetailTour = () => {
                                     {formatCurrency(tour.totalEstimatedCost)}
                                 </span>
                             </div>
+                            <hr className="border-t border-gray-300 my-4" />
+                            <p className="text-gray-800 mb-3 flex items-center">
+                                <strong className="text-gray-900 font-semibold mr-2 text-base">
+                                    ▶ Trạng thái:
+                                </strong>
+                                <span
+                                    className={`px-3 py-1 rounded-full font-medium text-base ${
+                                        statusTranslations[tour.status]
+                                            ?.color ||
+                                        'bg-gray-100 text-gray-800'
+                                    }`}
+                                >
+                                    {statusTranslations[tour.status]?.text ||
+                                        tour.status ||
+                                        'N/A'}
+                                </span>
+                            </p>
                             <hr className="border-t border-gray-300 my-4" />
                             <p className="text-gray-800 mb-3 flex items-center">
                                 <strong className="text-gray-900 font-semibold mr-2">
@@ -897,7 +927,8 @@ const DetailTour = () => {
                     </div>
                 </div>
                 <div className="mt-12 flex justify-center space-x-6">
-                    {tour.status === 'Draft' && (
+                    {(tour.status === 'Draft' ||
+                        tour.status === 'Rejected') && (
                         <button
                             className="px-6 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all duration-300 shadow-lg flex items-center text-lg font-semibold"
                             onClick={handleSubmitTour}

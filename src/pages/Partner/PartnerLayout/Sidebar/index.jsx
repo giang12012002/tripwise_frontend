@@ -266,8 +266,8 @@ function Index() {
                             <img
                                 src="/logo/logo-brand.png"
                                 alt="Logo"
-                                width={80}
-                                height={80}
+                                width={150}
+                                height={100}
                             />
                         </>
                     ) : (
