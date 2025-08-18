@@ -56,7 +56,10 @@ const CreateTour = () => {
     const activityFileInputRefs = useRef({})
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
+    const [isLoading, setIsLoading] = useState(false)
     const MAX_IMAGES = 20
+
+    const categories = ['Tham quan', 'Du lịch', 'Ẩm thực', 'Văn hóa']
 
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
@@ -704,6 +707,8 @@ const CreateTour = () => {
             return
         }
 
+        setIsLoading(true)
+
         try {
             const formData = new FormData()
             formData.append('TourName', tour.tourName)
@@ -840,7 +845,7 @@ const CreateTour = () => {
                 showConfirmButton: false,
                 timer: 1800
             })
-            navigate('/partner/listTour')
+            navigate('/partner')
         } catch (err) {
             console.error('API Error (handleSubmit):', {
                 message: err.message,
@@ -880,6 +885,7 @@ const CreateTour = () => {
             }
         } finally {
             setIsSubmitting(false)
+            setIsLoading(false)
         }
     }
 
@@ -899,6 +905,40 @@ const CreateTour = () => {
         console.log(
             `Toggled day ${dayIndex + 1}:`,
             openDays[dayIndex] ? 'Closed' : 'Opened'
+        )
+    }
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white">
+                <div className="flex-grow flex items-center justify-center max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center space-x-3 p-6 bg-white rounded-xl shadow-lg">
+                        <svg
+                            className="animate-spin h-8 w-8 text-blue-600"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                            ></circle>
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                        </svg>
+                        <span className="text-lg font-medium text-gray-700">
+                            Đang tải...
+                        </span>
+                    </div>
+                </div>
+            </div>
         )
     }
 
@@ -978,7 +1018,7 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
                             Danh Mục
                         </label>
-                        <input
+                        {/* <input
                             type="text"
                             name="category"
                             value={tour.category}
@@ -986,7 +1026,23 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                             placeholder="Ví dụ: Văn hóa, Phiêu lưu, Nghỉ dưỡng"
-                        />
+                        /> */}
+                        <select
+                            name="category"
+                            value={tour.category}
+                            onChange={handleTourChange}
+                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        >
+                            <option value="" disabled>
+                                Chọn một chủ đề
+                            </option>
+                            {categories.map((cat) => (
+                                <option key={cat} value={cat}>
+                                    {cat}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1477,7 +1533,7 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                     <label className="block text-gray-700 font-medium mb-2">
                                                         Danh Mục
                                                     </label>
-                                                    <input
+                                                    {/* <input
                                                         type="text"
                                                         value={
                                                             activity.category
@@ -1492,7 +1548,38 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         }
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         placeholder="Ví dụ: Tham quan, Ẩm thực"
-                                                    />
+                                                    /> */}
+                                                    <select
+                                                        value={
+                                                            activity.category
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleActivityChange(
+                                                                dayIndex,
+                                                                activityIndex,
+                                                                'category',
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    >
+                                                        <option
+                                                            value=""
+                                                            disabled
+                                                        >
+                                                            Chọn một danh mục
+                                                        </option>
+                                                        {categories.map(
+                                                            (cat) => (
+                                                                <option
+                                                                    key={cat}
+                                                                    value={cat}
+                                                                >
+                                                                    {cat}
+                                                                </option>
+                                                            )
+                                                        )}
+                                                    </select>
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">

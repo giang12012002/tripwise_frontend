@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '../states/LoadingSpinner'
+import LoadingScreen from '../ui/LoadingScreen'
 
 function VNPayCallback() {
     const navigate = useNavigate()
@@ -18,11 +19,7 @@ function VNPayCallback() {
             navigate(navigateTo || '/')
         }, 1200)
     }, [navigate])
-    return (
-        <div className="flex justify-center items-center h-screen">
-            <LoadingSpinner />
-        </div>
-    )
+    return <LoadingScreen />
 }
 
 export default VNPayCallback

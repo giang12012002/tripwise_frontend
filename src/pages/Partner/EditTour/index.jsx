@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import partnerTourAPI from '@/apis/partnerTourAPI'
 import Swal from 'sweetalert2'
+import TimePicker from '@/components/ui/TimePicker'
 
 const Index = () => {
     let { tourId } = useParams()
@@ -19,6 +20,8 @@ const Index = () => {
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
     const MAX_IMAGES = 20
+
+    const categories = ['Tham quan', 'Du lịch', 'Ẩm thực', 'Văn hóa']
 
     const isValidImage = (url) => {
         return new Promise((resolve) => {
@@ -805,6 +808,8 @@ const Index = () => {
             return
         }
 
+        setIsLoading(true)
+
         try {
             // let tourDraft = null
             // if (tour.status === 'Approved') {
@@ -1024,6 +1029,8 @@ const Index = () => {
                 status: err.response?.status,
                 errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
             })
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -1032,8 +1039,6 @@ const Index = () => {
             <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white">
                 <div className="flex-grow flex items-center justify-center max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center space-x-3 p-6 bg-white rounded-xl shadow-lg">
-                        {JSON.stringify(tour, null, 2)}
-
                         <svg
                             className="animate-spin h-8 w-8 text-blue-600"
                             xmlns="http://www.w3.org/2000/svg"
@@ -1119,7 +1124,7 @@ const Index = () => {
                             placeholder="Nhập địa điểm"
                         />
                     </div>
-                    <div>
+                    {/* <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
                             Chủ Đề
                         </label>
@@ -1132,7 +1137,31 @@ const Index = () => {
                             required
                             placeholder="Nhập chủ đề tour"
                         />
+                    </div> */}
+
+                    <div>
+                        <label className="block text-gray-800 font-semibold text-lg mb-2">
+                            Chủ Đề
+                        </label>
+                        <select
+                            name="category"
+                            value={tour.category}
+                            onChange={handleTourChange}
+                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        >
+                            {/* Thêm một tùy chọn mặc định không có giá trị */}
+                            <option value="" disabled>
+                                Chọn một chủ đề
+                            </option>
+                            {categories.map((cat) => (
+                                <option key={cat} value={cat}>
+                                    {cat}
+                                </option>
+                            ))}
+                        </select>
                     </div>
+
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
                             Thời Gian Bắt Đầu
@@ -1552,10 +1581,9 @@ const Index = () => {
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
-                                                        Thời Gian Bắt Đầu
+                                                        Giờ Bắt Đầu
                                                     </label>
-                                                    <input
-                                                        type="time"
+                                                    <TimePicker
                                                         value={
                                                             activity.startTime
                                                         }
@@ -1564,33 +1592,30 @@ const Index = () => {
                                                                 dayIndex,
                                                                 activityIndex,
                                                                 'startTime',
-                                                                e.target.value
+                                                                e
                                                             )
                                                         }
-                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        placeholder="Thời gian bắt đầu"
+                                                        placeholder="Chọn giờ bắt đầu"
                                                     />
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
-                                                        Thời Gian Kết Thúc
+                                                        Giờ Kết Thúc
                                                     </label>
-                                                    <input
-                                                        type="time"
+                                                    <TimePicker
                                                         value={activity.endTime}
                                                         onChange={(e) =>
                                                             handleActivityChange(
                                                                 dayIndex,
                                                                 activityIndex,
                                                                 'endTime',
-                                                                e.target.value
+                                                                e
                                                             )
                                                         }
-                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        placeholder="Thời gian kết thúc"
+                                                        placeholder="Chọn giờ kết thúc"
                                                     />
                                                 </div>
-                                                <div>
+                                                {/* <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
                                                         Danh Mục
                                                     </label>
@@ -1610,6 +1635,43 @@ const Index = () => {
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         placeholder="Ví dụ: Tham quan, Ẩm thực"
                                                     />
+                                                </div> */}
+                                                <div>
+                                                    <label className="block text-gray-700 font-medium mb-2">
+                                                        Danh Mục
+                                                    </label>
+                                                    <select
+                                                        value={
+                                                            activity.category
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleActivityChange(
+                                                                dayIndex,
+                                                                activityIndex,
+                                                                'category',
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    >
+                                                        {/* Thêm một tùy chọn mặc định không có giá trị */}
+                                                        <option
+                                                            value=""
+                                                            disabled
+                                                        >
+                                                            Chọn một danh mục
+                                                        </option>
+                                                        {categories.map(
+                                                            (cat) => (
+                                                                <option
+                                                                    key={cat}
+                                                                    value={cat}
+                                                                >
+                                                                    {cat}
+                                                                </option>
+                                                            )
+                                                        )}
+                                                    </select>
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
