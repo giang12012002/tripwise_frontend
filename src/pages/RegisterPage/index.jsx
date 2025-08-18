@@ -197,7 +197,7 @@ function Register() {
                             <div className="mb-4">
                                 <input
                                     type="text"
-                                    placeholder="Username"
+                                    placeholder="Tên đăng nhập"
                                     value={username}
                                     onChange={(e) =>
                                         setUsername(e.target.value)
@@ -209,7 +209,7 @@ function Register() {
                             <div className="mb-4 relative">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
-                                    placeholder="Password"
+                                    placeholder="Mật khẩu"
                                     value={password}
                                     onChange={(e) =>
                                         setPassword(e.target.value)
@@ -263,7 +263,7 @@ function Register() {
                             <div className="mb-4 relative">
                                 <input
                                     type={showRePassword ? 'text' : 'password'}
-                                    placeholder="Confirm Password"
+                                    placeholder="Xác nhận mật khẩu"
                                     value={confirmPassword}
                                     onChange={(e) =>
                                         setConfirmPassword(e.target.value)
