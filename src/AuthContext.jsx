@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { authAPI } from '@/apis' // Import authAPI để gọi API logout
+import { useNavigate } from 'react-router-dom'
 
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
+    const navigate = useNavigate()
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [username, setUsername] = useState('')
     const [userId, setUserId] = useState(null)
@@ -78,6 +80,7 @@ export const AuthProvider = ({ children }) => {
             const response = await authAPI.logout(deviceId)
             if (response.status === 200) {
                 clearAuthData()
+                navigate('/')
             } else {
                 toast.error(response.data?.message || 'Đăng xuất thất bại.')
             }

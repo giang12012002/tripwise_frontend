@@ -107,11 +107,12 @@ function OtpVerification() {
                 signupRequestId
             }
             const response = await authAPI.verifyOtp(otp, userSignupData)
-            if (response.status === 200 || response.status === 201) {
+            // if (response.status === 200 || response.status === 201) {
+            if (response.data.statusCode === 200) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Thành công',
-                    text: 'Đăng ký thành công!',
+                    text: response.data.message || 'Đăng ký thành công!',
                     showConfirmButton: false,
                     timer: 500
                 })

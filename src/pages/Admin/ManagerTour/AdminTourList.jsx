@@ -465,7 +465,9 @@ const AdminTourList = () => {
                                                             d="M9 12h6m-6 4h6M5 7h14M5 7a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7z"
                                                         />
                                                     </svg>
-                                                    {tour.updateNote}
+                                                    <span className="text-yellow-500">
+                                                        {tour.updateNote}
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>
@@ -487,6 +489,7 @@ const AdminTourList = () => {
                                                             tour.tourId
                                                         )
                                                     }
+                                                    title="Xem"
                                                 >
                                                     <svg
                                                         className="w-5 h-5"
@@ -507,9 +510,9 @@ const AdminTourList = () => {
                                                             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                                         />
                                                     </svg>
-                                                    <span className="hidden sm:inline">
+                                                    {/* <span className="hidden sm:inline">
                                                         Xem
-                                                    </span>
+                                                    </span> */}
                                                 </button>
 
                                                 {tour.status ===
@@ -523,6 +526,7 @@ const AdminTourList = () => {
                                                                     tour
                                                                 )
                                                             }
+                                                            title="Phê duyệt"
                                                         >
                                                             <svg
                                                                 className="w-5 h-5"
@@ -537,9 +541,9 @@ const AdminTourList = () => {
                                                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                                                                 />
                                                             </svg>
-                                                            <span className="hidden sm:inline">
+                                                            {/* <span className="hidden sm:inline">
                                                                 Phê duyệt
-                                                            </span>
+                                                            </span> */}
                                                         </button>
 
                                                         {/* Nút Từ chối */}
@@ -550,6 +554,7 @@ const AdminTourList = () => {
                                                                     tour
                                                                 )
                                                             }
+                                                            title="Từ chối"
                                                         >
                                                             <svg
                                                                 className="w-5 h-5"
@@ -564,9 +569,9 @@ const AdminTourList = () => {
                                                                     d="M6 18L18 6M6 6l12 12"
                                                                 />
                                                             </svg>
-                                                            <span className="hidden sm:inline">
+                                                            {/* <span className="hidden sm:inline">
                                                                 Từ chối
-                                                            </span>
+                                                            </span> */}
                                                         </button>
                                                     </>
                                                 )}
