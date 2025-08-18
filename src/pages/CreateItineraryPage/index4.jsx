@@ -41,13 +41,30 @@ function CreateItinerary() {
         const { name, value, type, checked } = e.target
         if (type === 'checkbox') {
             const field = name === 'preferences' ? 'preferences' : 'diningStyle'
-            setFormData((prev) => ({
-                ...prev,
-                [field]: checked
+            setFormData((prev) => {
+                let updatedValues = checked
                     ? [...prev[field], value]
                     : prev[field].filter((item) => item !== value)
+                if (updatedValues.length > 3) {
+                    setErrors((prev) => ({
+                        ...prev,
+                        [field]: 'Bạn chỉ có thể chọn tối đa 3 mục.'
+                    }))
+                    return prev
+                }
+                setErrors((prev) => ({ ...prev, [field]: '' }))
+                return {
+                    ...prev,
+                    [field]: updatedValues
+                }
+            })
+        } else if (type === 'number') {
+            const days = value === '' ? '' : Math.min(Number(value), 7)
+            setFormData((prev) => ({
+                ...prev,
+                [name]: days.toString()
             }))
-            setErrors((prev) => ({ ...prev, [field]: '' }))
+            setErrors((prev) => ({ ...prev, [name]: '' }))
         } else if (type !== 'radio') {
             setFormData((prev) => ({ ...prev, [name]: value }))
             setErrors((prev) => ({ ...prev, [name]: '' }))
@@ -58,10 +75,7 @@ function CreateItinerary() {
         let error = ''
         switch (name) {
             case 'destination':
-                {
-                    if (!value.trim())
-                        error = 'Vui lòng chọn hoặc nhập địa điểm.'
-                }
+                if (!value.trim()) error = 'Vui lòng chọn hoặc nhập địa điểm.'
                 break
             case 'travelDate':
                 if (!value || new Date(value) < new Date(today))
@@ -74,14 +88,14 @@ function CreateItinerary() {
                         error = 'Vui lòng nhập số ngày.'
                     } else if (isNaN(days) || days <= 0) {
                         error = 'Số ngày phải là số dương.'
+                    } else if (days > 7) {
+                        error = 'Số ngày không được vượt quá 7.'
                     }
                 }
                 break
             case 'preferences':
-                {
-                    if (value.length === 0)
-                        error = 'Vui lòng chọn ít nhất một sở thích.'
-                }
+                if (value.length === 0)
+                    error = 'Vui lòng chọn ít nhất một sở thích.'
                 break
             case 'budget':
                 {
@@ -224,7 +238,6 @@ function CreateItinerary() {
             let confirmButtonText = ''
             let timer = 4000
 
-            // Xử lý lỗi cụ thể liên quan đến gói dịch vụ và đăng nhập
             if (
                 err.response?.status === 400 &&
                 errorMessage
@@ -339,6 +352,7 @@ function CreateItinerary() {
             name: 'days',
             type: 'number',
             min: '1',
+            max: '7',
             required: true,
             icon: '⏳'
         },
@@ -571,6 +585,14 @@ function CreateItinerary() {
                                                     ].includes(option.value)
                                                         ? 'border-blue-500 bg-blue-50'
                                                         : 'border-gray-200 hover:border-blue-300'
+                                                } ${
+                                                    formData[field.name]
+                                                        .length >= 3 &&
+                                                    !formData[
+                                                        field.name
+                                                    ].includes(option.value)
+                                                        ? 'opacity-50 cursor-not-allowed'
+                                                        : ''
                                                 }`}
                                             >
                                                 <input
@@ -582,7 +604,16 @@ function CreateItinerary() {
                                                     ].includes(option.value)}
                                                     onChange={handleChange}
                                                     className="absolute opacity-0"
-                                                    disabled={loading}
+                                                    disabled={
+                                                        loading ||
+                                                        (formData[field.name]
+                                                            .length >= 3 &&
+                                                            !formData[
+                                                                field.name
+                                                            ].includes(
+                                                                option.value
+                                                            ))
+                                                    }
                                                 />
                                                 <span className="text-2xl mr-3">
                                                     {option.icon}
@@ -594,7 +625,7 @@ function CreateItinerary() {
                                         ))}
                                     </div>
                                     <div className="mt-3 text-xm text-gray-600">
-                                        Đã chọn: {formData[field.name].length}{' '}
+                                        Đã chọn: {formData[field.name].length}/3
                                         mục
                                     </div>
                                 </div>
@@ -650,6 +681,7 @@ function CreateItinerary() {
                                             className="w-full p-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                             placeholder={field.placeholder}
                                             min={field.min}
+                                            max={field.max}
                                             step={field.step}
                                             required={field.required}
                                             disabled={loading}
@@ -665,7 +697,7 @@ function CreateItinerary() {
                                                             1,
                                                             Number(prev.days) -
                                                                 1
-                                                        )
+                                                        ).toString()
                                                     }))
                                                 }
                                                 className="px-4 py-2 text-gray-700 hover:bg-gray-200 transition-colors disabled:text-gray-400 disabled:cursor-not-allowed"
@@ -680,13 +712,18 @@ function CreateItinerary() {
                                                 onClick={() =>
                                                     setFormData((prev) => ({
                                                         ...prev,
-                                                        days:
+                                                        days: Math.min(
+                                                            7,
                                                             Number(prev.days) +
-                                                            1
+                                                                1
+                                                        ).toString()
                                                     }))
                                                 }
                                                 className="px-4 py-2 text-gray-700 hover:bg-gray-200 transition-colors disabled:text-gray-400 disabled:cursor-not-allowed"
-                                                disabled={loading}
+                                                disabled={
+                                                    loading ||
+                                                    Number(formData.days) >= 7
+                                                }
                                             >
                                                 +
                                             </button>

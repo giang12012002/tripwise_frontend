@@ -13,7 +13,8 @@ import LogPage from '@/pages/Admin/LogsPage'
 import ReviewPage from '@/pages/Admin/Reviews'
 import ReviewDetail from '@/pages/Admin/Reviews/ReviewDetail'
 import SystemStatsPage from '@/pages/Admin/LandingReportPage/SystemStatsPage'
-
+import AdminHotNewsList from '@/pages/Admin/HotNews/AdminHotNewList.jsx'
+import AdminHotNewsCreate from '@/pages/Admin/HotNews/AdminHotNewsCreate.jsx'
 import AdminLayout from '@/pages/Admin/AdminLayout'
 
 function AdminRoutes() {
@@ -102,6 +103,15 @@ function AdminRoutes() {
                 <Route path="logs" element={<LogPage />} />
                 <Route path="reviews" element={<ReviewPage />} />
                 <Route path="review-detail" element={<ReviewDetail />} />
+                <Route path="hot-news" element={<AdminHotNewsList />} />
+                <Route
+                    path="hot-news/create"
+                    element={<AdminHotNewsCreate />}
+                />
+                <Route
+                    path="hot-news/edit/:id"
+                    element={<AdminHotNewsCreate />}
+                />
             </Route>
             <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
