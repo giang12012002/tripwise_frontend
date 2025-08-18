@@ -27,7 +27,29 @@ const paymentAPI = {
         )
         return response
     },
-    updateBookingRequest: async () => {},
+    updateBookingRequest: async ({
+        bookingId,
+        firstName,
+        lastName,
+        phoneNumber,
+        numAdults,
+        numChildren5To10,
+        numChildrenUnder5
+    }) => {
+        const response = await authorizedAxios.put(
+            '/api/payment/update-draft',
+            {
+                bookingId,
+                firstName,
+                lastName,
+                phoneNumber,
+                numAdults,
+                numChildren5To10,
+                numChildrenUnder5
+            }
+        )
+        return response
+    },
     confirmAndPay: async ({ bookingId }) => {
         const response = await authorizedAxios.post(
             '/api/payment/confirm-and-pay/' + bookingId

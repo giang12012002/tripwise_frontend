@@ -348,6 +348,13 @@ const createOrGet = async ({ tourId }) => {
     return response
 }
 
+const resubmitTourRejected = async ({ tourId }) => {
+    const response = await authorizedAxios.post(
+        `/api/partner/tours/resubmit-rejected/${tourId}`
+    )
+    return response
+}
+
 export default {
     getAllTours,
     getTopDestinations,
@@ -367,5 +374,6 @@ export default {
     deleteMultipleActivityImages,
     deleteOrDraftTour,
     getStatistics,
-    createOrGet
+    createOrGet,
+    resubmitTourRejected
 }

@@ -16,10 +16,14 @@ const AdminTourDetail = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
     const statusTranslations = {
-        Draft: 'Bản Nháp',
-        PendingApproval: 'Chờ duyệt',
-        Approved: 'Đã duyệt',
-        Rejected: 'Bị từ chối'
+        Draft: { name: 'Draft', text: 'Bản Nháp', color: 'bg-yellow-400' },
+        PendingApproval: {
+            name: 'PendingApproval',
+            text: 'Chờ duyệt',
+            color: 'bg-blue-400'
+        },
+        Approved: { name: 'Approved', text: 'Đã duyệt', color: 'bg-green-400' },
+        Rejected: { name: 'Rejected', text: 'Bị từ chối', color: 'bg-red-400' }
     }
 
     useEffect(() => {
@@ -59,7 +63,6 @@ const AdminTourDetail = () => {
             }
             try {
                 const response = await adminTourAPI.getTourDetail(tourId)
-
                 if (!response.data) {
                     setError('Không tìm thấy tour.')
                     setIsLoading(false)
@@ -81,6 +84,7 @@ const AdminTourDetail = () => {
                     }))
                 }
                 setTour(normalizedTour)
+                console.log('Normalized Tour:', normalizedTour)
                 setIsLoading(false)
             } catch (err) {
                 console.error('API Error (getTourDetail):', {
@@ -166,21 +170,24 @@ const AdminTourDetail = () => {
 
     const handleApproveTour = async () => {
         try {
-            await adminTourAPI.approveTour(tourId)
+            let response
+            if (tour.originalTourId !== null) {
+                response = await adminTourAPI.approveTourUpdate(
+                    tour.originalTourId
+                )
+            } else {
+                response = await adminTourAPI.approveTour(tourId)
+            }
+
             Swal.fire({
                 icon: 'success',
-                text: 'Tour đã được duyệt!',
+                text: response.data.message || 'Tour đã được duyệt!',
                 showConfirmButton: false,
                 timer: 1800
             })
             navigate('/admin/tours/pending')
         } catch (err) {
-            console.error('API Error (approveTour):', {
-                message: err.message,
-                response: err.response?.data,
-                status: err.response?.status,
-                errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
-            })
+            console.error('Lỗi approve:', err)
             setError('Không thể duyệt tour. Vui lòng thử lại.')
         }
     }
@@ -205,10 +212,21 @@ const AdminTourDetail = () => {
 
         if (rejectReason) {
             try {
-                await adminTourAPI.rejectTour(tourId, rejectReason)
+                let response
+                if (tour.originalTourId !== null) {
+                    response = await adminTourAPI.rejectTourUpdate(
+                        tour.originalTourId,
+                        rejectReason
+                    )
+                } else {
+                    response = await adminTourAPI.rejectTour(
+                        tourId,
+                        rejectReason
+                    )
+                }
                 Swal.fire({
                     icon: 'success',
-                    text: 'Tour đã bị từ chối!',
+                    text: response.data || 'Tour đã bị từ chối!',
                     showConfirmButton: false,
                     timer: 1800
                 })
@@ -367,6 +385,23 @@ const AdminTourDetail = () => {
                                     {formatCurrency(tour.totalEstimatedCost)}
                                 </span>
                             </div>
+                            <hr className="border-t border-gray-300 my-4" />
+                            <p className="text-gray-800 mb-3 flex items-center">
+                                <strong className="text-gray-900 font-semibold mr-2 text-base">
+                                    ▶ Trạng thái:
+                                </strong>
+                                <span
+                                    className={`px-3 py-1 rounded-full font-medium text-base ${
+                                        statusTranslations[tour.status]
+                                            ?.color ||
+                                        'bg-gray-100 text-gray-800'
+                                    }`}
+                                >
+                                    {statusTranslations[tour.status]?.text ||
+                                        tour.status ||
+                                        'N/A'}
+                                </span>
+                            </p>
                             <hr className="border-t border-gray-300 my-4" />
                             <p className="text-gray-800 mb-3 flex items-center">
                                 <strong className="text-gray-900 font-semibold mr-2">

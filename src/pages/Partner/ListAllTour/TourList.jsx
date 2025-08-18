@@ -46,13 +46,6 @@ const TourList = () => {
 
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem danh sách tour.',
-                showConfirmButton: false,
-                timer: 1800
-            })
             navigate('/signin')
         }
     }, [isLoggedIn, isAuthLoading, navigate])
@@ -157,8 +150,26 @@ const TourList = () => {
         }
     }
 
-    const handleEditTour = (tourId) => {
-        navigate(`/partner/edit/${tourId}`)
+    // const handleEditTour = (tourId) => {
+    //     navigate(`/partner/edit/${tourId}`)
+    // }
+
+    const handleEditTour = async (tour) => {
+        try {
+            if (tour.status === 'Approved') {
+                const response = await partnerTourAPI.createOrGet({
+                    tourId: tour.tourId
+                })
+                console.log('CreateOrGet: ', response)
+                if (response.status === 200) {
+                    navigate(`/partner/edit/${response.data.tourId}`)
+                }
+            } else {
+                navigate(`/partner/edit/${tour.tourId}`)
+            }
+        } catch (error) {
+            console.log('Lỗi chuyển hướng trang edit', error)
+        }
     }
 
     const handleDeleteOrDraftTour = async (tourId, action) => {
@@ -605,7 +616,8 @@ const TourList = () => {
                                 </button>
                                 <button
                                     className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 transition-all duration-200 flex items-center justify-center space-x-2"
-                                    onClick={() => handleEditTour(tour.tourId)}
+                                    // onClick={() => handleEditTour(tour.tourId)}
+                                    onClick={() => handleEditTour(tour)}
                                 >
                                     <svg
                                         className="w-4 h-4"

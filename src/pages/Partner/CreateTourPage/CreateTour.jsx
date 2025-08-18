@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import partnerTourAPI from '@/apis/partnerTourAPI'
 import Swal from 'sweetalert2'
+import TimePicker from '@/components/ui/TimePicker'
 
 const CreateTour = () => {
     const [tour, setTour] = useState({
@@ -55,7 +56,10 @@ const CreateTour = () => {
     const activityFileInputRefs = useRef({})
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
+    const [isLoading, setIsLoading] = useState(false)
     const MAX_IMAGES = 20
+
+    const categories = ['Tham quan', 'Du lịch', 'Ẩm thực', 'Văn hóa']
 
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
@@ -132,6 +136,109 @@ const CreateTour = () => {
                 'Tour imageFiles added:',
                 validFiles.map((f) => ({ name: f.name, size: f.size }))
             )
+        } else if (name === 'duration') {
+            // Cho phép giá trị rỗng tạm thời khi người dùng xóa
+            if (value === '') {
+                setTour((prev) => ({ ...prev, duration: '' }))
+                return
+            }
+            const newDuration = parseInt(value)
+            if (isNaN(newDuration) || newDuration < 1) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Số ngày phải lớn hơn hoặc bằng 1.',
+                    showConfirmButton: false,
+                    timer: 1800
+                })
+                return
+            }
+            setTour((prev) => {
+                let newItinerary = [...prev.itinerary]
+                const currentDays = newItinerary.length
+
+                if (newDuration > currentDays) {
+                    // Thêm ngày mới
+                    const daysToAdd = newDuration - currentDays
+                    const newDays = Array.from(
+                        { length: daysToAdd },
+                        (_, i) => ({
+                            dayNumber: currentDays + i + 1,
+                            title: '',
+                            itineraryId: null,
+                            activities: [
+                                {
+                                    placeDetail: '',
+                                    description: '',
+                                    address: '',
+                                    estimatedCost: 0,
+                                    startTime: '',
+                                    endTime: '',
+                                    mapUrl: '',
+                                    category: '',
+                                    imageFiles: [],
+                                    imageUrls: [],
+                                    imageIds: [],
+                                    attractionId: null
+                                }
+                            ]
+                        })
+                    )
+                    newItinerary = [...newItinerary, ...newDays]
+                    setOpenDays((prevOpenDays) => {
+                        const newOpenDays = { ...prevOpenDays }
+                        newDays.forEach((_, i) => {
+                            newOpenDays[currentDays + i] = true
+                        })
+                        return newOpenDays
+                    })
+                } else if (newDuration < currentDays) {
+                    // Xóa các ngày thừa
+                    newItinerary = newItinerary.slice(0, newDuration)
+                    setOpenDays((prevOpenDays) => {
+                        const newOpenDays = {}
+                        for (let i = 0; i < newDuration; i++) {
+                            if (prevOpenDays[i] !== undefined) {
+                                newOpenDays[i] = prevOpenDays[i]
+                            }
+                        }
+                        return newOpenDays
+                    })
+                    setActivityPreviews((prevPreviews) => {
+                        const newPreviews = {}
+                        Object.keys(prevPreviews).forEach((key) => {
+                            const [dayIndex] = key.split('-').map(Number)
+                            if (dayIndex < newDuration) {
+                                newPreviews[key] = prevPreviews[key]
+                            }
+                        })
+                        return newPreviews
+                    })
+                    setTempUrlInput((prevTemp) => {
+                        const newTemp = { tour: prevTemp.tour }
+                        Object.keys(prevTemp).forEach((key) => {
+                            if (key !== 'tour') {
+                                const [dayIndex] = key.split('-').map(Number)
+                                if (dayIndex < newDuration) {
+                                    newTemp[key] = prevTemp[key]
+                                }
+                            }
+                        })
+                        return newTemp
+                    })
+                }
+
+                // Cập nhật dayNumber cho tất cả các ngày
+                newItinerary.forEach((day, index) => {
+                    day.dayNumber = index + 1
+                })
+
+                return {
+                    ...prev,
+                    duration: value,
+                    itinerary: newItinerary
+                }
+            })
         } else {
             const newValue =
                 name === 'priceAdult' ||
@@ -428,6 +535,30 @@ const CreateTour = () => {
             delete newOpenDays[dayIndex]
             return newOpenDays
         })
+        setActivityPreviews((prev) => {
+            const newPreviews = {}
+            Object.keys(prev).forEach((key) => {
+                const [day] = key.split('-').map(Number)
+                if (day !== dayIndex) {
+                    const newDay = day > dayIndex ? day - 1 : day
+                    newPreviews[`${newDay}-${key.split('-')[1]}`] = prev[key]
+                }
+            })
+            return newPreviews
+        })
+        setTempUrlInput((prev) => {
+            const newTemp = { tour: prev.tour }
+            Object.keys(prev).forEach((key) => {
+                if (key !== 'tour') {
+                    const [day] = key.split('-').map(Number)
+                    if (day !== dayIndex) {
+                        const newDay = day > dayIndex ? day - 1 : day
+                        newTemp[`${newDay}-${key.split('-')[1]}`] = prev[key]
+                    }
+                }
+            })
+            return newTemp
+        })
         console.log(`Removed day ${dayIndex + 1}`)
     }
 
@@ -508,8 +639,8 @@ const CreateTour = () => {
             return 'Giá trẻ em dưới 5 tuổi không được vượt quá giá người lớn.'
         if (isNaN(tour.maxGroupSize) || tour.maxGroupSize <= 0)
             return 'Số người tối đa phải lớn hơn 0.'
-        if (tour.itinerary.length > parseInt(tour.duration))
-            return `Số ngày trong lịch trình (${tour.itinerary.length}) không được vượt quá thời gian tour (${tour.duration} ngày).`
+        if (tour.itinerary.length !== parseInt(tour.duration))
+            return `Số ngày trong lịch trình (${tour.itinerary.length}) phải bằng thời gian tour (${tour.duration} ngày).`
         if (tour.imageFiles.length + tour.imageUrls.length === 0)
             return 'Phải cung cấp ít nhất một hình ảnh cho tour.'
         let totalEstimatedCost = 0
@@ -575,6 +706,8 @@ const CreateTour = () => {
             setIsSubmitting(false)
             return
         }
+
+        setIsLoading(true)
 
         try {
             const formData = new FormData()
@@ -752,6 +885,7 @@ const CreateTour = () => {
             }
         } finally {
             setIsSubmitting(false)
+            setIsLoading(false)
         }
     }
 
@@ -771,6 +905,40 @@ const CreateTour = () => {
         console.log(
             `Toggled day ${dayIndex + 1}:`,
             openDays[dayIndex] ? 'Closed' : 'Opened'
+        )
+    }
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white">
+                <div className="flex-grow flex items-center justify-center max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center space-x-3 p-6 bg-white rounded-xl shadow-lg">
+                        <svg
+                            className="animate-spin h-8 w-8 text-blue-600"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                            ></circle>
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                        </svg>
+                        <span className="text-lg font-medium text-gray-700">
+                            Đang tải...
+                        </span>
+                    </div>
+                </div>
+            </div>
         )
     }
 
@@ -826,7 +994,8 @@ const CreateTour = () => {
                             name="location"
                             value={tour.location}
                             onChange={handleTourChange}
-                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full border border-gray-300 p-3 rounded-lg focusBryan
+focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                             placeholder="Nhập địa điểm"
                         />
@@ -849,7 +1018,7 @@ const CreateTour = () => {
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
                             Danh Mục
                         </label>
-                        <input
+                        {/* <input
                             type="text"
                             name="category"
                             value={tour.category}
@@ -857,7 +1026,23 @@ const CreateTour = () => {
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                             placeholder="Ví dụ: Văn hóa, Phiêu lưu, Nghỉ dưỡng"
-                        />
+                        /> */}
+                        <select
+                            name="category"
+                            value={tour.category}
+                            onChange={handleTourChange}
+                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        >
+                            <option value="" disabled>
+                                Chọn một chủ đề
+                            </option>
+                            {categories.map((cat) => (
+                                <option key={cat} value={cat}>
+                                    {cat}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1267,7 +1452,7 @@ const CreateTour = () => {
                                                         placeholder="Chi phí"
                                                     />
                                                 </div>
-                                                <div>
+                                                {/* <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
                                                         Giờ Bắt Đầu
                                                     </label>
@@ -1306,12 +1491,49 @@ const CreateTour = () => {
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         placeholder="Giờ kết thúc"
                                                     />
+                                                </div> */}
+
+                                                <div>
+                                                    <label className="block text-gray-700 font-medium mb-2">
+                                                        Giờ Bắt Đầu
+                                                    </label>
+                                                    <TimePicker
+                                                        value={
+                                                            activity.startTime
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleActivityChange(
+                                                                dayIndex,
+                                                                activityIndex,
+                                                                'startTime',
+                                                                e
+                                                            )
+                                                        }
+                                                        placeholder="Chọn giờ bắt đầu"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-gray-700 font-medium mb-2">
+                                                        Giờ Kết Thúc
+                                                    </label>
+                                                    <TimePicker
+                                                        value={activity.endTime}
+                                                        onChange={(e) =>
+                                                            handleActivityChange(
+                                                                dayIndex,
+                                                                activityIndex,
+                                                                'endTime',
+                                                                e
+                                                            )
+                                                        }
+                                                        placeholder="Chọn giờ kết thúc"
+                                                    />
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
                                                         Danh Mục
                                                     </label>
-                                                    <input
+                                                    {/* <input
                                                         type="text"
                                                         value={
                                                             activity.category
@@ -1326,7 +1548,38 @@ const CreateTour = () => {
                                                         }
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         placeholder="Ví dụ: Tham quan, Ẩm thực"
-                                                    />
+                                                    /> */}
+                                                    <select
+                                                        value={
+                                                            activity.category
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleActivityChange(
+                                                                dayIndex,
+                                                                activityIndex,
+                                                                'category',
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    >
+                                                        <option
+                                                            value=""
+                                                            disabled
+                                                        >
+                                                            Chọn một danh mục
+                                                        </option>
+                                                        {categories.map(
+                                                            (cat) => (
+                                                                <option
+                                                                    key={cat}
+                                                                    value={cat}
+                                                                >
+                                                                    {cat}
+                                                                </option>
+                                                            )
+                                                        )}
+                                                    </select>
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">

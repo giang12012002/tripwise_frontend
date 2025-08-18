@@ -210,10 +210,10 @@ function ItineraryDisplay() {
                 <Header />
                 <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
                     <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">
-                        Không tìm thấy lịch trình
+                        Không tìm thấy hành trình
                     </h2>
                     <p className="text-gray-600 mt-4">
-                        Vui lòng tạo một lịch trình mới từ biểu mẫu du lịch.
+                        Vui lòng tạo một hành trình mới từ biểu mẫu du lịch.
                     </p>
                 </div>
                 <Footer />
@@ -248,7 +248,7 @@ function ItineraryDisplay() {
                                     d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
                                 />
                             </svg>
-                            Cập nhật lịch trình
+                            Cập nhật hành trình
                         </button>
                         <button
                             onClick={handleSaveAsTour}
@@ -410,7 +410,7 @@ function ItineraryDisplay() {
                 </div>
 
                 <h3 className="text-2xl font-semibold text-blue-900 mb-6">
-                    Chi tiết lịch trình
+                    Chi tiết hành trình
                 </h3>
                 <div className="space-y-6">
                     {fullItinerary && fullItinerary.length > 0 ? (
@@ -592,7 +592,7 @@ function ItineraryDisplay() {
                         ))
                     ) : (
                         <p className="text-gray-600">
-                            Không có chi tiết lịch trình nào để hiển thị.
+                            Không có chi tiết trình nào để hiển thị.
                         </p>
                     )}
                 </div>

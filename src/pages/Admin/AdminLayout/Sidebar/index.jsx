@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react' // có
-import { Link, useLocation } from 'react-router' // có
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 import { FaHome } from 'react-icons/fa'
 import { FaRegNewspaper } from 'react-icons/fa6'
@@ -10,17 +10,23 @@ import { FaUsers } from 'react-icons/fa6'
 import { FaBoxOpen } from 'react-icons/fa6'
 import { FaClipboardCheck } from 'react-icons/fa6'
 import { FaStarHalfAlt } from 'react-icons/fa'
+import { FaNewspaper } from 'react-icons/fa'
 
 import { IoEllipsisHorizontal } from 'react-icons/io5'
 import { FaChevronDown } from 'react-icons/fa6'
 
-import { useSidebar } from '@/contexts/SidebarContext' // có
+import { useSidebar } from '@/contexts/SidebarContext'
 
 const navItems = [
     {
         icon: <FaHome />,
         name: 'Trang chủ',
         path: '/admin'
+    },
+    {
+        icon: <FaNewspaper />,
+        name: 'Tin tức',
+        path: '/admin/hot-news'
     },
     {
         icon: <FaRegNewspaper />,
@@ -147,7 +153,7 @@ function Index() {
                             }`}
                         >
                             <span
-                                className={`menu-item-icon-size  ${
+                                className={`menu-item-icon-size ${
                                     openSubmenu?.type === menuType &&
                                     openSubmenu?.index === index
                                         ? 'menu-item-icon-active'
@@ -269,16 +275,16 @@ function Index() {
 
     return (
         <aside
-            className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${
-            isExpanded || isMobileOpen
-                ? 'w-[290px]'
-                : isHovered
-                  ? 'w-[290px]'
-                  : 'w-[90px]'
-        }
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0`}
+            className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200
+${
+    isExpanded || isMobileOpen
+        ? 'w-[290px]'
+        : isHovered
+          ? 'w-[290px]'
+          : 'w-[90px]'
+}
+${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
+lg:translate-x-0`}
             onMouseEnter={() => !isExpanded && setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -286,8 +292,7 @@ function Index() {
                 className={`py-8 flex ${
                     !isExpanded && !isHovered
                         ? 'lg:justify-center'
-                        : // : 'justify-start'
-                          'justify-center'
+                        : 'justify-center'
                 }`}
             >
                 <Link to="/">
@@ -296,16 +301,16 @@ function Index() {
                             <img
                                 src="/logo/logo-brand.png"
                                 alt="Logo"
-                                width={80}
-                                height={80}
+                                width={150}
+                                height={100}
                             />
                         </>
                     ) : (
                         <img
                             src="/logo/logo.png"
                             alt="Logo"
-                            width={40}
-                            height={40}
+                            width={80}
+                            height={80}
                         />
                     )}
                 </Link>

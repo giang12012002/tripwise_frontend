@@ -4,10 +4,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import partnerTourAPI from '@/apis/partnerTourAPI'
 import Swal from 'sweetalert2'
-import TimePicker from '@/components/ui/TimePicker'
 
 const Index = () => {
-    let { tourId } = useParams()
+    const { tourId } = useParams()
     const [tour, setTour] = useState(null)
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(true)
@@ -20,8 +19,6 @@ const Index = () => {
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
     const MAX_IMAGES = 20
-
-    const categories = ['Tham quan', 'Du lịch', 'Ẩm thực', 'Văn hóa']
 
     const isValidImage = (url) => {
         return new Promise((resolve) => {
@@ -78,7 +75,6 @@ const Index = () => {
         }
     }, [tourImages, activityImages])
 
-    // Fetch tour data
     useEffect(() => {
         const fetchTour = async () => {
             if (!tourId || isNaN(parseInt(tourId))) {
@@ -89,9 +85,7 @@ const Index = () => {
             setIsLoading(true)
             try {
                 const response = await partnerTourAPI.getTourDetail(tourId)
-
                 const tourData = response.data
-
                 console.log('Fetch tour response in EditTour:', tourData)
 
                 const imageUrls = tourData.imageUrls || []
@@ -142,6 +136,7 @@ const Index = () => {
                 setTour({
                     tourName: tourData.tourName || '',
                     description: tourData.description || '',
+                    duration: tourData.days?.toString() || '1',
                     startTime:
                         tourData.startTime || tourData.StartTime
                             ? (tourData.startTime || tourData.StartTime).slice(
@@ -150,7 +145,6 @@ const Index = () => {
                               ) // giữ nguyên ngày + giờ local
                             : '',
 
-                    duration: tourData.days?.toString() || '1',
                     price: tourData.totalEstimatedCost || 0,
                     priceAdult: tourData.priceAdult || 0,
                     priceChild5To10: tourData.priceChild5To10 || 0,
@@ -507,7 +501,6 @@ const Index = () => {
             validUrls
         )
     }
-
     const removeActivityImage = async (dayIndex, activityIndex, index) => {
         const key = `${dayIndex}-${activityIndex}`
         const removedImage = activityImages[key][index]
@@ -602,10 +595,9 @@ const Index = () => {
     }
 
     const addDay = () => {
-        const newItinerary = [
-            ...tour.itinerary,
-            {
-                dayNumber: tour.itinerary.length + 1,
+        setTour((prevTour) => {
+            const newDay = {
+                dayNumber: prevTour.itinerary.length + 1,
                 title: '',
                 itineraryId: null,
                 activities: [
@@ -625,10 +617,26 @@ const Index = () => {
                     }
                 ]
             }
-        ]
-        setTour({ ...tour, itinerary: newItinerary })
-        setOpenDays({ ...openDays, [tour.itinerary.length]: true })
-        console.log('Added new day:', tour.itinerary.length + 1)
+            const newItinerary = [...prevTour.itinerary, newDay]
+            // Log số lượng ngày và hoạt động
+            console.log(
+                `Trước khi thêm ngày mới: ${prevTour.itinerary.length} ngày`
+            )
+            console.log(
+                `Sau khi thêm ngày mới: ${newItinerary.length} ngày, với ${newItinerary[newItinerary.length - 1].activities.length} hoạt động trong ngày ${newItinerary.length}`
+            )
+            return { ...prevTour, itinerary: newItinerary }
+        })
+        setOpenDays((prevOpenDays) => ({
+            ...prevOpenDays,
+            [tour.itinerary.length]: true // Sử dụng length hiện tại của itinerary
+        }))
+        Swal.fire({
+            icon: 'success',
+            text: `Đã thêm ngày ${tour.itinerary.length + 1}!`,
+            showConfirmButton: false,
+            timer: 1000
+        })
     }
 
     const removeDay = async (dayIndex) => {
@@ -690,23 +698,48 @@ const Index = () => {
     }
 
     const addActivity = (dayIndex) => {
-        const newItinerary = [...tour.itinerary]
-        newItinerary[dayIndex].activities.push({
-            attractionId: null,
-            description: '',
-            address: '',
-            placeDetail: '',
-            estimatedCost: 0,
-            startTime: '',
-            endTime: '',
-            mapUrl: '',
-            category: '',
-            imageFiles: [],
-            imageUrls: [],
-            imageIds: []
+        setTour((prevTour) => {
+            const newItinerary = [...prevTour.itinerary]
+            newItinerary[dayIndex].activities.push({
+                attractionId: null,
+                description: '',
+                address: '',
+                placeDetail: '',
+                estimatedCost: 0,
+                startTime: '',
+                endTime: '',
+                mapUrl: '',
+                category: '',
+                imageFiles: [],
+                imageUrls: [],
+                imageIds: []
+            })
+            const newActivityIndex =
+                newItinerary[dayIndex].activities.length - 1
+            // Log số lượng hoạt động
+            console.log(
+                `Trước khi thêm hoạt động mới vào ngày ${dayIndex + 1}: ${prevTour.itinerary[dayIndex].activities.length} hoạt động`
+            )
+            console.log(
+                `Sau khi thêm hoạt động mới vào ngày ${dayIndex + 1}: ${newItinerary[dayIndex].activities.length} hoạt động`
+            )
+            // Cập nhật activityImages và tempUrlInput
+            setActivityImages((prev) => ({
+                ...prev,
+                [`${dayIndex}-${newActivityIndex}`]: []
+            }))
+            setTempUrlInput((prev) => ({
+                ...prev,
+                [`${dayIndex}-${newActivityIndex}`]: ''
+            }))
+            return { ...prevTour, itinerary: newItinerary }
         })
-        setTour({ ...tour, itinerary: newItinerary })
-        console.log(`Added new activity to day ${dayIndex + 1}`)
+        Swal.fire({
+            icon: 'success',
+            text: `Đã thêm hoạt động mới vào ngày ${dayIndex + 1}!`,
+            showConfirmButton: false,
+            timer: 1000
+        })
     }
 
     const removeActivity = async (dayIndex, activityIndex) => {
@@ -799,7 +832,7 @@ const Index = () => {
         }
         return ''
     }
-
+    console.log('Tour images before update:', tourImages)
     const handleUpdate = async () => {
         const validationError = validateForm()
         if (validationError) {
@@ -808,17 +841,21 @@ const Index = () => {
             return
         }
 
-        setIsLoading(true)
-
         try {
-            // let tourDraft = null
-            // if (tour.status === 'Approved') {
-            //     const response = await partnerTourAPI.createOrGet({ tourId })
-            //     tourDraft = response.data
-            //     tourId = tourDraft.tourId
-            // }
+            // Log số lượng ngày và hoạt động trước khi cập nhật
+            console.log(
+                `Trước khi cập nhật tour: ${tour.itinerary.length} ngày`
+            )
+            tour.itinerary.forEach((day, index) => {
+                console.log(
+                    `Ngày ${index + 1}: ${day.activities.length} hoạt động`
+                )
+            })
 
-            // Cập nhật thông tin tour
+            if (tour.status !== 'Draft') {
+                await partnerTourAPI.createOrGet({ tourId })
+            }
+
             const formData = new FormData()
             formData.append('TourName', tour.tourName)
             formData.append('StartTime', tour.startTime || '')
@@ -839,198 +876,160 @@ const Index = () => {
             formData.append('Category', tour.category)
             formData.append('TourNote', tour.tourNote || '')
             formData.append('TourInfo', tour.tourInfo || '')
-
             tourImages
                 .filter((img) => img.type === 'existing')
                 .forEach((img) => formData.append('ImageIds', img.id))
             tourImages
                 .filter((img) => img.type === 'new' && img.file)
                 .forEach((img) => formData.append('ImageFiles', img.file))
-            tour.imageUrls.forEach((url) => formData.append('Image', url))
-
-            console.log(
-                'Tour FormData cho cập nhật:',
-                Array.from(formData.entries())
-            )
+            formData.append('Itinerary', JSON.stringify(tour.itinerary))
 
             const updateTourResponse = await partnerTourAPI.updateTour(
                 tourId,
                 formData
             )
-            console.log('Phản hồi cập nhật tour:', updateTourResponse.data)
+            const updatedTourResponse =
+                await partnerTourAPI.getTourDetail(tourId)
+            const updatedTourData = updatedTourResponse.data
 
-            // Cập nhật lịch trình và hoạt động
-            const newItinerary = [...tour.itinerary]
-            for (
-                let dayIndex = 0;
-                dayIndex < tour.itinerary.length;
-                dayIndex++
-            ) {
-                const day = tour.itinerary[dayIndex]
-                const itineraryPayload = {
-                    DayNumber: day.dayNumber,
-                    Title: day.title || `Ngày ${day.dayNumber}`
-                }
-                let itineraryId = day.itineraryId
-                if (itineraryId) {
-                    console.log(
-                        `Cập nhật lịch trình với ID: ${itineraryId}`,
-                        itineraryPayload
-                    )
-                    const updateItineraryResponse =
-                        await partnerTourAPI.updateItinerary(
-                            itineraryId,
-                            itineraryPayload
+            // Log số lượng ngày và hoạt động sau khi cập nhật
+            console.log(
+                `Sau khi cập nhật tour: ${updatedTourData.itinerary.length} ngày`
+            )
+            updatedTourData.itinerary.forEach((day, index) => {
+                console.log(
+                    `Ngày ${index + 1}: ${day.activities.length} hoạt động`
+                )
+            })
+
+            // Cập nhật trạng thái
+            setTour({
+                tourName: updatedTourData.tourName || '',
+                description: updatedTourData.description || '',
+                duration: updatedTourData.days?.toString() || '1',
+                startTime:
+                    updatedTourData.startTime ||
+                    updatedTourData.StartTime ||
+                    '',
+                price: updatedTourData.totalEstimatedCost || 0,
+                priceAdult: updatedTourData.priceAdult || 0,
+                priceChild5To10: updatedTourData.priceChild5To10 || 0,
+                priceChildUnder5: updatedTourData.priceChildUnder5 || 0,
+                location: updatedTourData.location || '',
+                maxGroupSize: updatedTourData.maxGroupSize || 1,
+                category: updatedTourData.preferences || '',
+                tourNote: updatedTourData.tourNote || '',
+                tourInfo: updatedTourData.tourInfo || '',
+                status: updatedTourData.status || 'Draft',
+                rejectReason: updatedTourData.rejectReason || '',
+                imageFiles: [],
+                imageUrls: Array.isArray(updatedTourData.imageUrls)
+                    ? updatedTourData.imageUrls
+                    : [updatedTourData.imageUrls].filter(Boolean),
+                imageIds: Array.isArray(updatedTourData.imageIds)
+                    ? updatedTourData.imageIds
+                    : [updatedTourData.imageIds].filter(Boolean),
+                itinerary:
+                    updatedTourData.itinerary?.map((day) => ({
+                        itineraryId: day.itineraryId || null,
+                        dayNumber: day.dayNumber || 1,
+                        title: day.title || '',
+                        activities:
+                            day.activities?.map((act) => ({
+                                attractionId: act.attractionId || null,
+                                description: act.description || '',
+                                address: act.address || '',
+                                placeDetail: act.placeDetail || '',
+                                estimatedCost: act.estimatedCost || 0,
+                                startTime: act.startTime || '',
+                                endTime: act.endTime || '',
+                                mapUrl: act.mapUrl || '',
+                                category: act.category || '',
+                                imageFiles: [],
+                                imageUrls: Array.isArray(act.imageUrls)
+                                    ? act.imageUrls
+                                    : [act.imageUrls].filter(Boolean),
+                                imageIds: Array.isArray(act.imageIds)
+                                    ? act.imageIds
+                                    : [act.imageIds].filter(Boolean)
+                            })) || []
+                    })) || []
+            })
+
+            setTourImages(
+                (Array.isArray(updatedTourData.imageUrls)
+                    ? updatedTourData.imageUrls
+                    : [updatedTourData.imageUrls].filter(Boolean)
+                ).map((url, index) => ({
+                    preview: url,
+                    type: 'existing',
+                    id:
+                        (Array.isArray(updatedTourData.imageIds)
+                            ? updatedTourData.imageIds
+                            : [updatedTourData.imageIds].filter(Boolean))[
+                            index
+                        ] || null
+                }))
+            )
+
+            setActivityImages(
+                updatedTourData.itinerary?.reduce(
+                    (acc, day, dayIndex) => ({
+                        ...acc,
+                        ...day.activities.reduce(
+                            (actAcc, act, actIndex) => ({
+                                ...actAcc,
+                                [`${dayIndex}-${actIndex}`]: (Array.isArray(
+                                    act.imageUrls
+                                )
+                                    ? act.imageUrls
+                                    : [act.imageUrls].filter(Boolean)
+                                ).map((url, i) => ({
+                                    preview: url,
+                                    type: 'existing',
+                                    id:
+                                        (Array.isArray(act.imageIds)
+                                            ? act.imageIds
+                                            : [act.imageIds].filter(Boolean))[
+                                            i
+                                        ] || null
+                                }))
+                            }),
+                            {}
                         )
-                    console.log(
-                        `Phản hồi cập nhật lịch trình cho ngày ${day.dayNumber}:`,
-                        updateItineraryResponse.data
-                    )
-                } else {
-                    console.log(
-                        `Tạo lịch trình mới cho ngày ${day.dayNumber}:`,
-                        itineraryPayload
-                    )
-                    const createItineraryResponse =
-                        await partnerTourAPI.createItinerary(
-                            tourId,
-                            itineraryPayload
-                        )
-                    console.log(
-                        `Phản hồi tạo lịch trình cho ngày ${day.dayNumber}:`,
-                        createItineraryResponse.data
-                    )
-                    itineraryId = createItineraryResponse.data.data
-                    newItinerary[dayIndex].itineraryId = itineraryId
-                }
+                    }),
+                    {}
+                ) || {}
+            )
 
-                for (
-                    let activityIndex = 0;
-                    activityIndex < day.activities.length;
-                    activityIndex++
-                ) {
-                    const activity = day.activities[activityIndex]
-                    const activityFormData = new FormData()
-                    activityFormData.append(
-                        'PlaceDetail',
-                        activity.placeDetail || ''
-                    )
-                    activityFormData.append(
-                        'Description',
-                        activity.description || ''
-                    )
-                    activityFormData.append('Address', activity.address || '')
-                    activityFormData.append(
-                        'EstimatedCost',
-                        parseFloat(activity.estimatedCost) || 0
-                    )
-                    activityFormData.append(
-                        'StartTime',
-                        activity.startTime || ''
-                    )
-                    activityFormData.append('EndTime', activity.endTime || '')
-                    activityFormData.append('MapUrl', activity.mapUrl || '')
-                    activityFormData.append('Category', activity.category || '')
-
-                    const activityKey = `${dayIndex}-${activityIndex}`
-                    const currentActivityImages =
-                        activityImages[activityKey] || []
-
-                    // Chỉ gửi một ảnh cho hoạt động (mới hoặc URL)
-                    if (currentActivityImages.length > 0) {
-                        const latestImage = currentActivityImages[0] // Lấy ảnh đầu tiên (giới hạn 1 ảnh)
-                        if (latestImage.type === 'new' && latestImage.file) {
-                            activityFormData.append(
-                                'ImageFiles',
-                                latestImage.file
-                            )
-                        } else if (
-                            latestImage.type === 'url' ||
-                            latestImage.type === 'existing'
-                        ) {
-                            activityFormData.append(
-                                'Image',
-                                latestImage.preview
-                            )
-                        }
-                        if (latestImage.type === 'existing' && latestImage.id) {
-                            activityFormData.append('ImageIds', latestImage.id)
-                        }
-                    }
-
-                    console.log(
-                        `Dữ liệu gửi lên cho hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
-                        {
-                            imageFiles: activity.imageFiles.map((f) => ({
-                                name: f.name,
-                                size: f.size
-                            })),
-                            imageUrls: activity.imageUrls,
-                            imageIds: activity.imageIds,
-                            activityImages: currentActivityImages.map(
-                                (img) => ({
-                                    preview: img.preview,
-                                    type: img.type,
-                                    id: img.id
-                                })
-                            )
-                        }
-                    )
-
-                    if (activity.attractionId) {
-                        console.log(
-                            `Cập nhật hoạt động với ID: ${activity.attractionId}`,
-                            Array.from(activityFormData.entries())
-                        )
-                        const updateActivityResponse =
-                            await partnerTourAPI.updateActivity(
-                                activity.attractionId,
-                                activityFormData
-                            )
-                        console.log(
-                            `Phản hồi cập nhật hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
-                            updateActivityResponse.data
-                        )
-                    } else {
-                        console.log(
-                            `Tạo hoạt động mới cho ngày ${day.dayNumber}:`,
-                            Array.from(activityFormData.entries())
-                        )
-                        const createActivityResponse =
-                            await partnerTourAPI.createActivity(
-                                itineraryId,
-                                activityFormData
-                            )
-                        console.log(
-                            `Phản hồi tạo hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
-                            createActivityResponse.data
-                        )
-                        newItinerary[dayIndex].activities[
-                            activityIndex
-                        ].attractionId = createActivityResponse.data.data
-                    }
-                }
-            }
-
-            setTour({ ...tour, itinerary: newItinerary })
             Swal.fire({
                 icon: 'success',
-                title: 'Thành công',
                 text: 'Cập nhật tour thành công!',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 1800
             })
-            navigate('/partner')
         } catch (err) {
-            setError('Không thể cập nhật tour. Vui lòng thử lại.')
-            console.error('API Error (handleUpdate):', {
+            console.error('Lỗi API (updateTour):', {
                 message: err.message,
                 response: err.response?.data,
                 status: err.response?.status,
                 errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
             })
-        } finally {
-            setIsLoading(false)
+            let errorMessage = 'Không thể cập nhật tour. Vui lòng thử lại.'
+            if (err.response?.data?.errors) {
+                errorMessage = Array.isArray(err.response.data.errors)
+                    ? err.response.data.errors.join(', ')
+                    : typeof err.response.data.errors === 'string'
+                      ? err.response.data.errors
+                      : JSON.stringify(err.response.data.errors)
+            }
+            setError(errorMessage)
+            Swal.fire({
+                icon: 'error',
+                text: errorMessage,
+                showConfirmButton: false,
+                timer: 1800
+            })
         }
     }
 
@@ -1124,7 +1123,7 @@ const Index = () => {
                             placeholder="Nhập địa điểm"
                         />
                     </div>
-                    {/* <div>
+                    <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
                             Chủ Đề
                         </label>
@@ -1137,34 +1136,10 @@ const Index = () => {
                             required
                             placeholder="Nhập chủ đề tour"
                         />
-                    </div> */}
-
-                    <div>
-                        <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Chủ Đề
-                        </label>
-                        <select
-                            name="category"
-                            value={tour.category}
-                            onChange={handleTourChange}
-                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
-                        >
-                            {/* Thêm một tùy chọn mặc định không có giá trị */}
-                            <option value="" disabled>
-                                Chọn một chủ đề
-                            </option>
-                            {categories.map((cat) => (
-                                <option key={cat} value={cat}>
-                                    {cat}
-                                </option>
-                            ))}
-                        </select>
                     </div>
-
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Thời Gian Bắt Đầu
+                            Thời Gian Bắt Đầu Tour
                         </label>
                         <input
                             type="datetime-local"
@@ -1175,9 +1150,10 @@ const Index = () => {
                             required
                         />
                     </div>
+
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Số ngày
+                            Thời Gian (ngày)
                         </label>
                         <input
                             type="number"
@@ -1190,7 +1166,7 @@ const Index = () => {
                             placeholder="Số ngày"
                         />
                     </div>
-                    <div className="hidden">
+                    <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
                             Giá (VND)
                         </label>
@@ -1581,9 +1557,10 @@ const Index = () => {
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
-                                                        Giờ Bắt Đầu
+                                                        Thời Gian Bắt Đầu
                                                     </label>
-                                                    <TimePicker
+                                                    <input
+                                                        type="time"
                                                         value={
                                                             activity.startTime
                                                         }
@@ -1592,30 +1569,33 @@ const Index = () => {
                                                                 dayIndex,
                                                                 activityIndex,
                                                                 'startTime',
-                                                                e
+                                                                e.target.value
                                                             )
                                                         }
-                                                        placeholder="Chọn giờ bắt đầu"
+                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        placeholder="Thời gian bắt đầu"
                                                     />
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
-                                                        Giờ Kết Thúc
+                                                        Thời Gian Kết Thúc
                                                     </label>
-                                                    <TimePicker
+                                                    <input
+                                                        type="time"
                                                         value={activity.endTime}
                                                         onChange={(e) =>
                                                             handleActivityChange(
                                                                 dayIndex,
                                                                 activityIndex,
                                                                 'endTime',
-                                                                e
+                                                                e.target.value
                                                             )
                                                         }
-                                                        placeholder="Chọn giờ kết thúc"
+                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        placeholder="Thời gian kết thúc"
                                                     />
                                                 </div>
-                                                {/* <div>
+                                                <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
                                                         Danh Mục
                                                     </label>
@@ -1635,43 +1615,6 @@ const Index = () => {
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         placeholder="Ví dụ: Tham quan, Ẩm thực"
                                                     />
-                                                </div> */}
-                                                <div>
-                                                    <label className="block text-gray-700 font-medium mb-2">
-                                                        Danh Mục
-                                                    </label>
-                                                    <select
-                                                        value={
-                                                            activity.category
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleActivityChange(
-                                                                dayIndex,
-                                                                activityIndex,
-                                                                'category',
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                    >
-                                                        {/* Thêm một tùy chọn mặc định không có giá trị */}
-                                                        <option
-                                                            value=""
-                                                            disabled
-                                                        >
-                                                            Chọn một danh mục
-                                                        </option>
-                                                        {categories.map(
-                                                            (cat) => (
-                                                                <option
-                                                                    key={cat}
-                                                                    value={cat}
-                                                                >
-                                                                    {cat}
-                                                                </option>
-                                                            )
-                                                        )}
-                                                    </select>
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">

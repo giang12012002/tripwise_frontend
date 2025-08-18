@@ -32,13 +32,6 @@ function Index() {
 
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để truy cập trang quản lý.',
-                showConfirmButton: false,
-                timer: 1800
-            })
             navigate('/signin')
         }
     }, [isLoggedIn, isAuthLoading, navigate])

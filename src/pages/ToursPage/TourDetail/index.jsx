@@ -265,17 +265,24 @@ const Index = () => {
                                         <span className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded text-sm font-bold">
                                             SALE
                                         </span>
-                                        <div className="relative overflow-hidden rounded-xl">
+                                        <div className="relative overflow-hidden rounded-xl w-full h-96">
                                             <img
                                                 src={
                                                     tour.imageUrls[
                                                         currentImageIndex
-                                                    ]
+                                                    ] || '/fallback-image.jpg'
                                                 }
                                                 alt={tour.tourName}
                                                 className="w-full h-96 object-cover transition-opacity duration-700 ease-in-out"
                                                 style={{ opacity: 1 }}
                                                 key={currentImageIndex}
+                                                onError={(e) => {
+                                                    e.target.src =
+                                                        '/fallback-image.jpg'
+                                                    console.error(
+                                                        `Failed to load main image: ${tour.imageUrls[currentImageIndex]}`
+                                                    )
+                                                }}
                                             />
                                         </div>
                                         <button
@@ -295,14 +302,29 @@ const Index = () => {
                                                 (url, index) => (
                                                     <img
                                                         key={index}
-                                                        src={url}
+                                                        src={
+                                                            url ||
+                                                            '/fallback-image.jpg'
+                                                        }
                                                         alt={`Thumbnail ${index + 1}`}
-                                                        className={`w-24 h-24 object-cover rounded-lg cursor-pointer transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105 ${currentImageIndex === index ? 'border-4 border-indigo-500 opacity-100' : 'opacity-70'}`}
+                                                        className={`w-24 h-24 object-cover rounded-lg cursor-pointer transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105 ${
+                                                            currentImageIndex ===
+                                                            index
+                                                                ? 'border-4 border-indigo-500 opacity-100'
+                                                                : 'opacity-70'
+                                                        }`}
                                                         onClick={() =>
                                                             setCurrentImageIndex(
                                                                 index
                                                             )
                                                         }
+                                                        onError={(e) => {
+                                                            e.target.src =
+                                                                '/fallback-image.jpg'
+                                                            console.error(
+                                                                `Failed to load thumbnail image: ${url}`
+                                                            )
+                                                        }}
                                                     />
                                                 )
                                             )}
@@ -313,15 +335,9 @@ const Index = () => {
                                             {tour.tourName}
                                         </h2>
                                         <div className="flex items-center mt-3">
-                                            <span className="text-xl line-through text-red-400 mr-3">
-                                                {formatCurrency(
-                                                    tour.totalEstimatedCost +
-                                                        600000
-                                                )}
-                                            </span>
                                             <span className="text-3xl font-bold text-red-600">
                                                 {formatCurrency(
-                                                    tour.totalEstimatedCost
+                                                    tour.priceAdult
                                                 )}
                                             </span>
                                         </div>
@@ -349,9 +365,9 @@ const Index = () => {
                                         <hr className="border-t border-gray-300 my-4" />
                                         <p className="text-gray-800 mb-3 flex items-center">
                                             <strong className="text-gray-900 font-semibold mr-2">
-                                                ▶ Phương tiện:
+                                                ▶ Chỗ còn trống:
                                             </strong>{' '}
-                                            Ô tô chất lượng cao
+                                            {tour.availableSlots}
                                         </p>
                                     </div>
                                 </div>
@@ -738,9 +754,18 @@ const Index = () => {
                                             {openSections['huy-doi'] && (
                                                 <div className="p-6 bg-gray-50">
                                                     <p className="text-gray-800">
-                                                        - Huỷ hoặc đổi tour vui
-                                                        lòng liên hệ Zalo:
-                                                        0339.805.402
+                                                        - Sau khi đóng tiền, nếu
+                                                        Quý khách muốn
+                                                        chuyển/huỷ tour xin vui
+                                                        lòng mang Vé Du Lịch đến
+                                                        văn phòng đăng ký tour
+                                                        để làm thủ tục
+                                                        chuyển/huỷ tour và chịu
+                                                        mất phí theo quy định
+                                                        của TripWise. Không giải
+                                                        quyết các trường hợp
+                                                        liên hệ chuyển/huỷ tour
+                                                        qua điện thoại.
                                                     </p>
                                                 </div>
                                             )}
