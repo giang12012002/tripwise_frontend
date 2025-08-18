@@ -265,7 +265,7 @@ const Index = () => {
                                         <span className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded text-sm font-bold">
                                             SALE
                                         </span>
-                                        <div className="relative overflow-hidden rounded-xl w-full h-96">
+                                        <div className="relative aspect-video w-full overflow-hidden rounded-xl">
                                             <img
                                                 src={
                                                     tour.imageUrls[
@@ -273,16 +273,7 @@ const Index = () => {
                                                     ] || '/fallback-image.jpg'
                                                 }
                                                 alt={tour.tourName}
-                                                className="w-full h-96 object-cover transition-opacity duration-700 ease-in-out"
-                                                style={{ opacity: 1 }}
-                                                key={currentImageIndex}
-                                                onError={(e) => {
-                                                    e.target.src =
-                                                        '/fallback-image.jpg'
-                                                    console.error(
-                                                        `Failed to load main image: ${tour.imageUrls[currentImageIndex]}`
-                                                    )
-                                                }}
+                                                className="w-full h-full object-cover"
                                             />
                                         </div>
                                         <button
@@ -369,6 +360,17 @@ const Index = () => {
                                             </strong>{' '}
                                             {tour.availableSlots}
                                         </p>
+                                        {tour.note && (
+                                            <>
+                                                <hr className="border-t border-gray-300 my-4" />
+                                                <p className="text-gray-800 mb-3 flex items-center">
+                                                    <strong className="text-gray-900 font-semibold mr-2">
+                                                        ▶ Thông báo:
+                                                    </strong>{' '}
+                                                    {tour.note}
+                                                </p>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             )}
