@@ -398,7 +398,7 @@ function ChatbotUpdate() {
                 <div className="flex flex-col md:flex-row gap-8">
                     <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-8 h-[80vh] overflow-y-auto">
                         <h3 className="text-xl font-semibold text-blue-800 mb-4">
-                            trình hiện tại
+                            Hành trình hiện tại
                         </h3>
                         <hr className="border-t border-gray-300 mb-4" />
                         <div className="grid grid-cols-1 gap-8 mb-8">
@@ -565,7 +565,7 @@ function ChatbotUpdate() {
                         </div>
                         <hr className="border-t border-gray-300 mb-4" />
                         <h4 className="text-lg font-semibold text-blue-800 mb-6">
-                            Chi tiết ành trình
+                            Chi tiết hành trình
                         </h4>
                         <div className="space-y-6">
                             {normalizedItineraryData.itinerary &&
@@ -779,7 +779,7 @@ function ChatbotUpdate() {
                     </div>
                     <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-8 h-[80vh] flex flex-col">
                         <h3 className="text-xl font-semibold text-blue-800 mb-4 text-center">
-                            Cập nhật trình cùng TripWiseAl
+                            Cập nhật hành trình cùng TripWiseAl
                         </h3>
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
                             {messages.map((msg, index) => (

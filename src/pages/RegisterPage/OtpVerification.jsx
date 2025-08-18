@@ -8,6 +8,7 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import beachSunset from '@/assets/images/background.png'
 import logoImage from '@/assets/images/logo2.png'
+import { IoFastFood } from 'react-icons/io5'
 
 function OtpVerification() {
     const navigate = useNavigate()
@@ -107,11 +108,12 @@ function OtpVerification() {
                 signupRequestId
             }
             const response = await authAPI.verifyOtp(otp, userSignupData)
-            if (response.status === 200 || response.status === 201) {
+            // if (response.status === 200 || response.status === 201) {
+            if (response.data.statusCode === 201) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Thành công',
-                    text: 'Đăng ký thành công!',
+                    text: response.data.message || 'Đăng ký thành công!',
                     showConfirmButton: false,
                     timer: 500
                 })
