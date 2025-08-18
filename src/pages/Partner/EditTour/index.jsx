@@ -1009,7 +1009,7 @@ const Index = () => {
                 showConfirmButton: false,
                 timer: 1500
             })
-            navigate('/partner/tours')
+            navigate('/partner')
         } catch (err) {
             setError('Không thể cập nhật tour. Vui lòng thử lại.')
             console.error('API Error (handleUpdate):', {
