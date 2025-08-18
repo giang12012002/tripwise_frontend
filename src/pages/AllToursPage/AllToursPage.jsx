@@ -62,7 +62,8 @@ const AllToursPage = () => {
                         address: tour.location || 'Không xác định',
                         city: tour.location
                             ? extractCity(tour.location)
-                            : 'Không xác định'
+                            : 'Không xác định',
+                        note: tour.note
                     }))
                 setTours(validTours)
             } catch (err) {

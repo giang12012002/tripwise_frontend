@@ -3,7 +3,7 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 
 function sendMail() {
-    const to = 'anhnvvhe179005@fpt.edu.vn'
+    const to = 'hello.tripwise.vn@gmail.com'
     const subject = encodeURIComponent('Chào bạn')
     const body = encodeURIComponent('Tôi muốn liên hệ với bạn qua email.')
     return `https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${to}&subject=${subject}&body=${body}`
@@ -78,7 +78,7 @@ function Index() {
                                         Liên hệ qua Gmail
                                     </h3>
                                     <p className="text-gray-600 text-sm">
-                                        anhnvvhe179005@fpt.edu.vn
+                                        hello.tripwise.vn@gmail.com
                                     </p>
                                     <a
                                         href={sendMail()}

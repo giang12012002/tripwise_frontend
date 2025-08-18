@@ -183,8 +183,20 @@ function TourCard({
     const tourPrice = tour.price || 'Giá không xác định'
     const tourAddress = tour.address || 'Địa chỉ không xác định'
 
+    console.log('Rendered TourCard for tour:', tour)
+
+    const badgeText = tour.note !== null ? tour.note : ''
+
     return (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-lg">
+        <div className="relative bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-lg">
+            {badgeText && (
+                <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden">
+                    <div className="absolute top-2 right-[-40px] bg-red-100 text-red-600 text-xs font-bold px-10 py-1 rotate-45 shadow-md">
+                        {badgeText}
+                    </div>
+                </div>
+            )}
+
             {imageUrl ? (
                 <img
                     src={imageUrl}
@@ -202,10 +214,15 @@ function TourCard({
                     <span className="text-gray-500">Không có ảnh</span>
                 </div>
             )}
+
             <div className="p-6">
-                <p className="text-xl font-semibold text-red-600 mb-2">
-                    {tourPrice}
-                </p>
+                <div className="flex justify-between">
+                    <p className="text-xl font-semibold text-red-600 mb-2">
+                        {tourPrice}
+                    </p>
+                    <p className="text-gray-600">{tour.note}</p>
+                </div>
+
                 <div className="flex items-center mb-3">
                     <span className="text-yellow-500">★★★★★</span>
                     <span className="ml-2 text-gray-600 text-sm">4.6</span>

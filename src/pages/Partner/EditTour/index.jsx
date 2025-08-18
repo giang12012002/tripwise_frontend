@@ -15,6 +15,7 @@ const Index = () => {
     const [tourImages, setTourImages] = useState([])
     const [activityImages, setActivityImages] = useState({})
     const [tempUrlInput, setTempUrlInput] = useState({ tour: '' })
+    const [originalTourUrls, setOriginalTourUrls] = useState(null)
     const tourFileInputRef = useRef(null)
     const activityFileInputRefs = useRef({})
     const navigate = useNavigate()
@@ -103,6 +104,8 @@ const Index = () => {
                         id: imageIds[index] || null
                     }))
                 )
+
+                setOriginalTourUrls(imageUrls)
 
                 // ✅ Fix: luôn convert imageUrls và imageIds của activity thành mảng
                 setActivityImages(
@@ -323,6 +326,7 @@ const Index = () => {
                             .indexOf(removedImage)
                 )
             })
+            console.log('Ảnh đã xóa: ' + removedImage.file.name)
         } else if (removedImage.type === 'existing' && removedImage.id) {
             try {
                 await partnerTourAPI.deleteMultipleTourImages([removedImage.id])
@@ -339,6 +343,8 @@ const Index = () => {
                         (id) => id !== removedImage.id
                     )
                 })
+                console.log('Xóa ảnh: ' + removedImage.id)
+                console.log('Tour sau khi xóa ảnh: ', tour)
             } catch (err) {
                 setError('Không thể xóa ảnh. Vui lòng thử lại.')
                 console.error('Failed to delete tour image:', err)
@@ -365,6 +371,7 @@ const Index = () => {
         if (existingImageIds.length > 0) {
             try {
                 await partnerTourAPI.deleteMultipleTourImages(existingImageIds)
+                console.log('Tour sau khi xóa ảnh: ', tour)
             } catch (err) {
                 setError('Không thể xóa tất cả ảnh. Vui lòng thử lại.')
                 console.error('Failed to clear tour images:', err)
@@ -840,13 +847,34 @@ const Index = () => {
             formData.append('TourNote', tour.tourNote || '')
             formData.append('TourInfo', tour.tourInfo || '')
 
+            // sửa ở đây
+            // tourImages
+            //     .filter((img) => img.type === 'existing')
+            //     .forEach((img) => formData.append('ImageIds', img.id))
+            // tourImages
+            //     .filter((img) => img.type === 'new' && img.file)
+            //     .forEach((img) => formData.append('ImageFiles', img.file))
+            // tour.imageUrls.forEach((url) => formData.append('Image', url))
+
             tourImages
-                .filter((img) => img.type === 'existing')
+                .filter((img) => img.type === 'existing' && img.id)
                 .forEach((img) => formData.append('ImageIds', img.id))
+
             tourImages
                 .filter((img) => img.type === 'new' && img.file)
-                .forEach((img) => formData.append('ImageFiles', img.file))
-            tour.imageUrls.forEach((url) => formData.append('Image', url))
+                .forEach((img) => formData.append('imageFiles', img.file))
+
+            // tour.imageUrls.forEach((url) => formData.append('imageUrls', url))
+
+            const newImageUrls = tourImages
+                .filter((img) => img.type === 'url')
+                .map((img) => img.preview)
+
+            newImageUrls.forEach((url) => formData.append('ImageUrls', url))
+
+            console.log('Tour Images cho cập nhật:', tourImages)
+
+            console.log('New Image URLs cho cập nhật:', newImageUrls)
 
             console.log(
                 'Tour FormData cho cập nhật:',
@@ -949,7 +977,7 @@ const Index = () => {
                             latestImage.type === 'existing'
                         ) {
                             activityFormData.append(
-                                'Image',
+                                'ImageUrls',
                                 latestImage.preview
                             )
                         }
@@ -1694,8 +1722,8 @@ const Index = () => {
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
-                                                        Hình Ảnh Hoạt Động (Có
-                                                        thể chọn nhiều)
+                                                        Hình Ảnh Hoạt Động (Chỉ
+                                                        chọn 1)
                                                     </label>
                                                     <button
                                                         className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

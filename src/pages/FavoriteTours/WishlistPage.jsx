@@ -82,7 +82,8 @@ const WishlistPage = () => {
                             address: tour.location || 'Không xác định',
                             city: tour.location
                                 ? extractCity(tour.location)
-                                : 'Không xác định'
+                                : 'Không xác định',
+                            note: tour.note
                         })
                     } catch (e) {
                         console.warn(
