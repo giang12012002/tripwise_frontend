@@ -152,7 +152,7 @@ const UserManager = () => {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Vui lòng nhập lý do xóa',
+                text: 'Vui lòng nhập lý do',
                 confirmButtonColor: '#2563eb'
             })
             return
@@ -162,7 +162,7 @@ const UserManager = () => {
             Swal.fire({
                 icon: 'success',
                 title: 'Thành công',
-                text: 'Xóa người dùng thành công',
+                text: 'Vô hiệu hóa người dùng thành công',
                 confirmButtonColor: '#2563eb'
             })
             setDeleteReasons((prev) => {
@@ -177,7 +177,7 @@ const UserManager = () => {
                 icon: 'error',
                 title: 'Lỗi',
                 text:
-                    'Lỗi khi xóa người dùng: ' +
+                    'Lỗi khi vô hiệu hóa người dùng: ' +
                     (err.response?.data?.message || err.message),
                 confirmButtonColor: '#2563eb'
             })
@@ -331,7 +331,7 @@ const UserManager = () => {
                         className="px-4 py-2 text-gray-600 font-semibold cursor-pointer hover:bg-gray-200 rounded-t-md focus:outline-none"
                         selectedClassName="bg-white border-b-2 border-blue-600 text-blue-600"
                     >
-                        Khách hàng đã xóa
+                        Tài khoản vô hiệu hóa
                     </Tab>
                 </TabList>
 
@@ -430,8 +430,7 @@ const UserManager = () => {
                     ) : (
                         <div className="text-center bg-white p-8 rounded-xl shadow-lg">
                             <p className="text-lg text-gray-600">
-                                Không tìm thấy người dùng đã xóa phù hợp với tìm
-                                kiếm.
+                                Không tìm thấy người dùng phù hợp với tìm kiếm.
                             </p>
                         </div>
                     )}

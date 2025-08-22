@@ -216,12 +216,9 @@ function TourCard({
             )}
 
             <div className="p-6">
-                <div className="flex justify-between">
-                    <p className="text-xl font-semibold text-red-600 mb-2">
-                        {tourPrice}
-                    </p>
-                    <p className="text-gray-600">{tour.note}</p>
-                </div>
+                <p className="text-xl font-semibold text-red-600 mb-2">
+                    {tourPrice}
+                </p>
 
                 <div className="flex items-center mb-3">
                     <span className="text-yellow-500">★★★★★</span>

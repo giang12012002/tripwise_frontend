@@ -3,28 +3,15 @@ import { Check } from 'lucide-react'
 import { toast } from 'react-toastify'
 
 const paymentMethods = [
-    { id: 'vnpay', name: 'VNPAY', icon: '/vnpay-logo.svg' },
-    { id: 'qr', name: 'QR', icon: '/qr-logo.svg' }
+    { id: 'chuyển khoản', name: 'Chuyển khoản', icon: '/credit-card-logo.svg' },
+    { id: 'tiền mặt', name: 'Tiền mặt', icon: '/cash-logo.svg' }
 ]
 
-function BookingConfirmDialog({
-    isOpen,
-    onClose,
-    onConfirm,
-    tourId,
-    tourName,
-    dayNum,
-    peopleNum,
-    estimatedCost,
-    adultNum,
-    childUnder10Num,
-    childUnder5Num
-}) {
+function ConfirmDialog({ booking, isOpen, onClose, onConfirm }) {
     const [isVisible, setIsVisible] = useState(false)
     const [animationClass, setAnimationClass] = useState('fade-in')
     const [selectedMethod, setSelectedMethod] = useState('vnpay')
-
-    const [loading, setLoading] = useState(false)
+    const [refundReason, setRefundReason] = useState('')
 
     useEffect(() => {
         if (isOpen) {
@@ -36,46 +23,21 @@ function BookingConfirmDialog({
         }
     }, [isOpen])
 
-    const handleSubmit = async () => {
-        setLoading(true)
-        try {
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-            if (selectedMethod === 'qr') {
-                toast.error('Hiện tại chưa hỗ trợ thanh toán QR')
-                return
-            }
-            onConfirm(tourId, adultNum, childUnder10Num, childUnder5Num)
-        } catch (err) {
-            toast.error('Có lỗi xảy ra khi tạo gói')
-        } finally {
-            setLoading(false)
-            handleClose()
-        }
-    }
-    const resetFields = () => {}
-
-    const handleClose = () => {
-        onClose()
-        resetFields()
-    }
-
-    if (!isVisible) return null
+    if (!isVisible || !booking) return null
 
     return (
         <div
             className={`fixed inset-0 z-50 bg-black/30 flex justify-center items-center ${animationClass}`}
         >
             <div className="bg-white rounded-xl shadow-lg max-w-3xl w-full p-6 md:p-8 transition-transform duration-300">
-                <h2 className="text-lg font-semibold mb-4">
-                    Thông tin đặt chỗ của bạn:
-                </h2>
+                <h2 className="text-lg font-semibold mb-4">Hoàn tiền:</h2>
 
-                <p className="text-gray-700 mb-4 text-base">
+                {/* <p className="text-gray-700 mb-4 text-base">
                     Tổng giá:{' '}
                     <span className="font-bold text-green-600">
-                        {estimatedCost.toLocaleString()} VND
+                        {plan.price.toLocaleString()} VND
                     </span>
-                </p>
+                </p> */}
 
                 <div className="flex flex-col md:flex-row justify-between gap-4">
                     {/* Chọn phương thức thanh toán */}
@@ -106,7 +68,7 @@ function BookingConfirmDialog({
                                     <img
                                         src={method.icon}
                                         alt={method.name}
-                                        className="h-5"
+                                        className="h-7"
                                     />
                                     <input
                                         type="radio"
@@ -123,47 +85,36 @@ function BookingConfirmDialog({
                         </div>
                     </div>
 
-                    {/* Quyền lợi */}
+                    {/* Lý do */}
                     <div className="flex-1 bg-gray-100 p-4 rounded-lg">
-                        <p className="font-semibold mb-2">Bạn sẽ nhận được:</p>
-                        <ul className="space-y-2 text-sm">
-                            <li className="flex items-center gap-2">
-                                <Check size={16} className="text-green-600" />
-                                <span>Tên tour: {tourName}</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Check size={16} className="text-green-600" />
-                                <span>Số người lớn: {adultNum}</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Check size={16} className="text-green-600" />
-                                <span>
-                                    Số trẻ em dưới 10 tuổi: {childUnder10Num}
-                                </span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Check size={16} className="text-green-600" />
-                                <span>
-                                    Số trẻ em dưới 5 tuổi: {childUnder5Num}
-                                </span>
-                            </li>
-                        </ul>
+                        <p className="font-semibold mb-2">Lý do hoàn tiền:</p>
+                        <textarea
+                            className="w-full h-28 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            placeholder="Nhập lý do hoàn tiền..."
+                            onChange={(e) => setRefundReason(e.target.value)}
+                        />
                     </div>
                 </div>
 
                 {/* Footer */}
                 <div className="flex justify-end mt-6 gap-4">
                     <button
-                        onClick={handleClose}
+                        onClick={onClose}
                         className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 hover:cursor-pointer"
                     >
                         Thoát
                     </button>
                     <button
-                        onClick={handleSubmit}
+                        onClick={() => {
+                            onConfirm({
+                                bookingId: booking.bookingId,
+                                cancelReason: refundReason,
+                                refundMethod: selectedMethod
+                            })
+                        }}
                         className="px-5 py-2 rounded bg-black text-white hover:bg-gray-800 hover:cursor-pointer active:bg-gray-900"
                     >
-                        Thanh toán →
+                        Xác nhận →
                     </button>
                 </div>
             </div>
@@ -171,4 +122,4 @@ function BookingConfirmDialog({
     )
 }
 
-export default BookingConfirmDialog
+export default ConfirmDialog

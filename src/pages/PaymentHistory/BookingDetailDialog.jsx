@@ -2,12 +2,33 @@ import React, { useEffect, useState } from 'react'
 import LoadingSpinner from '@/components/states/LoadingSpinner'
 import { Link } from 'react-router-dom'
 
+import { bookingStatus, paymentStatus } from './status'
+
+const getBookingStatusConfig = (value) => {
+    return (
+        bookingStatus.find((s) => s.value === value) || {
+            background: 'bg-gray-100',
+            text: 'text-gray-800',
+            vietnamese: value
+        }
+    )
+}
+
+const getPaymentStatusConfig = (value) => {
+    return (
+        paymentStatus.find((s) => s.value === value) || {
+            background: 'bg-gray-100',
+            text: 'text-gray-800',
+            vietnamese: value
+        }
+    )
+}
+
 function BookingDetailDialog({ isOpen, onClose, payment }) {
     const [isVisible, setIsVisible] = useState(false)
     const [animationClass, setAnimationClass] = useState('fade-in')
     const [loading, setLoading] = useState(false)
 
-    console.log('payment:', payment)
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true)
@@ -24,6 +45,7 @@ function BookingDetailDialog({ isOpen, onClose, payment }) {
         }
         return amount.toLocaleString('vi-VN') + ' đ'
     }
+
     const formatPriceLine = (numPeople, pricePerPerson) => {
         if (numPeople === null || numPeople === undefined) return 'Chưa có'
         if (numPeople === 0) return numPeople
@@ -53,15 +75,13 @@ function BookingDetailDialog({ isOpen, onClose, payment }) {
                 <div
                     className={`${loading ? 'opacity-50 pointer-events-none select-none' : ''}`}
                 >
-                    {/* Wrapper để giữ padding cho nội dung, nhưng vùng cuộn sát viền */}
                     <div className="">
                         <div className="max-h-[90vh] overflow-y-auto p-6">
                             <div className="bg-white p-8 rounded-2xl shadow-xl">
                                 <div className="flex justify-between items-start mb-6 border-b pb-4">
                                     <div>
                                         <h1 className="text-3xl font-bold text-gray-800">
-                                            Booking #
-                                            {payment?.bookingId || 'Chưa có'}
+                                            Booking
                                         </h1>
                                         <p className="text-sm text-gray-500 mt-1">
                                             Mã đơn hàng:{' '}
@@ -72,7 +92,11 @@ function BookingDetailDialog({ isOpen, onClose, payment }) {
                                         </p>
                                     </div>
                                     <span
-                                        className={`px-3 py-1 font-semibold rounded-full text-sm ${payment?.paymentStatus === 'Success' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
+                                        className={`px-3 py-1 font-semibold rounded-full text-sm ${
+                                            payment?.paymentStatus === 'Success'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-yellow-100 text-yellow-800'
+                                        }`}
                                     >
                                         {payment?.paymentStatus === 'Success'
                                             ? 'Đã thanh toán'
@@ -92,13 +116,10 @@ function BookingDetailDialog({ isOpen, onClose, payment }) {
                                                 Tên Tour
                                             </span>
                                             <div className="flex items-center gap-2">
-                                                {' '}
-                                                {/* Thêm div để căn chỉnh tên tour và nút */}
                                                 <span className="text-gray-800 font-medium">
                                                     {payment?.tourName ||
                                                         'Chưa có'}
                                                 </span>
-                                                {/* Nút xem chi tiết tour mới được thêm */}
                                                 {payment?.tourId && (
                                                     <Link
                                                         to={`/tour-detail/${payment?.tourId}`}
@@ -151,10 +172,7 @@ function BookingDetailDialog({ isOpen, onClose, payment }) {
                                             <span className="text-gray-800 font-medium">
                                                 {payment?.firstName ||
                                                 payment?.lastName
-                                                    ? `${payment?.firstName || ''} ${
-                                                          payment?.lastName ||
-                                                          ''
-                                                      }`.trim()
+                                                    ? `${payment?.firstName || ''} ${payment?.lastName || ''}`.trim()
                                                     : 'Chưa có'}
                                             </span>
                                         </div>
@@ -180,7 +198,7 @@ function BookingDetailDialog({ isOpen, onClose, payment }) {
                                 </div>
 
                                 {/* Chi tiết thanh toán */}
-                                <div>
+                                <div className="mb-8">
                                     <h2 className="text-xl font-bold text-gray-700 mb-4">
                                         Chi tiết thanh toán
                                     </h2>
@@ -259,6 +277,78 @@ function BookingDetailDialog({ isOpen, onClose, payment }) {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Thông tin hoàn tiền */}
+                                {payment?.refundStatus && (
+                                    <div className="mb-8">
+                                        <h2 className="text-xl font-bold text-gray-700 mb-4">
+                                            Thông tin hoàn tiền
+                                        </h2>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-gray-500 text-sm">
+                                                    Số tiền hoàn
+                                                </span>
+                                                <span className="text-gray-800 font-medium">
+                                                    {formatCurrency(
+                                                        payment?.refundAmount
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-gray-500 text-sm">
+                                                    Trạng thái hoàn tiền
+                                                </span>
+                                                <span
+                                                    className={`font-medium ${
+                                                        payment?.refundStatus ===
+                                                        'Approved'
+                                                            ? 'text-green-600'
+                                                            : 'text-yellow-600'
+                                                    }`}
+                                                >
+                                                    {payment?.refundStatus ===
+                                                    'Approved'
+                                                        ? 'Đã duyệt'
+                                                        : payment?.refundStatus ||
+                                                          'Chưa có'}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-gray-500 text-sm">
+                                                    Phương thức hoàn tiền
+                                                </span>
+                                                <span className="text-gray-800 font-medium">
+                                                    {payment?.refundMethod ||
+                                                        'Chưa có'}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-gray-500 text-sm">
+                                                    Lý do hủy
+                                                </span>
+                                                <span className="text-gray-800 font-medium">
+                                                    {payment?.cancelReason ||
+                                                        'Chưa có'}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-gray-500 text-sm">
+                                                    Ngày hoàn tiền
+                                                </span>
+                                                <span className="text-gray-800 font-medium">
+                                                    {payment?.refundDate
+                                                        ? new Date(
+                                                              payment?.refundDate
+                                                          ).toLocaleString(
+                                                              'vi-VN'
+                                                          )
+                                                        : 'Chưa có'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

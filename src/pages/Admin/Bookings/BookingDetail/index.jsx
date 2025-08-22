@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { bookingTourAPI } from '@/apis'
+import { status } from '../bookingStatus'
 
 function Index() {
     const location = useLocation()
@@ -10,6 +11,18 @@ function Index() {
     const { tourId } = location.state
     const [booking, setBooking] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
+
+    const getStatusConfig = (value) => {
+        return (
+            status.find((s) => s.value === value) || {
+                background: 'bg-gray-100',
+                text: 'text-gray-800',
+                vietnamese: value
+            }
+        )
+    }
+
+    const stt = getStatusConfig(booking?.paymentStatus)
 
     const fetchBookingDetail = async () => {
         try {
@@ -69,7 +82,7 @@ function Index() {
             <main className="flex-grow py-10 max-w-4xl mx-auto w-full px-4">
                 <div className="flex items-center mb-6">
                     <button
-                        onClick={() => navigate('/partner/bookings')}
+                        onClick={() => navigate('/admin/bookings')}
                         className="flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
                     >
                         <svg
@@ -103,11 +116,9 @@ function Index() {
                             </p>
                         </div>
                         <span
-                            className={`px-3 py-1 font-semibold rounded-full text-sm ${booking.paymentStatus === 'Success' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stt.background} ${stt.text}`}
                         >
-                            {booking.paymentStatus === 'Success'
-                                ? 'Đã thanh toán'
-                                : booking.paymentStatus || 'Chưa có'}
+                            {stt.vietnamese}
                         </span>
                     </div>
 

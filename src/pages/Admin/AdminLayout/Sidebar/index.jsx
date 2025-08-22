@@ -67,6 +67,11 @@ const navItems = [
         icon: <FaStarHalfAlt />,
         name: 'Đánh giá người dùng',
         path: '/admin/reviews'
+    },
+    {
+        icon: <FaChartLine />,
+        name: 'Quản lý Bookings',
+        path: '/admin/bookings'
     }
 ]
 

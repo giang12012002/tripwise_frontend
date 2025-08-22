@@ -6,7 +6,7 @@ import userProfileAPI from '@/apis/userProfileAPI.js'
 import Swal from 'sweetalert2'
 import { useDispatch, useSelector } from 'react-redux'
 import avatarImage from '@/assets/images/maleAvatar.png'
-import logoImage from '@/assets/images/logoHEAER.png'
+import logoImage from '/logo/logo-no-brand.png'
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -63,7 +63,7 @@ function Header() {
                     <img
                         src={logoImage}
                         alt="Tripwise Logo"
-                        className="h-14 mr-2"
+                        className="h-10 w-10 mr-2"
                     />
                     TRIPWISE
                 </Link>
