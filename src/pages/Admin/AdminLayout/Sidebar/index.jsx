@@ -20,7 +20,7 @@ import { useSidebar } from '@/contexts/SidebarContext'
 const navItems = [
     {
         icon: <FaHome />,
-        name: 'Trang chủ',
+        name: 'Tổng Quan',
         path: '/admin'
     },
     {
@@ -28,11 +28,7 @@ const navItems = [
         name: 'Tin tức',
         path: '/admin/hot-news'
     },
-    {
-        icon: <FaRegNewspaper />,
-        name: 'Bài viết',
-        path: '/admin/blogs'
-    },
+
     {
         icon: <FaChartLine />,
         name: 'Báo cáo thống kê',
@@ -62,6 +58,11 @@ const navItems = [
         icon: <FaClipboardCheck />,
         name: 'Bảng logs',
         path: '/admin/logs'
+    },
+    {
+        icon: <FaRegNewspaper />,
+        name: 'Bài viết',
+        path: '/admin/blogs'
     },
     {
         icon: <FaStarHalfAlt />,

@@ -14,6 +14,7 @@ const AllToursPage = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [priceFilter, setPriceFilter] = useState('')
     const [cityFilter, setCityFilter] = useState('')
+    const [dateFilter, setDateFilter] = useState('')
     const toursPerPage = 6
     const navigate = useNavigate()
 
@@ -62,6 +63,20 @@ const AllToursPage = () => {
                         address: tour.location || 'Không xác định',
                         city: tour.location
                             ? extractCity(tour.location)
+                            : 'Không xác định',
+                        createdDate: tour.createdDate
+                            ? new Intl.DateTimeFormat('vi-VN', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit'
+                              }).format(new Date(tour.createdDate))
+                            : 'Không xác định',
+                        startDate: tour.startDate
+                            ? new Intl.DateTimeFormat('vi-VN', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit'
+                              }).format(new Date(tour.startDate))
                             : 'Không xác định'
                     }))
                 setTours(validTours)
@@ -116,7 +131,12 @@ const AllToursPage = () => {
         const matchesCity =
             cityFilter === '' ||
             tour.city.toLowerCase() === cityFilter.toLowerCase()
-        return matchesSearch && matchesPrice && matchesCity
+        const matchesDate =
+            dateFilter === '' ||
+            (tour.startDate &&
+                new Date(tour.startDate).toISOString().slice(0, 10) ===
+                    dateFilter)
+        return matchesSearch && matchesPrice && matchesCity && matchesDate
     })
 
     const totalPages = Math.ceil(filteredTours.length / toursPerPage)
@@ -144,16 +164,16 @@ const AllToursPage = () => {
         <div className="min-h-screen flex flex-col bg-gray-50">
             <Header />
             <div className="flex flex-1 w-full px-4 sm:px-6 lg:px-4 mt-6 mb-8">
-                {/* TourFilter Sidebar */}
                 <div className="hidden lg:block w-80 ml-2 mr-2 bg-white shadow-lg rounded-lg p-4">
                     <TourFilter
                         priceFilter={priceFilter}
                         setPriceFilter={setPriceFilter}
                         cityFilter={cityFilter}
                         setCityFilter={setCityFilter}
+                        dateFilter={dateFilter}
+                        setDateFilter={setDateFilter}
                     />
                 </div>
-                {/* Main Content */}
                 <section className="flex-1 bg-white shadow-lg rounded-lg p-4 ml-2">
                     <div className="text-center mb-6">
                         <h2 className="text-3xl font-bold text-gray-800">
@@ -192,7 +212,10 @@ const AllToursPage = () => {
                         {currentTours.length === 0 ? (
                             <div className="col-span-full text-center bg-gray-50 p-4 rounded-md">
                                 <p className="text-base text-gray-600">
-                                    {searchTerm || priceFilter || cityFilter
+                                    {searchTerm ||
+                                    priceFilter ||
+                                    cityFilter ||
+                                    dateFilter
                                         ? 'Không tìm thấy tour phù hợp với tiêu chí.'
                                         : 'Không có tour nào.'}
                                 </p>
@@ -203,7 +226,9 @@ const AllToursPage = () => {
                                     key={tour.id}
                                     tour={{
                                         ...tour,
-                                        price: tour.formattedPrice
+                                        price: tour.formattedPrice,
+                                        createdDate: tour.createdDate,
+                                        startDate: tour.startDate
                                     }}
                                     onViewDetail={() =>
                                         handleViewDetail(tour.id)

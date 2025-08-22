@@ -12,7 +12,7 @@ function ChatbotUpdate() {
     const { isLoggedIn, isAuthLoading } = useAuth()
     const itineraryData = location.state?.itineraryData || null
 
-    // Hàm chuẩn hóa dữ liệu để xử lý sự không nhất quán trong tên thuộc tính
+    // Hàm chuẩn hóa dữ liệu (giữ nguyên)
     const normalizeItineraryData = (data) => {
         if (!data) return null
         return {
@@ -113,13 +113,14 @@ function ChatbotUpdate() {
         }
     }
 
-    const normalizedItineraryData = normalizeItineraryData(itineraryData)
-
+    const [normalizedItineraryData, setNormalizedItineraryData] = useState(
+        normalizeItineraryData(itineraryData)
+    )
     const [messages, setMessages] = useState([
         {
             text: [
-                'Xin chào! Bạn muốn thay đổi gì trong hành trình? Xem hành trình hiện tại bên trái.',
-                'Để cập nhật một hoạt động cụ thể bạn cần ghi rõ ngày, thời giai của hoạt động, nhập: "ngày 1, 07:00 - 08:00 đi ăn bánh mì".'
+                'Cách 1 (Tối ưu nhất): Tích chọn hoạt động cần chỉnh → nhập yêu cầu.\n     Ví dụ: "Lùi sang 9h".',
+                'Cách 2: Nếu không tích chọn hoạt động, hãy ghi rõ ngày, giờ và nội dung chỉnh sửa.\n   Ví dụ: "Ngày 1, 6h, đổi sang đi chơi".'
             ],
             sender: 'bot',
             timestamp: new Date()
@@ -128,6 +129,10 @@ function ChatbotUpdate() {
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [openDays, setOpenDays] = useState({})
+    const [selectedActivity, setSelectedActivity] = useState(null)
+    const [recentlyUpdatedActivities, setRecentlyUpdatedActivities] = useState(
+        []
+    ) // Mảng lưu các hoạt động đã thay đổi
     const messagesEndRef = useRef(null)
 
     const scrollToBottom = () => {
@@ -151,7 +156,7 @@ function ChatbotUpdate() {
     }, [messages])
 
     const formatCurrency = (value) => {
-        if (!value || isNaN(value)) return 'Không xác định'
+        if (!value || isNaN(value)) return '0 ₫'
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
@@ -160,6 +165,21 @@ function ChatbotUpdate() {
 
     const toggleDay = (dayNumber) => {
         setOpenDays((prev) => ({ ...prev, [dayNumber]: !prev[dayNumber] }))
+    }
+
+    const handleActivitySelection = (dayNumber, activityIndex, description) => {
+        if (
+            selectedActivity?.dayNumber === dayNumber &&
+            selectedActivity?.activityIndex === activityIndex
+        ) {
+            setSelectedActivity(null)
+        } else {
+            setSelectedActivity({
+                dayNumber,
+                activityIndex,
+                selectedActivityDescription: description
+            })
+        }
     }
 
     const parseDayRange = (message) => {
@@ -221,31 +241,164 @@ function ChatbotUpdate() {
                 userMessage: parsedMessage
             } = parseDayRange(input)
             let response
+            let botMessage = ''
+            let hasChanges = false
+            let updateSummary = ''
+            let changeDetails = ''
+            let updatedActivities = []
+
+            const isDeleteRequest = /xóa|delete|remove/i.test(input)
+            const isAddRequest = /thêm|add|new|thêm hoạt động/i.test(input)
 
             if (isChunkUpdate) {
-                console.log('Gửi yêu cầu cập nhật chunk:', {
-                    generatePlanId: normalizedItineraryData.generatePlanId,
-                    userMessage: parsedMessage,
-                    startDay,
-                    chunkSize
-                })
                 response = await travelFormAPI.updateItineraryChunk(
                     normalizedItineraryData.generatePlanId,
                     parsedMessage,
                     startDay,
                     chunkSize
                 )
+                hasChanges = response.data.hasChanges || false
+                updateSummary =
+                    response.data.updateSummary ||
+                    `Hành trình từ ngày ${startDay} đến ngày ${startDay + chunkSize - 1} đã được cập nhật!`
+                changeDetails = response.data.changeDetails || ''
+                botMessage = hasChanges
+                    ? updateSummary
+                    : `Hành trình từ ngày ${startDay} đến ngày ${startDay + chunkSize - 1} không có thay đổi. Bạn có thể thử yêu cầu cụ thể hơn.`
+
+                // Xác định các hoạt động đã thay đổi hoặc mới trong khoảng ngày
+                if (hasChanges) {
+                    const historyResponse =
+                        await travelFormAPI.getHistoryDetail(
+                            normalizedItineraryData.generatePlanId
+                        )
+                    const newItinerary = historyResponse.data.itinerary || []
+                    newItinerary.forEach((day) => {
+                        if (
+                            day.dayNumber >= startDay &&
+                            day.dayNumber < startDay + chunkSize
+                        ) {
+                            day.activities.forEach((_, index) => {
+                                updatedActivities.push({
+                                    dayNumber: day.dayNumber,
+                                    activityIndex: index
+                                })
+                            })
+                        }
+                    })
+                }
             } else {
                 response = await travelFormAPI.updateItinerary(
                     normalizedItineraryData.generatePlanId,
-                    input
+                    input,
+                    selectedActivity?.dayNumber,
+                    selectedActivity?.activityIndex,
+                    selectedActivity?.selectedActivityDescription
                 )
+                hasChanges = response.data.hasChanges || false
+                updateSummary = response.data.updateSummary || ''
+                changeDetails = response.data.changeDetails || ''
+
+                if (selectedActivity) {
+                    if (hasChanges) {
+                        updatedActivities.push({
+                            dayNumber: selectedActivity.dayNumber,
+                            activityIndex: selectedActivity.activityIndex
+                        })
+                        if (isAddRequest) {
+                            const historyResponse =
+                                await travelFormAPI.getHistoryDetail(
+                                    normalizedItineraryData.generatePlanId
+                                )
+                            const newDay = historyResponse.data.itinerary.find(
+                                (day) =>
+                                    day.dayNumber === selectedActivity.dayNumber
+                            )
+                            if (
+                                newDay &&
+                                newDay.activities.length >
+                                    normalizedItineraryData.itinerary.find(
+                                        (day) =>
+                                            day.dayNumber ===
+                                            selectedActivity.dayNumber
+                                    )?.activities.length
+                            ) {
+                                const newActivityIndex =
+                                    newDay.activities.length - 1
+                                updatedActivities.push({
+                                    dayNumber: selectedActivity.dayNumber,
+                                    activityIndex: newActivityIndex
+                                })
+                            }
+                        }
+                    }
+                    botMessage = hasChanges
+                        ? isDeleteRequest
+                            ? `Hoạt động "${selectedActivity.selectedActivityDescription}" ngày ${selectedActivity.dayNumber} đã được xóa!`
+                            : isAddRequest
+                              ? `Hoạt động mới đã được thêm vào ngày ${selectedActivity.dayNumber}!`
+                              : `Hoạt động đã được cập nhật!`
+                        : isDeleteRequest
+                          ? `Hoạt động "${selectedActivity.selectedActivityDescription}" ngày ${selectedActivity.dayNumber} không thể xóa. Vui lòng thử yêu cầu cụ thể hơn.`
+                          : isAddRequest
+                            ? `Không thể thêm hoạt động mới vào ngày ${selectedActivity.dayNumber}. Vui lòng thử yêu cầu cụ thể hơn.`
+                            : `Hoạt động "${selectedActivity.selectedActivityDescription}" ngày ${selectedActivity.dayNumber} không có thay đổi. Vui lòng thử yêu cầu cụ thể hơn.`
+                } else {
+                    botMessage = hasChanges
+                        ? updateSummary || 'Hành trình đã được cập nhật!'
+                        : response.data.userGuidance
+                    // || 'Lịch trình hiện tại đã bao gồm những gì bạn muốn rồi, không cần điều chỉnh thêm! 😊'
+
+                    // Nếu không chọn hoạt động cụ thể, kiểm tra toàn bộ lịch trình
+                    if (hasChanges) {
+                        const historyResponse =
+                            await travelFormAPI.getHistoryDetail(
+                                normalizedItineraryData.generatePlanId
+                            )
+                        const newItinerary =
+                            historyResponse.data.itinerary || []
+                        newItinerary.forEach((newDay) => {
+                            const oldDay =
+                                normalizedItineraryData.itinerary.find(
+                                    (d) => d.dayNumber === newDay.dayNumber
+                                )
+                            newDay.activities.forEach((activity, index) => {
+                                const oldActivity = oldDay?.activities[index]
+                                if (
+                                    !oldActivity ||
+                                    JSON.stringify(oldActivity) !==
+                                        JSON.stringify(activity)
+                                ) {
+                                    updatedActivities.push({
+                                        dayNumber: newDay.dayNumber,
+                                        activityIndex: index
+                                    })
+                                }
+                            })
+                            // Kiểm tra các hoạt động mới
+                            if (
+                                newDay.activities.length >
+                                (oldDay?.activities.length || 0)
+                            ) {
+                                for (
+                                    let i = oldDay?.activities.length || 0;
+                                    i < newDay.activities.length;
+                                    i++
+                                ) {
+                                    updatedActivities.push({
+                                        dayNumber: newDay.dayNumber,
+                                        activityIndex: i
+                                    })
+                                }
+                            }
+                        })
+                    }
+                }
             }
 
             const historyResponse = await travelFormAPI.getHistoryDetail(
                 normalizedItineraryData.generatePlanId
             )
-
             const updatedItinerary = {
                 generatePlanId: normalizedItineraryData.generatePlanId,
                 destination:
@@ -317,17 +470,47 @@ function ChatbotUpdate() {
                     historyResponse.data.relatedTourMessage || null
             }
 
+            setNormalizedItineraryData(updatedItinerary)
+            if (hasChanges) {
+                setRecentlyUpdatedActivities((prev) => [
+                    ...prev,
+                    ...updatedActivities
+                ])
+            }
+
             setMessages((prev) => [
                 ...prev,
                 {
-                    text: isChunkUpdate
-                        ? `Hành trình từ ngày ${startDay} đến ngày ${startDay + chunkSize - 1} đã được cập nhật! Bạn có muốn xem  trình mới hoặc tiếp tục chỉnh sửa?`
-                        : 'Hành trình đã được cập nhật! Bạn có muốn xem  trình mới hoặc tiếp tục chỉnh sửa?',
+                    text: botMessage,
                     sender: 'bot',
                     timestamp: new Date(),
-                    updatedItinerary
+                    updatedItinerary: hasChanges ? updatedItinerary : null,
+                    hasChanges,
+                    updateSummary,
+                    changeDetails
                 }
             ])
+            setSelectedActivity(null)
+
+            if (!hasChanges) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Không có thay đổi',
+                    text:
+                        response.data.userGuidance ||
+                        'Lịch trình hiện tại đã bao gồm những gì bạn muốn rồi, không cần điều chỉnh thêm! 😊',
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK'
+                })
+                // } else if (changeDetails) {
+                //     Swal.fire({
+                //         icon: 'success',
+                //         title: 'Cập nhật thành công',
+                //         html: `Hành trình đã được cập nhật!<br><strong>Chi tiết thay đổi:</strong><br>${changeDetails.replace(/\n/g, '<br>')}`,
+                //         showConfirmButton: true,
+                //         confirmButtonText: 'OK'
+                //     })
+            }
         } catch (err) {
             setMessages((prev) => [
                 ...prev,
@@ -344,7 +527,7 @@ function ChatbotUpdate() {
                     err.response?.data?.error ||
                     err.response?.data?.errors?.Message?.[0] ||
                     err.message ||
-                    'Lỗi khi cập nhật lịch trình.',
+                    'Lỗi khi cập nhật hành trình.',
                 showConfirmButton: false,
                 timer: 1500
             })
@@ -360,26 +543,21 @@ function ChatbotUpdate() {
     }
 
     const handleViewUpdatedItinerary = (updatedItinerary) => {
-        console.log(
-            'Dữ liệu truyền sang ItineraryDisplay:',
-            JSON.stringify(updatedItinerary, null, 2)
-        )
         navigate('/user/itinerary', {
             state: { itineraryData: updatedItinerary }
         })
     }
 
     if (!normalizedItineraryData) {
-        console.log('No itineraryData provided, rendering error message')
         return (
-            <div className="min-h-screen flex flex-col">
+            <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-blue-50">
                 <Header />
-                <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
-                    <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">
+                <div className="flex-grow max-w-4xl w-full mx-auto p-8 bg-white rounded-3xl shadow-2xl mt-8 animate-fade-in">
+                    <h2 className="text-4xl font-bold text-blue-900 tracking-tight text-center">
                         Không tìm thấy hành trình
                     </h2>
-                    <p className="text-gray-600 mt-4">
-                        Vui lòng quay lại trang ành trình để tiếp tục.
+                    <p className="text-gray-600 mt-4 text-lg text-center">
+                        Vui lòng quay lại trang hành trình để tiếp tục.
                     </p>
                 </div>
                 <Footer />
@@ -388,46 +566,57 @@ function ChatbotUpdate() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-blue-50">
             <Header />
-            <div className="flex-grow max-w-7xl w-full mx-auto p-10 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-10">
-                <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight mb-8 text-center">
+            <div className="flex-grow max-w-7xl w-full mx-auto p-6 md:p-10 mt-10">
+                <h2 className="text-4xl font-extrabold text-blue-900 tracking-tight mb-8 text-center animate-slide-in">
                     Cập nhật hành trình du lịch tại{' '}
-                    {normalizedItineraryData.destination || 'Không xác định'}
+                    <span className="text-blue-900">
+                        {normalizedItineraryData.destination ||
+                            'Không xác định'}
+                    </span>
                 </h2>
-                <div className="flex flex-col md:flex-row gap-8">
-                    <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-8 h-[80vh] overflow-y-auto">
-                        <h3 className="text-xl font-semibold text-blue-800 mb-4">
+                <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="w-full lg:w-1/2 bg-white rounded-3xl shadow-xl p-8 h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-gray-100">
+                        <h3 className="text-2xl font-bold text-blue-800 mb-6 animate-fade-in">
                             Hành trình hiện tại
                         </h3>
-                        <hr className="border-t border-gray-300 mb-4" />
-                        <div className="grid grid-cols-1 gap-8 mb-8">
+                        <hr className="border-t border-gray-200 mb-6" />
+                        <div className="space-y-8">
                             <div>
-                                <h4 className="text-lg font-semibold text-blue-800 mb-4">
+                                <h4 className="text-xl font-semibold text-blue-800 mb-4">
                                     Thông tin chuyến đi
                                 </h4>
-                                <div className="space-y-4">
-                                    <p className="flex items-center text-gray-700 text-sm leading-6">
-                                        <span className="mr-2">📅</span>
-                                        <strong>Ngày đi:&nbsp; </strong>
-                                        {normalizedItineraryData.travelDate
-                                            ? new Date(
-                                                  normalizedItineraryData.travelDate
-                                              ).toLocaleDateString('vi-VN')
-                                            : 'Không xác định'}
+                                <div className="space-y-3">
+                                    <p className="flex items-center text-gray-700 text-base">
+                                        <span className="mr-3 text-blue-500">
+                                            📅
+                                        </span>
+                                        <strong>Ngày đi: </strong>
+                                        <span className="ml-2">
+                                            {normalizedItineraryData.travelDate
+                                                ? new Date(
+                                                      normalizedItineraryData.travelDate
+                                                  ).toLocaleDateString('vi-VN')
+                                                : 'Không xác định'}
+                                        </span>
                                     </p>
-                                    <p className="flex items-center text-gray-700 text-sm leading-6">
-                                        <span className="mr-2">⏳</span>
-                                        <strong>Số ngày:&nbsp; </strong>
-                                        {normalizedItineraryData.days ||
-                                            'Không xác định'}
+                                    <p className="flex items-center text-gray-700 text-base">
+                                        <span className="mr-3 text-blue-500">
+                                            ⏳
+                                        </span>
+                                        <strong>Số ngày: </strong>
+                                        <span className="ml-2">
+                                            {normalizedItineraryData.days ||
+                                                'Không xác định'}
+                                        </span>
                                     </p>
-                                    <p className="flex items-center text-gray-700 text-sm leading-6">
-                                        <span className="mr-2">💸</span>
-                                        <strong>
-                                            Tổng chi phí ước tính:&nbsp;{' '}
-                                        </strong>
-                                        <span className="text-blue-600">
+                                    <p className="flex items-center text-gray-700 text-base">
+                                        <span className="mr-3 text-blue-500">
+                                            💸
+                                        </span>
+                                        <strong>Tổng chi phí ước tính: </strong>
+                                        <span className="ml-2 text-blue-600 font-medium">
                                             {formatCurrency(
                                                 normalizedItineraryData.totalEstimatedCost
                                             )}
@@ -436,11 +625,11 @@ function ChatbotUpdate() {
                                 </div>
                             </div>
                             <div>
-                                <hr className="border-t border-gray-300 mb-4" />
-                                <h4 className="text-lg font-semibold text-blue-800 mb-4">
+                                <hr className="border-t border-gray-200 mb-6" />
+                                <h4 className="text-xl font-semibold text-blue-800 mb-4">
                                     Sở thích & Chi tiết
                                 </h4>
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     {normalizedItineraryData.preferences &&
                                         normalizedItineraryData.preferences !==
                                             'Không xác định' &&
@@ -448,21 +637,23 @@ function ChatbotUpdate() {
                                             'Chưa xác định' &&
                                         normalizedItineraryData.preferences !==
                                             null && (
-                                            <p className="flex items-center text-gray-700 text-sm leading-6">
-                                                <span className="mr-2">🌟</span>
-                                                <strong>
-                                                    Sở thích:&nbsp;{' '}
-                                                </strong>
-                                                {normalizedItineraryData.preferences
-                                                    .split(', ')
-                                                    .map((pref, index) => (
-                                                        <span
-                                                            key={index}
-                                                            className="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full mr-2"
-                                                        >
-                                                            {pref}
-                                                        </span>
-                                                    ))}
+                                            <p className="flex items-center text-gray-700 text-base">
+                                                <span className="mr-3 text-blue-500">
+                                                    🌟
+                                                </span>
+                                                <strong>Sở thích: </strong>
+                                                <span className="ml-2 flex flex-wrap gap-2">
+                                                    {normalizedItineraryData.preferences
+                                                        .split(', ')
+                                                        .map((pref, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full transition-all hover:bg-blue-200"
+                                                            >
+                                                                {pref}
+                                                            </span>
+                                                        ))}
+                                                </span>
                                             </p>
                                         )}
                                     {normalizedItineraryData.diningStyle &&
@@ -472,21 +663,25 @@ function ChatbotUpdate() {
                                             'Chưa xác định' &&
                                         normalizedItineraryData.diningStyle !==
                                             null && (
-                                            <p className="flex items-center text-gray-700 text-sm leading-6">
-                                                <span className="mr-2">🍽️</span>
+                                            <p className="flex items-center text-gray-700 text-base">
+                                                <span className="mr-3 text-blue-500">
+                                                    🍽️
+                                                </span>
                                                 <strong>
                                                     Phong cách ăn uống:{' '}
                                                 </strong>
-                                                {normalizedItineraryData.diningStyle
-                                                    .split(', ')
-                                                    .map((style, index) => (
-                                                        <span
-                                                            key={index}
-                                                            className="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full mr-2"
-                                                        >
-                                                            {style}
-                                                        </span>
-                                                    ))}
+                                                <span className="ml-2 flex flex-wrap gap-2">
+                                                    {normalizedItineraryData.diningStyle
+                                                        .split(', ')
+                                                        .map((style, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full transition-all hover:bg-blue-200"
+                                                            >
+                                                                {style}
+                                                            </span>
+                                                        ))}
+                                                </span>
                                             </p>
                                         )}
                                     {normalizedItineraryData.transportation &&
@@ -496,317 +691,345 @@ function ChatbotUpdate() {
                                             'Chưa xác định' &&
                                         normalizedItineraryData.transportation !==
                                             null && (
-                                            <p className="flex items-center text-gray-700 text-sm leading-6">
-                                                <span className="mr-2">🚗</span>
-                                                <strong>
-                                                    Phương tiện:&nbsp;{' '}
-                                                </strong>
-                                                {
-                                                    normalizedItineraryData.transportation
-                                                }
-                                            </p>
-                                        )}
-                                    {normalizedItineraryData.groupType &&
-                                        normalizedItineraryData.groupType !==
-                                            'Không xác định' &&
-                                        normalizedItineraryData.groupType !==
-                                            'Chưa xác định' &&
-                                        normalizedItineraryData.groupType !==
-                                            null && (
-                                            <p className="flex items-center text-gray-700 text-sm leading-6">
-                                                <span className="mr-2">👥</span>
-                                                <strong>Nhóm:&nbsp; </strong>
-                                                {
-                                                    normalizedItineraryData.groupType
-                                                }
-                                            </p>
-                                        )}
-                                    {normalizedItineraryData.accommodation &&
-                                        normalizedItineraryData.accommodation !==
-                                            'Không xác định' &&
-                                        normalizedItineraryData.accommodation !==
-                                            'Chưa xác định' &&
-                                        normalizedItineraryData.accommodation !==
-                                            null && (
-                                            <p className="flex items-center text-gray-700 text-sm leading-6">
-                                                <span className="mr-2">🏨</span>
-                                                <strong>Chỗ ở:&nbsp; </strong>
-                                                {
-                                                    normalizedItineraryData.accommodation
-                                                }
-                                            </p>
-                                        )}
-                                    {normalizedItineraryData.suggestedAccommodation &&
-                                        normalizedItineraryData.suggestedAccommodation !==
-                                            'Không xác định' &&
-                                        normalizedItineraryData.suggestedAccommodation !==
-                                            'Chưa xác định' &&
-                                        normalizedItineraryData.suggestedAccommodation !==
-                                            null && (
-                                            <p className="flex items-center text-gray-700 text-sm leading-6">
-                                                <span className="mr-2">🗺️</span>
-                                                <strong>
-                                                    Đề xuất chỗ ở:&nbsp;{' '}
-                                                </strong>
-                                                <a
-                                                    href={
-                                                        normalizedItineraryData.suggestedAccommodation
+                                            <p className="flex items-center text-gray-700 text-base">
+                                                <span className="mr-3 text-blue-500">
+                                                    🚗
+                                                </span>
+                                                <strong>Phương tiện: </strong>
+                                                <span className="ml-2">
+                                                    {
+                                                        normalizedItineraryData.transportation
                                                     }
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:underline hover:text-blue-800 transition-colors"
-                                                >
-                                                    Tìm trên Google Maps
-                                                </a>
+                                                </span>
                                             </p>
                                         )}
                                 </div>
                             </div>
                         </div>
-                        <hr className="border-t border-gray-300 mb-4" />
-                        <h4 className="text-lg font-semibold text-blue-800 mb-6">
+                        <hr className="border-t border-gray-200 my-6" />
+                        <h4 className="text-xl font-semibold text-blue-800 mb-6">
                             Chi tiết hành trình
                         </h4>
                         <div className="space-y-6">
                             {normalizedItineraryData.itinerary &&
                             normalizedItineraryData.itinerary.length > 0 ? (
-                                normalizedItineraryData.itinerary.map((day) => {
-                                    return (
-                                        <div
-                                            key={day.dayNumber}
-                                            className="bg-white rounded-xl shadow-md overflow-hidden"
+                                normalizedItineraryData.itinerary.map((day) => (
+                                    <div
+                                        key={day.dayNumber}
+                                        className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl"
+                                    >
+                                        <button
+                                            onClick={() =>
+                                                toggleDay(day.dayNumber)
+                                            }
+                                            className="w-full p-5 text-left bg-blue-100 hover:bg-blue-200 transition-colors duration-300 flex justify-between items-center"
                                         >
-                                            <button
-                                                onClick={() =>
-                                                    toggleDay(day.dayNumber)
-                                                }
-                                                className="w-full p-6 text-left bg-blue-100 hover:bg-blue-200 transition-colors duration-300 flex justify-between items-center"
+                                            <span className="font-semibold text-lg text-blue-900">
+                                                {day.title ||
+                                                    `Ngày ${day.dayNumber}`}{' '}
+                                                (Ngày {day.dayNumber})
+                                            </span>
+                                            <span
+                                                className={`transition-transform duration-300 ${openDays[day.dayNumber] ? 'rotate-180' : ''}`}
                                             >
-                                                <span className="font-semibold text-base text-blue-900">
-                                                    {day.title ||
-                                                        `Ngày ${day.dayNumber}`}{' '}
-                                                    (Ngày {day.dayNumber})
-                                                </span>
-                                                <span
-                                                    className={`transition-transform duration-300 ${
-                                                        openDays[day.dayNumber]
-                                                            ? 'rotate-180'
-                                                            : ''
-                                                    }`}
+                                                <svg
+                                                    className="w-6 h-6 text-blue-600"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
                                                 >
-                                                    <svg
-                                                        className="w-6 h-6 text-blue-600"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M19 9l-7 7-7-7"
-                                                        />
-                                                    </svg>
-                                                </span>
-                                            </button>
-                                            {openDays[day.dayNumber] && (
-                                                <div className="p-6 animate-fade-in">
-                                                    <div className="mb-4 space-y-2">
-                                                        <p className="text-gray-700 text-sm leading-6">
-                                                            <strong>
-                                                                Chi phí
-                                                                ngày:{' '}
-                                                            </strong>
-                                                            <span className="text-blue-600 font-semibold">
-                                                                {formatCurrency(
-                                                                    day.dailyCost
-                                                                )}
-                                                            </span>
-                                                        </p>
-                                                        <p className="text-gray-700 text-sm leading-6">
-                                                            <strong>
-                                                                Thời tiết:{' '}
-                                                            </strong>
-                                                            {day.weatherDescription ||
-                                                                'Không xác định'}
-                                                        </p>
-                                                        <p className="text-gray-700 text-sm leading-6">
-                                                            <strong>
-                                                                Nhiệt độ:{' '}
-                                                            </strong>
-                                                            {day.temperatureCelsius
-                                                                ? `${day.temperatureCelsius}°C`
-                                                                : 'Không xác định'}
-                                                        </p>
-                                                        <p className="text-gray-700 text-sm leading-6">
-                                                            <strong>
-                                                                Ghi chú thời
-                                                                tiết:{' '}
-                                                            </strong>
-                                                            {day.weatherNote ||
-                                                                'Không có ghi chú'}
-                                                        </p>
-                                                    </div>
-                                                    <ul className="relative space-y-6">
-                                                        {day.activities &&
-                                                        day.activities.length >
-                                                            0 ? (
-                                                            day.activities.map(
-                                                                (
-                                                                    activity,
-                                                                    index
-                                                                ) => {
-                                                                    return (
-                                                                        <li
-                                                                            key={
-                                                                                index
-                                                                            }
-                                                                            className="pl-8 relative"
-                                                                        >
-                                                                            <span className="absolute left-2 top-2 w-4 h-4 bg-blue-600 rounded-full"></span>
-                                                                            {index <
-                                                                                day
-                                                                                    .activities
-                                                                                    .length -
-                                                                                    1 && (
-                                                                                <span className="absolute left-3 top-6 w-0.5 h-[calc(100%-1.5rem)] bg-blue-200"></span>
-                                                                            )}
-                                                                            <div className="bg-blue-50 p-6 rounded-lg shadow-sm">
-                                                                                {activity.image && (
-                                                                                    <img
-                                                                                        src={
-                                                                                            activity.image
-                                                                                        }
-                                                                                        alt={
-                                                                                            activity.description ||
-                                                                                            'Activity'
-                                                                                        }
-                                                                                        className="w-full h-40 object-cover rounded-lg mb-6"
-                                                                                    />
-                                                                                )}
-                                                                                <p className="text-gray-700 text-sm leading-6">
-                                                                                    <strong>
-                                                                                        Thời
-                                                                                        gian:{' '}
-                                                                                    </strong>
-                                                                                    {activity.starttime &&
-                                                                                    activity.endtime
-                                                                                        ? `${activity.starttime} - ${activity.endtime}`
-                                                                                        : 'Không xác định'}
-                                                                                </p>
-                                                                                <p className="text-gray-700 text-sm leading-6">
-                                                                                    <strong>
-                                                                                        Hoạt
-                                                                                        động:{' '}
-                                                                                    </strong>
-                                                                                    {activity.description ||
-                                                                                        'Không xác định'}
-                                                                                </p>
-                                                                                <p className="text-gray-700 text-sm leading-6">
-                                                                                    <strong>
-                                                                                        Chi
-                                                                                        phí
-                                                                                        ước
-                                                                                        tính:{' '}
-                                                                                    </strong>
-                                                                                    <span className="text-blue-600">
-                                                                                        {formatCurrency(
-                                                                                            activity.estimatedCost
-                                                                                        )}
-                                                                                    </span>
-                                                                                </p>
-                                                                                <p className="text-gray-700 text-sm leading-6">
-                                                                                    <strong>
-                                                                                        Phương
-                                                                                        tiện:{' '}
-                                                                                    </strong>
-                                                                                    {activity.transportation ||
-                                                                                        'Không xác định'}
-                                                                                </p>
-                                                                                {activity.address && (
-                                                                                    <p className="text-gray-700 text-sm leading-6">
-                                                                                        <strong>
-                                                                                            Địa
-                                                                                            chỉ:{' '}
-                                                                                        </strong>
-                                                                                        <a
-                                                                                            href={
-                                                                                                activity.mapUrl ||
-                                                                                                '#'
-                                                                                            }
-                                                                                            target="_blank"
-                                                                                            rel="noopener noreferrer"
-                                                                                            className="text-blue-600 hover:underline hover:text-blue-800 transition-colors"
-                                                                                        >
-                                                                                            {
-                                                                                                activity.address
-                                                                                            }
-                                                                                        </a>
-                                                                                    </p>
-                                                                                )}
-                                                                                <p className="text-gray-700 text-sm leading-6">
-                                                                                    <strong>
-                                                                                        Chi
-                                                                                        tiết:{' '}
-                                                                                    </strong>
-                                                                                    {activity.placeDetail ||
-                                                                                        'Không xác định'}
-                                                                                </p>
-                                                                            </div>
-                                                                        </li>
-                                                                    )
-                                                                }
-                                                            )
-                                                        ) : (
-                                                            <p className="text-gray-600 text-sm leading-6">
-                                                                Không có hoạt
-                                                                động nào cho
-                                                                ngày này.
-                                                            </p>
-                                                        )}
-                                                    </ul>
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M19 9l-7 7-7-7"
+                                                    />
+                                                </svg>
+                                            </span>
+                                        </button>
+                                        {openDays[day.dayNumber] && (
+                                            <div className="p-6 animate-fade-in">
+                                                <div className="mb-4 space-y-2">
+                                                    <p className="text-gray-700 text-base">
+                                                        <strong>
+                                                            Chi phí ngày:{' '}
+                                                        </strong>
+                                                        <span className="text-blue-600 font-semibold">
+                                                            {formatCurrency(
+                                                                day.dailyCost
+                                                            )}
+                                                        </span>
+                                                    </p>
+                                                    <p className="text-gray-700 text-base">
+                                                        <strong>
+                                                            Thời tiết:{' '}
+                                                        </strong>
+                                                        {day.weatherDescription ||
+                                                            'Không xác định'}
+                                                    </p>
+                                                    <p className="text-gray-700 text-base">
+                                                        <strong>
+                                                            Nhiệt độ:{' '}
+                                                        </strong>
+                                                        {day.temperatureCelsius
+                                                            ? `${day.temperatureCelsius}°C`
+                                                            : 'Không xác định'}
+                                                    </p>
+                                                    <p className="text-gray-700 text-base">
+                                                        <strong>
+                                                            Ghi chú thời
+                                                            tiết:{' '}
+                                                        </strong>
+                                                        {day.weatherNote ||
+                                                            'Không có ghi chú'}
+                                                    </p>
                                                 </div>
-                                            )}
-                                        </div>
-                                    )
-                                })
+                                                <ul className="relative space-y-6">
+                                                    {day.activities &&
+                                                    day.activities.length >
+                                                        0 ? (
+                                                        day.activities.map(
+                                                            (
+                                                                activity,
+                                                                index
+                                                            ) => (
+                                                                <li
+                                                                    key={index}
+                                                                    className="pl-8 relative"
+                                                                >
+                                                                    <div className="flex items-center mb-2">
+                                                                        <span className="absolute left-2 top-2 w-3 h-3 bg-blue-600 rounded-full"></span>
+                                                                        {index <
+                                                                            day
+                                                                                .activities
+                                                                                .length -
+                                                                                1 && (
+                                                                            <span className="absolute left-2.5 top-6 w-0.5 h-[calc(100%-1.5rem)] bg-blue-200"></span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="bg-blue-50 p-5 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={
+                                                                                selectedActivity?.dayNumber ===
+                                                                                    day.dayNumber &&
+                                                                                selectedActivity?.activityIndex ===
+                                                                                    index
+                                                                            }
+                                                                            onChange={() =>
+                                                                                handleActivitySelection(
+                                                                                    day.dayNumber,
+                                                                                    index,
+                                                                                    activity.description
+                                                                                )
+                                                                            }
+                                                                            className="mr-0 h-9 w-8 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                                                                            disabled={
+                                                                                isLoading
+                                                                            }
+                                                                        />
+                                                                        {activity.image && (
+                                                                            <img
+                                                                                src={
+                                                                                    activity.image
+                                                                                }
+                                                                                alt={
+                                                                                    activity.description ||
+                                                                                    'Activity'
+                                                                                }
+                                                                                className="w-full h-48 object-cover rounded-lg mb-5 transition-transform duration-300 hover:scale-105"
+                                                                                loading="lazy"
+                                                                            />
+                                                                        )}
+                                                                        <p className="text-gray-700 text-base">
+                                                                            <strong>
+                                                                                Thời
+                                                                                gian:{' '}
+                                                                            </strong>
+                                                                            {activity.starttime &&
+                                                                            activity.endtime
+                                                                                ? `${activity.starttime} - ${activity.endtime}`
+                                                                                : 'Không xác định'}
+                                                                        </p>
+                                                                        <p className="text-gray-700 text-base">
+                                                                            <strong>
+                                                                                Hoạt
+                                                                                động:{' '}
+                                                                            </strong>
+                                                                            {activity.description ||
+                                                                                'Không xác định'}
+                                                                            {recentlyUpdatedActivities.some(
+                                                                                (
+                                                                                    act
+                                                                                ) =>
+                                                                                    act.dayNumber ===
+                                                                                        day.dayNumber &&
+                                                                                    act.activityIndex ===
+                                                                                        index
+                                                                            ) && (
+                                                                                <span className="ml-2 text-xs text-green-500 font-medium">
+                                                                                    (Đã
+                                                                                    cập
+                                                                                    nhật)
+                                                                                </span>
+                                                                            )}
+                                                                        </p>
+                                                                        <p className="text-gray-700 text-base">
+                                                                            <strong>
+                                                                                Chi
+                                                                                phí
+                                                                                ước
+                                                                                tính:{' '}
+                                                                            </strong>
+                                                                            <span className="text-blue-600 font-medium">
+                                                                                {formatCurrency(
+                                                                                    activity.estimatedCost
+                                                                                )}
+                                                                            </span>
+                                                                        </p>
+                                                                        <p className="text-gray-700 text-base">
+                                                                            <strong>
+                                                                                Phương
+                                                                                tiện:{' '}
+                                                                            </strong>
+                                                                            {activity.transportation ||
+                                                                                'Không xác định'}
+                                                                        </p>
+                                                                        {activity.address && (
+                                                                            <p className="text-gray-700 text-base">
+                                                                                <strong>
+                                                                                    Địa
+                                                                                    chỉ:{' '}
+                                                                                </strong>
+                                                                                <a
+                                                                                    href={
+                                                                                        activity.mapUrl ||
+                                                                                        '#'
+                                                                                    }
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    className="text-blue-600 hover:underline hover:text-blue-800 transition-colors duration-200"
+                                                                                >
+                                                                                    {
+                                                                                        activity.address
+                                                                                    }
+                                                                                </a>
+                                                                            </p>
+                                                                        )}
+                                                                        <p className="text-gray-700 text-base">
+                                                                            <strong>
+                                                                                Chi
+                                                                                tiết:{' '}
+                                                                            </strong>
+                                                                            {activity.placeDetail ||
+                                                                                'Không xác định'}
+                                                                        </p>
+                                                                    </div>
+                                                                </li>
+                                                            )
+                                                        )
+                                                    ) : (
+                                                        <p className="text-gray-600 text-base">
+                                                            Không có hoạt động
+                                                            nào cho ngày này.
+                                                        </p>
+                                                    )}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
                             ) : (
-                                <p className="text-gray-600 text-sm leading-6">
-                                    Không có chi tiết h trình nào để hiển thị.
+                                <p className="text-gray-600 text-base">
+                                    Không có chi tiết hành trình nào để hiển
+                                    thị.
                                 </p>
                             )}
                         </div>
                     </div>
-                    <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-8 h-[80vh] flex flex-col">
-                        <h3 className="text-xl font-semibold text-blue-800 mb-4 text-center">
-                            Cập nhật hành trình cùng TripWiseAl
+                    <div className="w-full lg:w-1/2 bg-white rounded-3xl shadow-xl p-8 h-[80vh] flex flex-col">
+                        <h3 className="text-2xl font-bold text-blue-800 mb-6 text-center animate-fade-in">
+                            Cập nhật hành trình cùng TripWiseAI
                         </h3>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        {selectedActivity && (
+                            <div className="mb-4 p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 animate-slide-in">
+                                <p className="text-lg font-semibold text-gray-800">
+                                    <span className="text-gray-900">
+                                        Đã chọn:{' '}
+                                    </span>
+                                    Ngày {selectedActivity.dayNumber}, Hoạt động{' '}
+                                    {selectedActivity.activityIndex + 1} (
+                                    <span className="text-gray-600">
+                                        {
+                                            selectedActivity.selectedActivityDescription
+                                        }
+                                    </span>
+                                    )
+                                </p>
+                            </div>
+                        )}
+                        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-gray-200 p-6 space-y-6 bg-gradient-to-b from-gray-50 to-gray-100">
                             {messages.map((msg, index) => (
                                 <div
                                     key={index}
-                                    className={`flex ${
-                                        msg.sender === 'user'
-                                            ? 'justify-end'
-                                            : 'justify-start'
-                                    }`}
+                                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-slide-in-from-${msg.sender === 'user' ? 'right' : 'left'}`}
                                 >
                                     <div
-                                        className={`max-w-xs lg:max-w-md p-4 rounded-lg shadow-sm ${
+                                        className={`max-w-xs sm:max-w-sm lg:max-w-md p-5 rounded-2xl shadow-lg transition-all duration-500 ${
                                             msg.sender === 'user'
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-gray-100 text-gray-800'
-                                        }`}
+                                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
+                                                : 'bg-white text-gray-800 border border-gray-200'
+                                        } hover:shadow-xl transform hover:-translate-y-1`}
                                     >
-                                        <p className="text-sm leading-6">
-                                            {msg.text}
+                                        <p className="text-sm sm:text-base leading-relaxed font-medium">
+                                            {Array.isArray(msg.text)
+                                                ? msg.text.map((line, i) => (
+                                                      <span
+                                                          key={i}
+                                                          className="block mb-1"
+                                                      >
+                                                          {line}
+                                                      </span>
+                                                  ))
+                                                : msg.text}
                                         </p>
-                                        <p className="text-xs mt-1 opacity-70">
+                                        {msg.hasChanges === false && (
+                                            <p className="text-sm text-gray-600 mt-2">
+                                                {msg.updateSummary ||
+                                                    'Không có thay đổi trong hành trình.'}
+                                            </p>
+                                        )}
+                                        {/*{msg.hasChanges === true &&*/}
+                                        {/*    msg.changeDetails && (*/}
+                                        {/*        <p className="text-sm text-green-600 mt-2">*/}
+                                        {/*            <strong>*/}
+                                        {/*                Chi tiết thay đổi:*/}
+                                        {/*            </strong>*/}
+                                        {/*            <br />*/}
+                                        {/*            {msg.changeDetails*/}
+                                        {/*                .split('\n')*/}
+                                        {/*                .map((line, i) => (*/}
+                                        {/*                    <span*/}
+                                        {/*                        key={i}*/}
+                                        {/*                        className="block"*/}
+                                        {/*                    >*/}
+                                        {/*                        {line}*/}
+                                        {/*                    </span>*/}
+                                        {/*                ))}*/}
+                                        {/*        </p>*/}
+                                        {/*    )}*/}
+                                        <p className="text-xs mt-2 opacity-60 font-light">
                                             {msg.timestamp.toLocaleTimeString(
-                                                'vi-VN'
+                                                'vi-VN',
+                                                {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false
+                                                }
                                             )}
                                         </p>
                                         {msg.sender === 'bot' &&
+                                            msg.hasChanges === true &&
                                             msg.updatedItinerary && (
                                                 <button
                                                     onClick={() =>
@@ -814,7 +1037,7 @@ function ChatbotUpdate() {
                                                             msg.updatedItinerary
                                                         )
                                                     }
-                                                    className="mt-2 px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300"
+                                                    className="mt-4 px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
                                                 >
                                                     Xem hành trình mới
                                                 </button>
@@ -832,22 +1055,22 @@ function ChatbotUpdate() {
                                 onKeyPress={(e) =>
                                     e.key === 'Enter' && handleSendMessage()
                                 }
-                                placeholder="VD: Cập nhật ngày 4-6: Thêm hoạt động tham quan chợ đêm..."
-                                className="flex-1 p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                placeholder={
+                                    selectedActivity
+                                        ? `Nhập thay đổi cho "${selectedActivity.selectedActivityDescription}" (Ngày ${selectedActivity.dayNumber})...`
+                                        : 'VD: Thay hoạt động ăn sáng bằng uống cà phê tại Cộng Cà Phê...'
+                                }
+                                className="flex-1 p-4 border border-gray-200 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base transition-all duration-300"
                                 disabled={isLoading}
                             />
                             <button
                                 onClick={handleSendMessage}
-                                className={`px-4 py-3 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-all duration-300 ${
-                                    isLoading
-                                        ? 'opacity-50 cursor-not-allowed'
-                                        : ''
-                                }`}
+                                className={`px-6 py-4 bg-blue-700 text-white font-semibold rounded-r-xl hover:bg-blue-800 hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
                                     <svg
-                                        className="animate-spin h-5 w-5 text-white"
+                                        className="animate-spin h-6 w-6 text-white"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"

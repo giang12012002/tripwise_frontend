@@ -171,15 +171,14 @@ const Index = () => {
             return () => clearInterval(interval)
         }
     }, [tour, currentImageIndex])
-
     if (isLoading) {
         return (
             <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 to-indigo-100">
                 <Header />
                 <div className="flex-grow flex items-center justify-center max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center space-x-4 p-8 bg-white rounded-2xl shadow-2xl border border-blue-200">
+                    <div className="flex items-center space-x-4 p-8 bg-white rounded-2xl shadow-2xl border border-blue-00">
                         <svg
-                            className="animate-spin h-10 w-10 text-indigo-600"
+                            className="animate-spin h-10 w-10 text-"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -244,7 +243,7 @@ const Index = () => {
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 to-indigo-100">
             <Header />
             <div className="flex gap-4">
-                <div classNameName="w-3/4 bg-blue-200 p-4">
+                <div className="w-3/4 bg-blue-100 p-4">
                     <div className="flex-grow py-4">
                         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
                             {error && (
@@ -273,9 +272,11 @@ const Index = () => {
                                                     ] || '/fallback-image.jpg'
                                                 }
                                                 alt={tour.tourName}
-                                                className="w-full h-96 object-cover transition-opacity duration-700 ease-in-out"
-                                                style={{ opacity: 1 }}
+                                                className="w-full h-96 object-cover object-center transition-opacity duration-700 ease-in-out"
+                                                style={{ aspectRatio: '16/9' }}
                                                 key={currentImageIndex}
+                                                width="672"
+                                                height="378"
                                                 onError={(e) => {
                                                     e.target.src =
                                                         '/fallback-image.jpg'
@@ -307,12 +308,17 @@ const Index = () => {
                                                             '/fallback-image.jpg'
                                                         }
                                                         alt={`Thumbnail ${index + 1}`}
-                                                        className={`w-24 h-24 object-cover rounded-lg cursor-pointer transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105 ${
+                                                        className={`w-24 h-24 object-cover object-center rounded-lg cursor-pointer transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105 ${
                                                             currentImageIndex ===
                                                             index
                                                                 ? 'border-4 border-indigo-500 opacity-100'
                                                                 : 'opacity-70'
                                                         }`}
+                                                        style={{
+                                                            aspectRatio: '1/1'
+                                                        }}
+                                                        width="96"
+                                                        height="96"
                                                         onClick={() =>
                                                             setCurrentImageIndex(
                                                                 index

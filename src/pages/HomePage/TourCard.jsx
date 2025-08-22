@@ -10,8 +10,32 @@ function TourCard({
 }) {
     const [isLiked, setIsLiked] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [tourDetails, setTourDetails] = useState({})
 
     useEffect(() => {
+        const fetchTourDetails = async () => {
+            const accessToken = localStorage.getItem('accessToken')
+            if (!tour?.id) {
+                console.error('Lỗi: tour hoặc tour.id không hợp lệ:', tour)
+                return
+            }
+
+            try {
+                const response = await tourUserAPI.getApprovedTourDetail(
+                    tour.id,
+                    accessToken
+                )
+                setTourDetails(response.data || {})
+            } catch (err) {
+                console.error('Lỗi khi lấy chi tiết tour:', {
+                    tourId: tour.id,
+                    message: err.message,
+                    response: err.response?.data,
+                    status: err.response?.status
+                })
+            }
+        }
+
         const checkIfLiked = async () => {
             const accessToken = localStorage.getItem('accessToken')
             if (!accessToken) {
@@ -50,6 +74,7 @@ function TourCard({
         }
 
         if (tour && tour.id) {
+            fetchTourDetails()
             checkIfLiked()
         } else {
             console.error('Lỗi: tour hoặc tour.id không hợp lệ:', tour)
@@ -121,23 +146,9 @@ function TourCard({
                 if (removeTourFromWishlist) {
                     removeTourFromWishlist(tour.id)
                 }
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Đã xóa',
-                    text: 'Đã xóa tour khỏi "Tour yêu thích".',
-                    showConfirmButton: false,
-                    timer: 1500
-                })
             } else {
                 await tourUserAPI.addToWishlist(tour.id, accessToken)
                 setIsLiked(true)
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Đã thêm',
-                    text: 'Đã thêm tour vào "Tour yêu thích".',
-                    showConfirmButton: false,
-                    timer: 1500
-                })
             }
         } catch (err) {
             console.error('Lỗi khi cập nhật danh sách yêu thích:', {
@@ -178,10 +189,51 @@ function TourCard({
         }
     }
 
-    const imageUrl = tour.image && tour.image.trim() ? tour.image : null
-    const tourName = tour.name || 'Tour không có tên'
-    const tourPrice = tour.price || 'Giá không xác định'
-    const tourAddress = tour.address || 'Địa chỉ không xác định'
+    const imageUrl =
+        tourDetails.image && tourDetails.image.trim()
+            ? tourDetails.image
+            : tour.image || null
+    const tourName = tourDetails.name || tour.name || 'Tour không có tên'
+    const tourPrice = tourDetails.price || tour.price || 'Giá không xác định'
+    const tourAddress =
+        tourDetails.address || tour.address || 'Địa chỉ không xác định'
+
+    // Format startTime to "00:00 sáng - 30/08/2025"
+    // Format startTime to "00:00 sáng - 30/08/2025" or "14:00 tối - 30/08/2025"
+    const formatStartTime = (startTime) => {
+        if (!startTime) return 'Ngày khởi hành không xác định'
+        try {
+            const date = new Date(startTime)
+            if (isNaN(date.getTime())) return 'Ngày khởi hành không xác định'
+
+            const hours = date.getHours()
+            const period = hours < 12 ? 'sáng' : 'tối'
+
+            const timeOptions = {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }
+            const dateOptions = {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }
+
+            const timeString = date.toLocaleTimeString('vi-VN', timeOptions)
+            const dateString = date
+                .toLocaleDateString('vi-VN', dateOptions)
+                .replace(/\//g, '/')
+            return `${timeString} ${period} - ${dateString}`
+        } catch (err) {
+            console.error('Lỗi khi định dạng startTime:', err.message)
+            return 'Ngày khởi hành không xác định'
+        }
+    }
+
+    const tourStartTime = formatStartTime(
+        tourDetails.startTime || tour.startTime || tour.StartTime
+    )
 
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-lg">
@@ -213,7 +265,7 @@ function TourCard({
                 <h3 className="text-xl font-bold text-gray-800 mb-2">
                     {tourName}
                 </h3>
-                <div className="flex items-center text-gray-600 text-sm mb-4">
+                <div className="flex items-center text-gray-600 text-sm mb-2">
                     <svg
                         className="w-5 h-5 mr-2 text-gray-500"
                         fill="none"
@@ -228,6 +280,22 @@ function TourCard({
                         />
                     </svg>
                     <span>{tourAddress}</span>
+                </div>
+                <div className="flex items-center text-gray-600 text-sm mb-4">
+                    <svg
+                        className="w-5 h-5 mr-2 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                    </svg>
+                    <span>{tourStartTime}</span>
                 </div>
                 <div className="flex justify-between mt-4">
                     <button

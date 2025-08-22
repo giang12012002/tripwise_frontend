@@ -58,11 +58,22 @@ const saveTourFromGenerated = async (generatePlanId) => {
     )
 }
 
-const updateItinerary = async (generatePlanId, message) => {
+const updateItinerary = async (
+    generatePlanId,
+    message,
+    dayNumber,
+    activityIndex,
+    selectedActivityDescription
+) => {
     try {
         const response = await authorizedAxios.post(
             `api/AIGeneratePlan/UpdateItinerary/${generatePlanId}`,
-            { Message: message }
+            {
+                Message: message,
+                DayNumber: dayNumber,
+                ActivityIndex: activityIndex,
+                SelectedActivityDescription: selectedActivityDescription
+            }
         )
         return response
     } catch (err) {
@@ -71,7 +82,13 @@ const updateItinerary = async (generatePlanId, message) => {
             response: err.response?.data,
             status: err.response?.status,
             errors: err.response?.data?.errors || 'Không có chi tiết lỗi',
-            payload: { Message: message, generatePlanId }
+            payload: {
+                Message: message,
+                DayNumber: dayNumber,
+                ActivityIndex: activityIndex,
+                SelectedActivityDescription: selectedActivityDescription,
+                generatePlanId
+            }
         })
         throw err
     }

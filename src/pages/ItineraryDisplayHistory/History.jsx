@@ -87,7 +87,7 @@ function History() {
                     Swal.fire({
                         icon: 'info',
                         title: 'Thông báo',
-                        text: 'Không tìm thấy lịch trình hợp lệ.',
+                        text: 'Không tìm thấy hành trình hợp lệ.',
                         showConfirmButton: false,
                         timer: 1500
                     })
@@ -142,7 +142,7 @@ function History() {
     const handleDelete = async (id) => {
         Swal.fire({
             title: 'Xác nhận xóa',
-            text: 'Bạn có chắc muốn xóa lịch trình này? Hành động này không thể hoàn tác.',
+            text: 'Bạn có chắc muốn xóa  trình này? Hành động này không thể hoàn tác.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -160,7 +160,7 @@ function History() {
                     if (response.status === 200) {
                         Swal.fire({
                             icon: 'success',
-                            text: 'Xóa lịch trình thành công!',
+                            text: 'Xóa hành  thành công!',
                             showConfirmButton: false,
                             timer: 1500
                         })
@@ -172,10 +172,10 @@ function History() {
                 } catch (err) {
                     const errorMessage =
                         err.response?.status === 404
-                            ? 'Lịch trình không tồn tại hoặc bạn không có quyền xóa. Vui lòng làm mới danh sách hoặc liên hệ hỗ trợ.'
+                            ? 'hành trình không tồn tại hoặc bạn không có quyền xóa. Vui lòng làm mới danh sách hoặc liên hệ hỗ trợ.'
                             : err.response?.data?.message ||
                               err.response?.data?.error ||
-                              'Không thể xóa lịch trình. Vui lòng kiểm tra lại hoặc liên hệ hỗ trợ.'
+                              'Không thể xóa hành trình. Vui lòng kiểm tra lại hoặc liên hệ hỗ trợ.'
                     console.error('Error in handleDelete:', {
                         id: id,
                         errorMessage,
@@ -572,8 +572,8 @@ function History() {
                         <div className="text-center bg-white p-8 rounded-xl shadow-lg">
                             <p className="text-lg text-gray-600">
                                 {searchTerm || selectedMonth || selectedYear
-                                    ? 'Không tìm thấy lịch trình phù hợp với bộ lọc.'
-                                    : 'Bạn chưa tạo lịch trình nào. Hãy bắt đầu tạo một lịch trình mới!'}
+                                    ? 'Không tìm thấy hành trình phù hợp với bộ lọc.'
+                                    : 'Bạn chưa tạo hành trình nào. Hãy bắt đầu tạo một  trình mới!'}
                             </p>
                             <button
                                 onClick={() =>
@@ -581,7 +581,7 @@ function History() {
                                 }
                                 className="mt-4 inline-block px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition"
                             >
-                                Tạo Lịch Trình Mới
+                                Tạo Hành Trình Mới
                             </button>
                         </div>
                     )}
