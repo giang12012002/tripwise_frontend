@@ -246,7 +246,7 @@ function CreateItinerary() {
             ) {
                 errorMessage =
                     err.response?.data?.error ||
-                    'Không tìm thấy gói sử dụng. Vui lòng nâng cấp gói hoặc liên hệ hỗ trợ qua support@x.ai.'
+                    'Không tìm thấy gói sử dụng. Vui lòng nâng cấp gói.'
                 showConfirmButton = true
                 confirmButtonText = 'Nâng cấp gói'
             } else if (
@@ -256,7 +256,7 @@ function CreateItinerary() {
             ) {
                 errorMessage =
                     err.response?.data?.error ||
-                    'Không tìm thấy gói dịch vụ hợp lệ. Vui lòng nâng cấp gói hoặc liên hệ hỗ trợ qua support@x.ai.'
+                    'Không tìm thấy gói dịch vụ hợp lệ. Vui lòng nâng cấp gói.'
                 showConfirmButton = true
                 confirmButtonText = 'Nâng cấp gói'
             } else if (

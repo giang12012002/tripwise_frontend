@@ -443,7 +443,7 @@ function MyTours() {
                             <p className="text-lg text-gray-600">
                                 {searchTerm || selectedMonth || selectedYear
                                     ? 'Không tìm thấy tour phù hợp với bộ lọc.'
-                                    : 'Bạn chưa có tour nào. Hãy lưu một lịch trình để tạo tour!'}
+                                    : 'Bạn chưa có tour nào. Hãy lưu một hành trình!'}
                             </p>
                         </div>
                     )}

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import Swal from 'sweetalert2'
-import logoImage from '@/assets/images/logoHEAER.png'
+import logoImage from '@/assets/images/NEWS2.png'
 
 const AdminDashboard = () => {
     const navigate = useNavigate()

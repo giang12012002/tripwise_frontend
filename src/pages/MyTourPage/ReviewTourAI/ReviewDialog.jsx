@@ -63,7 +63,7 @@ function ReviewDialog({ isOpen, onClose, onConfirm }) {
                     className={`${loading ? 'opacity-50 pointer-events-none select-none' : ''}`}
                 >
                     <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-                        Bạn thấy lịch trình này thế nào? Hãy để lại đánh giá cho
+                        Bạn thấy hành trình này thế nào? Hãy để lại đánh giá cho
                         chúng tôi!
                     </h2>
 

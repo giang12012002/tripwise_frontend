@@ -37,8 +37,7 @@ function HistoryDetail() {
 
     const fetchHistoryDetail = async () => {
         if (!id || isNaN(id)) {
-            console.error('ID không hợp lệ:', id)
-            toast.error('ID lịch trình không hợp lệ.')
+            toast.error('ID hành trình không hợp lệ.')
             navigate('/user/HistoryItinerary')
             return
         }
@@ -49,7 +48,7 @@ function HistoryDetail() {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Vui lòng đăng nhập để xem chi tiết lịch trình.',
+                text: 'Vui lòng đăng nhập để xem chi tiết  trình.',
                 confirmButtonColor: '#2563eb'
             })
             navigate('/signin')
@@ -185,15 +184,15 @@ function HistoryDetail() {
                 setRelatedTours(response.data.relatedTours || [])
                 setRelatedTourMessage(response.data.relatedTourMessage || null)
             } else {
-                throw new Error('Dữ liệu chi tiết lịch trình không hợp lệ.')
+                throw new Error('Dữ liệu chi tiết hành trình không hợp lệ.')
             }
         } catch (err) {
             const errorMessage =
                 err.response?.status === 404
-                    ? 'Không tìm thấy lịch trình với ID này.'
+                    ? 'Không tìm thấy hành trình với ID này.'
                     : err.response?.data?.error ||
                       err.message ||
-                      'Không thể tải chi tiết lịch trình.'
+                      'Không thể tải chi tiết  trình.'
             console.error('Lỗi API:', {
                 message: err.message,
                 response: err.response?.data,
@@ -217,7 +216,7 @@ function HistoryDetail() {
                 })
             } else if (err.response?.status === 404) {
                 navigate('/user/HistoryItinerary')
-                toast.error('Không tìm thấy lịch trình.')
+                toast.error('Không tìm thấy  trình.')
             }
         } finally {
             setLoading(false)
@@ -229,7 +228,7 @@ function HistoryDetail() {
     }, [id, navigate])
 
     const formatCurrency = (value) => {
-        if (value == null || isNaN(value)) return 'Không xác định'
+        if (value == null || isNaN(value)) return '0 ₫'
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
@@ -266,7 +265,7 @@ function HistoryDetail() {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Không có lịch trình để lưu thành tour.',
+                text: 'Không có hành  để lưu thành tour.',
                 showConfirmButton: false,
                 timer: 1500
             })
@@ -280,7 +279,7 @@ function HistoryDetail() {
             Swal.fire({
                 icon: 'success',
                 title: 'Thành công',
-                text: 'Lịch trình đã được lưu thành tour.',
+                text: 'hành trình đã được lưu thành tour.',
                 showConfirmButton: false,
                 timer: 1500
             })
@@ -306,16 +305,13 @@ function HistoryDetail() {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Dữ liệu lịch trình không đầy đủ để cập nhật.',
+                text: 'Dữ liệu hành trình không đầy đủ để cập nhật.',
                 showConfirmButton: false,
                 timer: 1500
             })
             return
         }
-        console.log(
-            'Dữ liệu historyDetail trước khi chuyển hướng:',
-            historyDetail
-        )
+
         navigate('/user/chatbot-update', {
             state: { itineraryData: historyDetail }
         })
@@ -327,7 +323,7 @@ function HistoryDetail() {
             <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">
-                        Lịch trình du lịch tại{' '}
+                        trình du lịch tại{' '}
                         {historyDetail?.Destination || 'Không xác định'}
                     </h2>
                     <div className="flex space-x-4">
@@ -369,7 +365,7 @@ function HistoryDetail() {
                                     d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
                                 />
                             </svg>
-                            Cập nhật lịch trình
+                            Cập nhật hành trình
                         </button>
                         <button
                             onClick={handleSaveAsTour}
@@ -449,10 +445,10 @@ function HistoryDetail() {
                 ) : !historyDetail ? (
                     <div>
                         <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">
-                            Không tìm thấy lịch trình
+                            Không tìm thấy hành trình
                         </h2>
                         <p className="text-gray-600 mt-4">
-                            Vui lòng quay lại và chọn một lịch trình khác.
+                            Vui lòng quay lại và chọn một trình khác.
                         </p>
                     </div>
                 ) : (
@@ -586,7 +582,7 @@ function HistoryDetail() {
                         </div>
 
                         <h3 className="text-2xl font-semibold text-blue-900 mb-6">
-                            Chi tiết lịch trình
+                            Chi tiết hành
                         </h3>
                         <div className="space-y-6">
                             {historyDetail.Itinerary?.length > 0 ? (
@@ -779,7 +775,7 @@ function HistoryDetail() {
                                 ))
                             ) : (
                                 <p className="text-gray-600">
-                                    Không có chi tiết lịch trình nào để hiển
+                                    Không có chi tiết hành trình nào để hiển
                                     thị.
                                 </p>
                             )}
