@@ -13,13 +13,12 @@ const tourUserAPI = {
         )
         return response
     },
-    getBookedTours: async (token) => {
-        const response = await authorizedAxios.get(
-            '/api/TourUser/booked-tours',
-            {
-                headers: { Authorization: `Bearer ${token}` }
-            }
-        )
+    getBookedTours: async () => {
+        const response = await authorizedAxios.get('/api/TourUser/booked-tours')
+        return response
+    },
+    getBookedTourDetail: async (bookingId) => {
+        const response = await authorizedAxios.get(`/api/TourUser/${bookingId}`)
         return response
     },
     addToWishlist: async (tourId, token) => {

@@ -140,6 +140,40 @@ const rejectTourUpdate = async (tourId, reason) => {
     return response
 }
 
+const confirmRefund = async (bookingId) => {
+    const response = await authorizedAxios.post(
+        'api/admin/tours/confirm-refund/' + bookingId
+    )
+    return response
+}
+
+const completeRefund = async (bookingId) => {
+    const response = await authorizedAxios.post(
+        'api/admin/tours/complete-refund/' + bookingId
+    )
+    return response
+}
+
+const rejectRefund = async ({ bookingId, rejectReason }) => {
+    const response = await authorizedAxios.post(
+        'api/admin/tours/reject-cancelbooking/' + bookingId,
+        { rejectReason }
+    )
+    return response
+}
+
+const getBookings = async ({ partnerId, fromDate, toDate, status }) => {
+    const response = await authorizedAxios.get('api/admin/tours/get-booking', {
+        params: {
+            ...(partnerId ? { partnerId } : {}),
+            ...(fromDate ? { fromDate } : {}),
+            ...(toDate ? { toDate } : {}),
+            ...(status ? { status } : {})
+        }
+    })
+    return response
+}
+
 export default {
     getAllTours,
     getPendingTours,
@@ -147,5 +181,9 @@ export default {
     approveTour,
     rejectTour,
     approveTourUpdate,
-    rejectTourUpdate
+    rejectTourUpdate,
+    confirmRefund,
+    completeRefund,
+    rejectRefund,
+    getBookings
 }

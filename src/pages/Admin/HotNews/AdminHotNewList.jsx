@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
 import appSettingAPI from '@/apis/appSettingAPI.js'
 import HotNewsDialog from '@/pages/Admin/HotNews/HotNewsDialog.jsx'
 
@@ -16,7 +16,14 @@ const AdminHotNewsList = () => {
             const response = await appSettingAPI.fetchAllHotNews()
             setHotNews(response.data)
         } catch (error) {
-            toast.error('Lỗi khi tải danh sách tin tức nổi bật')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Lỗi khi tải danh sách tin tức nổi bật.',
+                showConfirmButton: true,
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#2563eb'
+            })
             console.error(error)
         } finally {
             setLoading(false)
@@ -24,13 +31,37 @@ const AdminHotNewsList = () => {
     }
 
     const handleDelete = async (id) => {
-        if (window.confirm('Bạn có chắc muốn xóa tin tức này?')) {
+        const result = await Swal.fire({
+            icon: 'warning',
+            title: 'Xác nhận',
+            text: 'Bạn có chắc muốn xóa tin tức này?',
+            showCancelButton: true,
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#2563eb'
+        })
+
+        if (result.isConfirmed) {
             try {
                 await appSettingAPI.deleteHotNews(id)
-                toast.success('Xóa tin tức thành công')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Xóa tin tức thành công.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#2563eb'
+                })
                 fetchHotNews()
             } catch (error) {
-                toast.error('Lỗi khi xóa tin tức')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Lỗi khi xóa tin tức.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#2563eb'
+                })
                 console.error(error)
             }
         }
@@ -40,18 +71,39 @@ const AdminHotNewsList = () => {
         try {
             if (newsId) {
                 await appSettingAPI.updateHotNews(newsId, data)
-                toast.success('Cập nhật tin tức thành công')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Cập nhật tin tức thành công.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#2563eb'
+                })
             } else {
                 await appSettingAPI.createHotNews(data)
-                toast.success('Tạo tin tức thành công')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Tạo tin tức thành công.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#2563eb'
+                })
             }
             fetchHotNews()
             setShowHotNewsDialog(false)
             setEditingNews(null)
         } catch (error) {
-            toast.error(
-                newsId ? 'Lỗi khi cập nhật tin tức' : 'Lỗi khi tạo tin tức'
-            )
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: newsId
+                    ? 'Lỗi khi cập nhật tin tức.'
+                    : 'Lỗi khi tạo tin tức.',
+                showConfirmButton: true,
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#2563eb'
+            })
             console.error(error)
         }
     }

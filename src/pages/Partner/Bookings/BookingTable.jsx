@@ -98,7 +98,7 @@ function BookingTable({ bookings }) {
                                         </span>
                                     </div>
                                     {/* Nút Xóa (ví dụ) */}
-                                    <div className="group relative">
+                                    <div className="group relative hidden">
                                         <button
                                             onClick={() =>
                                                 alert(

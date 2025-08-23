@@ -13,13 +13,13 @@ function HomePage() {
     return (
         <div className="min-h-screen bg-gray-100 font-sans">
             <Header />
-            <div>
+            <div className="mb-80">
                 <AiTourCreateButton />
             </div>
-            <div className="my-80">
+            <div>
                 <NewsImagesSlider /> {/* Thêm slider ảnh tin tức */}
             </div>
-            <div className="my-0">
+            <div className="my-12">
                 <ApprovedToursSection />
             </div>
             <div className="my-8">

@@ -10,8 +10,11 @@ import story3Image from '@/assets/images/story3.jpg'
 import story4Image from '@/assets/images/story4.jpg'
 import story5Image from '@/assets/images/story5.jpg'
 import story6Image from '@/assets/images/story6.jpg'
-import member1Image from '@/assets/images/maleAvatar.png'
-import member2Image from '@/assets/images/maleAvatar.png'
+import member1Image from '@/assets/images/GIANG.png'
+import member2Image from '@/assets/images/Cuong.jpg'
+import member3Image from '@/assets/images/TUNG.png'
+import member4Image from '@/assets/images/VA.png'
+import member5Image from '@/assets/images/BINH.png'
 import commitmentImage from '@/assets/images/thap.png'
 import AboutImage from '@/assets/images/AboutImage.jpg'
 
@@ -77,9 +80,9 @@ const mockData = {
     InfoTeamDTOs: [
         { FullName: 'Giang', ImageUrl: member1Image },
         { FullName: 'Cương', ImageUrl: member2Image },
-        { FullName: 'Tùng', ImageUrl: member2Image },
-        { FullName: 'Việt Anh', ImageUrl: member2Image },
-        { FullName: 'Bình', ImageUrl: member2Image }
+        { FullName: 'Tùng', ImageUrl: member3Image },
+        { FullName: 'Việt Anh', ImageUrl: member4Image },
+        { FullName: 'Bình', ImageUrl: member5Image }
     ],
     OurCommitment: {
         Describe: [

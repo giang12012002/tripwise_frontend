@@ -14,6 +14,7 @@ import VNPayCallback from '@/components/callbacks/VNPayCallback'
 import PaymentHistory from '@/pages/PaymentHistory'
 import BookingPage from '@/pages/BookingPage'
 import FavoriteTours from '@/pages/FavoriteTours/WishlistPage'
+import BookingHistory from '@/pages/BookingHistory'
 
 function UserRoutes() {
     return (
@@ -38,6 +39,7 @@ function UserRoutes() {
             <Route path="/payment-history" element={<PaymentHistory />} />
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/favoritetour" element={<FavoriteTours />} />
+            <Route path="/booking-history" element={<BookingHistory />} />
 
             <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>

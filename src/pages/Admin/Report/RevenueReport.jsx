@@ -48,11 +48,13 @@ const RevenueReport = ({ data, onExport, loading }) => {
         if (!selectedTotal) {
             return [
                 { name: 'Tổng Tour', value: 0, percentage: 0 },
-                { name: 'Tổng Gói', value: 0, percentage: 0 }
+                { name: 'Tổng Gói', value: 0, percentage: 0 },
+                { name: 'Tổng Hủy Tour', value: 0, percentage: 0 }
             ]
         }
         const totalTour = selectedTotal.totalBookingRevenue || 0
         const totalPlan = selectedTotal.totalPlanRevenue || 0
+        const totalCancelTour = selectedTotal.cancelledRevenue || 0
         const total = totalTour + totalPlan
         const tourPercentage = total ? (totalTour / total) * 100 : 0
         const planPercentage = total ? (totalPlan / total) * 100 : 0
@@ -315,6 +317,9 @@ const RevenueReport = ({ data, onExport, loading }) => {
                                 Tổng gói
                             </th>
                             <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tổng hủy tour
+                            </th>
+                            <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Tổng cộng
                             </th>
                         </tr>
@@ -331,8 +336,12 @@ const RevenueReport = ({ data, onExport, loading }) => {
                                         item.totalBookingRevenue || 0
                                     )}
                                 </td>
+
                                 <td className="py-4 px-6">
                                     {formatCurrency(item.totalPlanRevenue || 0)}
+                                </td>
+                                <td className="py-4 px-6">
+                                    {formatCurrency(item.cancelledRevenue || 0)}
                                 </td>
                                 <td className="py-4 px-6">
                                     {formatCurrency(

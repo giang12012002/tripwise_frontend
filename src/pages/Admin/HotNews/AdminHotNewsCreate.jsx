@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import appSettingAPI from '@/apis/appSettingAPI.js'
-import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
 
 const AdminHotNewsCreate = () => {
     const { id } = useParams()
@@ -23,7 +23,14 @@ const AdminHotNewsCreate = () => {
                     setFormData({ imageFile: null, imageUrl, redirectUrl })
                     setPreviewImage(imageUrl)
                 } catch (error) {
-                    toast.error('Lỗi khi tải dữ liệu tin tức')
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Lỗi khi tải dữ liệu tin tức.',
+                        showConfirmButton: true,
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#2563eb'
+                    })
                     console.error(error)
                 }
             }
@@ -46,7 +53,14 @@ const AdminHotNewsCreate = () => {
         if (formData.imageUrl) {
             setPreviewImage(formData.imageUrl)
         } else {
-            toast.error('Vui lòng nhập URL hình ảnh trước khi thêm')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng nhập URL hình ảnh trước khi thêm.',
+                showConfirmButton: true,
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#2563eb'
+            })
         }
     }
 
@@ -63,14 +77,35 @@ const AdminHotNewsCreate = () => {
         try {
             if (id) {
                 await appSettingAPI.updateHotNews(id, data)
-                toast.success('Cập nhật tin tức thành công')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Cập nhật tin tức thành công.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#2563eb'
+                })
             } else {
                 await appSettingAPI.createHotNews(data)
-                toast.success('Tạo tin tức thành công')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Tạo tin tức thành công.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#2563eb'
+                })
             }
             navigate('/admin/hot-news')
         } catch (error) {
-            toast.error(id ? 'Lỗi khi cập nhật tin tức' : 'Lỗi khi tạo tin tức')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: id ? 'Lỗi khi cập nhật tin tức.' : 'Lỗi khi tạo tin tức.',
+                showConfirmButton: true,
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#2563eb'
+            })
             console.error(error)
         } finally {
             setLoading(false)

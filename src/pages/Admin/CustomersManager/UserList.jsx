@@ -10,10 +10,10 @@ const UserList = ({
 }) => {
     const handleDeleteClick = async (userId, userName) => {
         const inputResult = await Swal.fire({
-            title: 'Xóa người dùng',
-            text: `Nhập lý do xóa người dùng "${userName}":`,
+            title: 'Vô hiệu hóa người dùng ' + userName,
+            text: `Nhập lý do:`,
             input: 'text',
-            inputPlaceholder: 'Lý do xóa',
+            inputPlaceholder: 'Lý do',
             inputAttributes: {
                 autocapitalize: 'off',
                 autocorrect: 'off'
@@ -25,7 +25,7 @@ const UserList = ({
             cancelButtonColor: '#6b7280',
             inputValidator: (value) => {
                 if (!value.trim()) {
-                    return 'Vui lòng nhập lý do xóa'
+                    return 'Vui lòng nhập lý do'
                 }
             }
         })
@@ -39,12 +39,12 @@ const UserList = ({
 
             const confirmResult = await Swal.fire({
                 icon: 'warning',
-                title: 'Xác nhận xóa',
-                text: `Bạn có chắc muốn xóa người dùng "${userName}"? Lý do: ${reason}`,
+                title: 'Xác nhận vô hiệu hoá',
+                text: `Bạn có chắc muốn vô hiệu hóa người dùng "${userName}"? Lý do: ${reason}`,
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Xóa',
+                confirmButtonText: 'Có',
                 cancelButtonText: 'Hủy'
             })
 
@@ -185,17 +185,18 @@ const UserList = ({
                                         aria-label="Xóa người dùng"
                                     >
                                         <svg
-                                            className="h-5 w-5"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
                                             xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="1.5"
+                                            stroke="currentColor"
+                                            class="size-6"
+                                            className="h-5 w-5"
                                         >
                                             <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M22 10.5h-6m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM4 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 10.374 21c-2.331 0-4.512-.645-6.374-1.766Z"
                                             />
                                         </svg>
                                     </button>

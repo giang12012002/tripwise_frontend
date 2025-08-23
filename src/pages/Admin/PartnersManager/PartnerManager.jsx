@@ -152,7 +152,7 @@ const PartnerManager = () => {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Vui lòng nhập lý do xóa',
+                text: 'Vui lòng nhập lý do',
                 confirmButtonColor: '#2563eb'
             })
             return
@@ -162,7 +162,7 @@ const PartnerManager = () => {
             Swal.fire({
                 icon: 'success',
                 title: 'Thành công',
-                text: 'Xóa đối tác thành công',
+                text: 'Vô hiệu hóa đối tác thành công',
                 confirmButtonColor: '#2563eb'
             })
             setDeleteReasons((prev) => {
@@ -177,7 +177,7 @@ const PartnerManager = () => {
                 icon: 'error',
                 title: 'Lỗi',
                 text:
-                    'Lỗi khi xóa đối tác: ' +
+                    'Lỗi khi vô hiệu hóa đối tác: ' +
                     (err.response?.data?.message || err.message),
                 confirmButtonColor: '#2563eb'
             })
@@ -335,7 +335,7 @@ const PartnerManager = () => {
                         className="px-4 py-2 text-gray-600 font-semibold cursor-pointer hover:bg-gray-200 rounded-t-md focus:outline-none"
                         selectedClassName="bg-white border-b-2 border-blue-600 text-blue-600"
                     >
-                        Đối tác đã xóa
+                        Tài khoản vô hiệu hóa
                     </Tab>
                 </TabList>
 
@@ -434,8 +434,7 @@ const PartnerManager = () => {
                     ) : (
                         <div className="text-center bg-white p-8 rounded-xl shadow-lg">
                             <p className="text-lg text-gray-600">
-                                Không tìm thấy đối tác đã xóa phù hợp với tìm
-                                kiếm.
+                                Không tìm thấy đối tác phù hợp với tìm kiếm.
                             </p>
                         </div>
                     )}

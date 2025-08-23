@@ -1066,9 +1066,15 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         <input
                             type="number"
                             name="priceAdult"
+                            // value={
+                            //     tour.priceAdult === 0 ||
+                            //     tour.priceAdult === undefined
+                            //         ? ''
+                            //         : tour.priceAdult
+                            // }
                             value={
-                                tour.priceAdult === 0 ||
-                                tour.priceAdult === undefined
+                                tour.priceAdult === undefined ||
+                                tour.priceAdult === null
                                     ? ''
                                     : tour.priceAdult
                             }
@@ -1088,8 +1094,8 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             type="number"
                             name="priceChild5To10"
                             value={
-                                tour.priceChild5To10 === 0 ||
-                                tour.priceChild5To10 === undefined
+                                tour.priceChild5To10 === undefined ||
+                                tour.priceChild5To10 === null
                                     ? ''
                                     : tour.priceChild5To10
                             }
@@ -1109,8 +1115,8 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             type="number"
                             name="priceChildUnder5"
                             value={
-                                tour.priceChildUnder5 === 0 ||
-                                tour.priceChildUnder5 === undefined
+                                tour.priceChildUnder5 === undefined ||
+                                tour.priceChildUnder5 === null
                                     ? ''
                                     : tour.priceChildUnder5
                             }
@@ -1431,9 +1437,9 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         type="number"
                                                         value={
                                                             activity.estimatedCost ===
-                                                                0 ||
+                                                                undefined ||
                                                             activity.estimatedCost ===
-                                                                undefined
+                                                                null
                                                                 ? ''
                                                                 : activity.estimatedCost
                                                         }

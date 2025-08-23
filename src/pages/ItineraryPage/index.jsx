@@ -46,7 +46,7 @@ function ItineraryDisplay() {
     }, [isLoggedIn, isAuthLoading, navigate])
 
     const formatCurrency = (value) => {
-        if (!value || isNaN(value)) return '0 đ'
+        if (!value || isNaN(value)) return '0 ₫'
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
@@ -62,7 +62,7 @@ function ItineraryDisplay() {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Không có lịch trình để lưu thành tour.',
+                text: 'Không có  trình để lưu thành tour.',
                 showConfirmButton: false,
                 timer: 1500
             })
@@ -76,7 +76,7 @@ function ItineraryDisplay() {
             Swal.fire({
                 icon: 'success',
                 title: 'Thành công',
-                text: 'Lịch trình đã được lưu thành tour.',
+                text: ' trình đã được lưu thành tour.',
                 showConfirmButton: false,
                 timer: 1500
             })
@@ -102,7 +102,7 @@ function ItineraryDisplay() {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Không có lịch trình để cập nhật.',
+                text: 'Không có hành trình để cập nhật.',
                 showConfirmButton: false,
                 timer: 1500
             })
@@ -132,7 +132,7 @@ function ItineraryDisplay() {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Không thể tiếp tục tạo lịch trình.',
+                text: 'Không thể tiếp tục tạo ành trình.',
                 showConfirmButton: false,
                 timer: 1500
             })
@@ -179,13 +179,13 @@ function ItineraryDisplay() {
                 Swal.fire({
                     icon: 'success',
                     title: 'Thành công',
-                    text: 'Đã tải thêm lịch trình thành công!',
+                    text: 'Đã tải thêm hảnh  thành công!',
                     showConfirmButton: false,
                     timer: 1500
                 })
             } else {
                 throw new Error(
-                    response.data.error || 'Không thể tải thêm lịch trình.'
+                    response.data.error || 'Không thể tải thêm  trình.'
                 )
             }
         } catch (err) {
@@ -195,7 +195,7 @@ function ItineraryDisplay() {
                 text:
                     err.response?.data?.error ||
                     err.message ||
-                    'Lỗi khi tải thêm lịch trình.',
+                    'Lỗi khi tải thêm hành trình.',
                 showConfirmButton: false,
                 timer: 1500
             })
@@ -227,7 +227,7 @@ function ItineraryDisplay() {
             <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">
-                        Lịch trình du lịch tại {itineraryData.destination}
+                        Hành trình du lịch tại {itineraryData.destination}
                     </h2>
                     <div className="flex space-x-4">
                         <button

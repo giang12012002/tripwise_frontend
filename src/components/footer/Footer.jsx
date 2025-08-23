@@ -27,7 +27,7 @@ const Footer = () => {
                     </div>
 
                     {/* Liên kết Điều hướng */}
-                    <div className="px-30">
+                    <div className="px-24">
                         <h3 className="text-lg font-semibold mb-4">
                             Liên Kết Nhanh
                         </h3>
@@ -91,8 +91,8 @@ const Footer = () => {
                             Kết Nối Với Chúng Tôi
                         </h3>
                         <p className="text-sm mb-4">
-                            Đăng ký nhận bản tin để nhận ưu đãi độc quyền và mẹo
-                            du lịch!
+                            Đăng ký mgay để trải nghiệm mọi tiện tích của
+                            TripWise!
                         </p>
                         <div className="flex">
                             <input
