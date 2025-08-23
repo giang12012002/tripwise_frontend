@@ -7,7 +7,7 @@ import { jwtDecode } from 'jwt-decode'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import beachSunset from '@/assets/images/background.png'
-import logoImage from '@/assets/images/NEWS5.png'
+import logoImage from '@/assets/images/logo2.png'
 import { IoFastFood } from 'react-icons/io5'
 
 function OtpVerification() {
