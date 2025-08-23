@@ -178,7 +178,7 @@ function TourDetail() {
     }, [id, navigate, isLoggedIn])
 
     const formatCurrency = (value) => {
-        if (value == null || isNaN(value)) return 'Không xác định'
+        if (value == null || isNaN(value)) return '0 ₫'
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
@@ -364,7 +364,7 @@ function TourDetail() {
                         </div>
 
                         <h3 className="text-2xl font-semibold text-blue-900 mb-6">
-                            Lịch trình chi tiết
+                            trình chi tiết
                         </h3>
                         <div className="space-y-6">
                             {tourDetail.Itineraries?.length > 0 ? (
@@ -537,7 +537,7 @@ function TourDetail() {
                                 ))
                             ) : (
                                 <p className="text-gray-600">
-                                    Không có chi tiết lịch trình nào để hiển
+                                    Không có chi tiết hành trình nào để hiển
                                     thị.
                                 </p>
                             )}

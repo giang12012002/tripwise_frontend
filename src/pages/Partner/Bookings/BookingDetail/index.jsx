@@ -93,7 +93,7 @@ function Index() {
                     <div className="flex justify-between items-start mb-6 border-b pb-4">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-800">
-                                Booking #{booking.bookingId || 'Chưa có'}
+                                Booking
                             </h1>
                             <p className="text-sm text-gray-500 mt-1">
                                 Mã đơn hàng:{' '}

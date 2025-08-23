@@ -22,8 +22,9 @@ import {
     FaBook,
     FaShoppingCart,
     FaTicketAlt,
-    FaShoppingBag
-} from 'react-icons/fa' // Thư viện react-icons
+    FaShoppingBag,
+    FaBan
+} from 'react-icons/fa'
 
 ChartJS.register(
     CategoryScale,
@@ -64,15 +65,19 @@ const SystemStatsPage = () => {
                         month: month + 1,
                         bookingRevenue: 0,
                         planRevenue: 0,
+                        cancelledRevenue: 0,
                         totalBookings: 0,
-                        totalPlans: 0
+                        totalPlans: 0,
+                        totalCancelled: 0
                     }
                     return {
-                        Month: Number(stat.month) || month + 1,
-                        BookingRevenue: Number(stat.bookingRevenue) || 0,
-                        PlanRevenue: Number(stat.planRevenue) || 0,
-                        TotalBookings: Number(stat.totalBookings) || 0,
-                        TotalPlans: Number(stat.totalPlans) || 0
+                        month: Number(stat.month) || month + 1,
+                        bookingRevenue: Number(stat.bookingRevenue) || 0,
+                        planRevenue: Number(stat.planRevenue) || 0,
+                        cancelledRevenue: Number(stat.cancelledRevenue) || 0,
+                        totalBookings: Number(stat.totalBookings) || 0,
+                        totalPlans: Number(stat.totalPlans) || 0,
+                        totalCancelled: Number(stat.totalCancelled) || 0
                     }
                 })
                 setStats(monthlyStats)
@@ -95,23 +100,25 @@ const SystemStatsPage = () => {
                 console.log('Dashboard Stats Data:', data)
                 const stats = Array.isArray(data) ? data[0] || {} : data || {}
                 const normalizedStats = {
-                    TotalUsers: stats.TotalUsers || stats.totalUsers || 0,
-                    TotalReviews: stats.TotalReviews || stats.totalReviews || 0,
-                    TotalComments:
+                    totalUsers: stats.TotalUsers || stats.totalUsers || 0,
+                    totalReviews: stats.TotalReviews || stats.totalReviews || 0,
+                    totalComments:
                         stats.TotalComments || stats.totalComments || 0,
-                    TotalStarRatings:
+                    totalStarRatings:
                         stats.TotalStarRatings || stats.totalStarRatings || 0,
-                    TotalPartners:
+                    totalPartners:
                         stats.TotalPartners || stats.totalPartners || 0,
-                    TotalTours: stats.TotalTours || stats.totalTours || 0,
-                    TotalBlogs: stats.TotalBlogs || stats.totalBlogs || 0,
-                    TotalPlans: stats.TotalPlans || stats.totalPlans || 0,
-                    TotalTourBookings:
+                    totalTours: stats.TotalTours || stats.totalTours || 0,
+                    totalBlogs: stats.TotalBlogs || stats.totalBlogs || 0,
+                    totalPlans: stats.TotalPlans || stats.totalPlans || 0,
+                    totalTourBookings:
                         stats.TotalTourBookings || stats.totalTourBookings || 0,
-                    TotalPlanPurchases:
+                    totalPlanPurchases:
                         stats.TotalPlanPurchases ||
                         stats.totalPlanPurchases ||
-                        0
+                        0,
+                    totalCancelled:
+                        stats.TotalCancelled || stats.totalCancelled || 0
                 }
                 setDashboardStats(normalizedStats)
             } catch (err) {
@@ -126,17 +133,27 @@ const SystemStatsPage = () => {
         fetchDashboardStats()
     }, [])
 
-    const totalRevenue = stats.reduce(
-        (sum, stat) => sum + stat.BookingRevenue + stat.PlanRevenue,
+    const totalBookingRevenue = stats.reduce(
+        (sum, stat) => sum + (Number(stat.bookingRevenue) || 0),
         0
     )
+    const totalPlanRevenue = stats.reduce(
+        (sum, stat) => sum + (Number(stat.planRevenue) || 0),
+        0
+    )
+    const totalCancelledRevenue = stats.reduce(
+        (sum, stat) => sum + (Number(stat.cancelledRevenue) || 0),
+        0
+    )
+    const totalRevenue =
+        totalBookingRevenue + totalPlanRevenue + totalCancelledRevenue
 
     const chartData = {
-        labels: stats.map((stat) => `Tháng ${stat.Month}`),
+        labels: stats.map((stat) => `Tháng ${stat.month}`),
         datasets: [
             {
                 label: 'Doanh Thu Đặt Tour (VND)',
-                data: stats.map((stat) => stat.BookingRevenue || 0),
+                data: stats.map((stat) => Number(stat.bookingRevenue) || 0),
                 borderColor: '#2563eb',
                 backgroundColor: 'rgba(37, 99, 235, 0.2)',
                 fill: true,
@@ -146,9 +163,34 @@ const SystemStatsPage = () => {
             },
             {
                 label: 'Doanh Thu Bán Gói (VND)',
-                data: stats.map((stat) => stat.PlanRevenue || 0),
+                data: stats.map((stat) => Number(stat.planRevenue) || 0),
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            },
+            {
+                label: 'Doanh Thu Bị Hủy (VND)',
+                data: stats.map((stat) => Number(stat.cancelledRevenue) || 0),
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            },
+            {
+                label: 'Tổng Doanh Thu (VND)',
+                data: stats.map(
+                    (stat) =>
+                        (Number(stat.bookingRevenue) || 0) +
+                        (Number(stat.planRevenue) || 0) +
+                        (Number(stat.cancelledRevenue) || 0)
+                ),
+                borderColor: '#8b5cf6', // Màu tím để phân biệt
+                backgroundColor: 'rgba(139, 92, 246, 0.2)',
                 fill: true,
                 tension: 0.4,
                 pointRadius: 4,
@@ -156,7 +198,6 @@ const SystemStatsPage = () => {
             }
         ]
     }
-
     const chartOptions = {
         responsive: true,
         plugins: {
@@ -242,7 +283,7 @@ const SystemStatsPage = () => {
 
             {/* Summary Statistics */}
             {!loading && stats.length > 0 && (
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-blue-500 text-white p-4 rounded-lg text-center">
                         <FaMap className="mx-auto mb-2 text-2xl" />
                         <h2 className="text-lg font-semibold">
@@ -250,33 +291,115 @@ const SystemStatsPage = () => {
                         </h2>
                         <p className="text-2xl">
                             {stats.reduce(
-                                (sum, stat) => sum + stat.TotalBookings,
+                                (sum, stat) =>
+                                    sum + (Number(stat.totalBookings) || 0),
                                 0
                             )}
                         </p>
                         <p className="text-sm text-gray-200">Tổng đặt tour</p>
                     </div>
-                    <div className="bg-yellow-500 text-white p-4 rounded-lg shadow-md text-center">
+                    <div className="bg-green-500 text-white p-4 rounded-lg shadow-md text-center">
                         <FaShoppingCart className="mx-auto mb-2 text-2xl" />
                         <h2 className="text-lg font-semibold">
                             Số lượng gói đã bán
                         </h2>
                         <p className="text-2xl">
                             {stats.reduce(
-                                (sum, stat) => sum + stat.TotalPlans,
+                                (sum, stat) =>
+                                    sum + (Number(stat.totalPlans) || 0),
                                 0
                             )}
                         </p>
                         <p className="text-sm text-gray-200">Tổng gói</p>
                     </div>
+                    <div className="bg-red-500 text-white p-4 rounded-lg shadow-md text-center">
+                        <FaBan className="mx-auto mb-2 text-2xl" />
+                        <h2 className="text-lg font-semibold">
+                            Số lượng hủy Tour
+                        </h2>
+                        <p className="text-2xl">
+                            {stats.reduce(
+                                (sum, stat) =>
+                                    sum + (Number(stat.totalCancelled) || 0),
+                                0
+                            )}
+                        </p>
+                        <p className="text-sm text-gray-200">Tổng hủy</p>
+                    </div>
                 </div>
             )}
-
-            {/* Total Revenue */}
+            {/* Revenue Breakdown */}
             {!loading && stats.length > 0 && (
-                <div className="bg-white p-4 rounded-lg shadow-md mb-6 text-center">
-                    <h2 className="text-xl font-semibold">Tổng Doanh Thu</h2>
-                    <p className="text-2xl">{formatCurrency(totalRevenue)}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    {/* Doanh Thu Đặt Tour */}
+                    <div className="bg-white p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
+                        <h2 className="text-lg font-semibold text-gray-700 mb-2">
+                            Doanh Thu Đặt Tour
+                        </h2>
+                        <p className="text-2xl font-bold text-blue-600">
+                            {formatCurrency(totalBookingRevenue)}
+                        </p>
+                        <div className="mt-2 h-1 bg-blue-100 rounded-full">
+                            <div
+                                className="h-full bg-blue-600 rounded-full"
+                                style={{
+                                    width: `${(totalBookingRevenue / totalRevenue) * 100 || 0}%`
+                                }}
+                            ></div>
+                        </div>
+                    </div>
+
+                    {/* Doanh Thu Bán Gói */}
+                    <div className="bg-white p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
+                        <h2 className="text-lg font-semibold text-gray-700 mb-2">
+                            Doanh Thu Bán Gói
+                        </h2>
+                        <p className="text-2xl font-bold text-green-600">
+                            {formatCurrency(totalPlanRevenue)}
+                        </p>
+                        <div className="mt-2 h-1 bg-green-100 rounded-full">
+                            <div
+                                className="h-full bg-green-600 rounded-full"
+                                style={{
+                                    width: `${(totalPlanRevenue / totalRevenue) * 100 || 0}%`
+                                }}
+                            ></div>
+                        </div>
+                    </div>
+
+                    {/* Doanh Thu Bị Hủy */}
+                    <div className="bg-white p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
+                        <h2 className="text-lg font-semibold text-gray-700 mb-2">
+                            Doanh Thu Hủy Tour
+                        </h2>
+                        <p className="text-2xl font-bold text-red-600">
+                            {formatCurrency(totalCancelledRevenue)}
+                        </p>
+                        <div className="mt-2 h-1 bg-red-100 rounded-full">
+                            <div
+                                className="h-full bg-red-600 rounded-full"
+                                style={{
+                                    width: `${(totalCancelledRevenue / totalRevenue) * 100 || 0}%`
+                                }}
+                            ></div>
+                        </div>
+                    </div>
+
+                    {/* Tổng Doanh Thu */}
+                    <div className="bg-white p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
+                        <h2 className="text-lg font-semibold text-gray-700 mb-2">
+                            Tổng Doanh Thu
+                        </h2>
+                        <p className="text-2xl font-bold text-purple-600">
+                            {formatCurrency(totalRevenue)}
+                        </p>
+                        <div className="mt-2 h-1 bg-purple-100 rounded-full">
+                            <div
+                                className="h-full bg-purple-600 rounded-full"
+                                style={{ width: '100%' }}
+                            ></div>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -322,7 +445,7 @@ const SystemStatsPage = () => {
                                         Tổng Khách Hàng
                                     </h4>
                                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                                        {dashboardStats.TotalUsers}
+                                        {dashboardStats.totalUsers}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Khách Hàng
@@ -334,7 +457,7 @@ const SystemStatsPage = () => {
                                         Tổng Bình Luận
                                     </h4>
                                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                                        {dashboardStats.TotalComments}
+                                        {dashboardStats.totalComments}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Bình Luận
@@ -346,7 +469,7 @@ const SystemStatsPage = () => {
                                         Tổng Đánh Giá
                                     </h4>
                                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                                        {dashboardStats.TotalReviews}
+                                        {dashboardStats.totalReviews}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Đánh Giá
@@ -367,7 +490,7 @@ const SystemStatsPage = () => {
                                         Tổng Đối Tác
                                     </h4>
                                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                                        {dashboardStats.TotalPartners}
+                                        {dashboardStats.totalPartners}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Đối Tác
@@ -379,7 +502,7 @@ const SystemStatsPage = () => {
                                         Tổng Tour
                                     </h4>
                                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                                        {dashboardStats.TotalTours}
+                                        {dashboardStats.totalTours}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Tour
@@ -400,7 +523,7 @@ const SystemStatsPage = () => {
                                         Tổng Bài Blog
                                     </h4>
                                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                                        {dashboardStats.TotalBlogs}
+                                        {dashboardStats.totalBlogs}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Bài Viết
@@ -412,7 +535,7 @@ const SystemStatsPage = () => {
                                         Tổng Gói
                                     </h4>
                                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                                        {dashboardStats.TotalPlans}
+                                        {dashboardStats.totalPlans}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Gói
@@ -424,7 +547,7 @@ const SystemStatsPage = () => {
                                         Tổng Điểm Đánh Giá
                                     </h4>
                                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                                        {dashboardStats.TotalStarRatings}
+                                        {dashboardStats.totalStarRatings}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Điểm Số

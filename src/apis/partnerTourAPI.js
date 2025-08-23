@@ -5,7 +5,6 @@ const getAllTours = async (status = '') => {
         const response = await authorizedAxios.get(
             `api/partner/tours${status ? `?status=${status}` : ''}`
         )
-
         return response
     } catch (err) {
         console.error('API Error (getAllTours):', {
@@ -66,7 +65,6 @@ const createActivity = async (itineraryId, dto) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             }
         )
-
         return response
     } catch (err) {
         console.error('Lỗi API (createActivity):', {
@@ -89,7 +87,6 @@ const updateActivity = async (activityId, dto) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             }
         )
-
         return response
     } catch (err) {
         console.error('Lỗi API (updateActivity):', {
@@ -149,7 +146,6 @@ const updateTour = async (tourId, dto) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             }
         )
-
         return response
     } catch (err) {
         console.error('Lỗi API (updateTour):', {
@@ -325,10 +321,15 @@ const deleteOrDraftTour = async (tourId, action) => {
         throw err
     }
 }
-const getStatistics = async () => {
+
+const getStatistics = async (fromDate = null, toDate = null) => {
     try {
+        const params = new URLSearchParams()
+        if (fromDate) params.append('fromDate', fromDate)
+        if (toDate) params.append('toDate', toDate)
+
         const response = await authorizedAxios.get(
-            'api/partner/tours/statistics'
+            `api/partner/tours/statistics${params.toString() ? `?${params.toString()}` : ''}`
         )
         return response
     } catch (err) {
@@ -341,6 +342,7 @@ const getStatistics = async () => {
         throw err
     }
 }
+
 const createOrGet = async ({ tourId }) => {
     const response = await authorizedAxios.post(
         `/api/partner/tours/${tourId}/create-or-get`

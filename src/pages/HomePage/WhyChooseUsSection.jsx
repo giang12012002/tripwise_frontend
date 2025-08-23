@@ -22,7 +22,7 @@ function WhyChooseUsSection() {
                             <span className="text-2xl">⏰</span>
                         </div>
                         <h3 className="text-lg font-semibold">
-                            Giảm thời gian thiết kế
+                            Tối ưu thời gian thiết kế
                         </h3>
                         <p>AI giúp bạn tạo tour nhanh chóng</p>
                     </div>

@@ -16,6 +16,8 @@ import SystemStatsPage from '@/pages/Admin/LandingReportPage/SystemStatsPage'
 import AdminHotNewsList from '@/pages/Admin/HotNews/AdminHotNewList.jsx'
 import AdminHotNewsCreate from '@/pages/Admin/HotNews/AdminHotNewsCreate.jsx'
 import AdminLayout from '@/pages/Admin/AdminLayout'
+import AdminBookings from '@/pages/Admin/Bookings'
+import AdminBookingsDetail from '@/pages/Admin/Bookings/BookingDetail'
 
 function AdminRoutes() {
     return (
@@ -67,6 +69,11 @@ function AdminRoutes() {
                 <Route
                     path="hot-news/edit/:id"
                     element={<AdminHotNewsCreate />}
+                />
+                <Route path="bookings" element={<AdminBookings />} />
+                <Route
+                    path="bookings/:bookingId"
+                    element={<AdminBookingsDetail />}
                 />
             </Route>
             <Route path="*" element={<Navigate to="/404" replace />} />

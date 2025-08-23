@@ -58,12 +58,26 @@ const paymentAPI = {
     },
     fetchPaymentHistory: async ({ status }) => {
         const response = await authorizedAxios.get(
-            '/api/payment/payment-history?status=' + status
+            '/api/payment/payment-history',
+            {
+                params: status ? { status } : {} // chỉ thêm nếu có
+            }
         )
         return response
     },
     fetchBookingDetail: async ({ bookingId }) => {
         const response = await authorizedAxios.get(`/api/payment/${bookingId}`)
+        return response
+    },
+
+    sendRefundRequest: async ({ bookingId, refundMethod, cancelReason }) => {
+        const response = await authorizedAxios.post(
+            `/api/payment/${bookingId}/cancel`,
+            {
+                refundMethod,
+                cancelReason
+            }
+        )
         return response
     }
 }

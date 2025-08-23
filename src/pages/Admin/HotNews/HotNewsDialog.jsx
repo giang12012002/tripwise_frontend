@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
 
 const HotNewsDialog = ({ isOpen, onClose, onConfirm, news }) => {
     const [formData, setFormData] = useState({
@@ -48,7 +48,14 @@ const HotNewsDialog = ({ isOpen, onClose, onConfirm, news }) => {
         if (formData.imageUrl) {
             setPreviewImage(formData.imageUrl)
         } else {
-            toast.error('Vui lòng nhập URL hình ảnh trước khi thêm')
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng nhập URL hình ảnh trước khi thêm.',
+                showConfirmButton: true,
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#2563eb'
+            })
         }
     }
 

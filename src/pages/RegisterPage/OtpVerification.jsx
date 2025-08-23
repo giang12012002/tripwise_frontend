@@ -118,23 +118,24 @@ function OtpVerification() {
                     timer: 500
                 })
                 const { accessToken, refreshToken, userId } = response.data
-                if (accessToken && refreshToken) {
-                    localStorage.setItem('accessToken', accessToken)
-                    localStorage.setItem('refreshToken', refreshToken)
-                    localStorage.setItem(
-                        'deviceId',
-                        localStorage.getItem('deviceId')
-                    )
-                    if (userId) {
-                        localStorage.setItem('userId', userId)
-                    }
+                navigate('/signin')
+                // if (accessToken && refreshToken) {
+                //     localStorage.setItem('accessToken', accessToken)
+                //     localStorage.setItem('refreshToken', refreshToken)
+                //     localStorage.setItem(
+                //         'deviceId',
+                //         localStorage.getItem('deviceId')
+                //     )
+                //     if (userId) {
+                //         localStorage.setItem('userId', userId)
+                //     }
 
-                    const decodedToken = jwtDecode(accessToken)
-                    const extractedUserId = decodedToken.sub
-                    const extractedUsername = decodedToken.name
-                    login(extractedUsername, extractedUserId)
-                    navigate('/signin')
-                }
+                //     const decodedToken = jwtDecode(accessToken)
+                //     const extractedUserId = decodedToken.sub
+                //     const extractedUsername = decodedToken.name
+                //     login(extractedUsername, extractedUserId)
+
+                // }
             } else {
                 Swal.fire({
                     icon: 'error',

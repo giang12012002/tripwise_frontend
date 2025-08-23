@@ -34,7 +34,9 @@ const PartnerPerformanceReport = ({
     const chartData = data.map((item) => ({
         name: item.partnerName || 'N/A',
         totalBookings: item.totalBookings || 0,
-        totalRevenue: item.totalRevenue || 0
+        totalRevenue: item.totalRevenue || 0,
+        totalCancelled: item.totalCancelled || 0,
+        cancelledRevenue: item.cancelledRevenue || 0
     }))
 
     // Danh sách tháng/năm để chọn
@@ -178,6 +180,12 @@ const PartnerPerformanceReport = ({
                                     Số lượt đặt
                                 </th>
                                 <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Số lượt hủy tour
+                                </th>
+                                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Doanh số đặt tour
+                                </th>
+                                <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Tổng doanh thu
                                 </th>
                             </tr>
@@ -197,6 +205,12 @@ const PartnerPerformanceReport = ({
                                     </td>
                                     <td className="py-4 px-6">
                                         {item.totalBookings || 0}
+                                    </td>
+                                    <td className="py-4 px-6">
+                                        {item.totalCancelled || 0}
+                                    </td>
+                                    <td className="py-4 px-6">
+                                        {item.cancelledRevenue || 0}
                                     </td>
                                     <td className="py-4 px-6">
                                         {formatCurrency(item.totalRevenue)}
