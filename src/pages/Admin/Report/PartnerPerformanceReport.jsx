@@ -30,6 +30,21 @@ const PartnerPerformanceReport = ({
         }).format(validAmount)
     }
 
+    const formatYAxis = (value) => {
+        if (value >= 1_000_000_000) {
+            const billion = value / 1_000_000_000
+            return Number.isInteger(billion)
+                ? `${billion} tỷ`
+                : `${billion.toFixed(1)} tỷ`
+        } else if (value >= 1_000_000) {
+            const million = value / 1_000_000
+            return Number.isInteger(million)
+                ? `${million} triệu`
+                : `${million.toFixed(1)} triệu`
+        }
+        return value
+    }
+
     // Chuẩn bị dữ liệu cho biểu đồ (BarChart)
     const chartData = data.map((item) => ({
         name: item.partnerName || 'N/A',
@@ -77,6 +92,17 @@ const PartnerPerformanceReport = ({
                     Hiệu Suất Đối Tác Theo Tháng
                 </h3>
                 <div className="flex items-center space-x-4">
+                    <select
+                        value={selectedMonth}
+                        onChange={handleMonthChange}
+                        className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        {generateMonthOptions().map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
                     <button
                         onClick={onExport}
                         disabled={loading}
@@ -95,11 +121,15 @@ const PartnerPerformanceReport = ({
                     So Sánh Hiệu Suất Đối Tác
                 </h4>
                 {chartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={400}>
                         <BarChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
-                            <YAxis />
+                            <YAxis
+                                width={100}
+                                tickFormatter={formatYAxis}
+                                tick={{ fontSize: 12 }}
+                            />
                             <Tooltip
                                 formatter={(value, name) =>
                                     name === 'totalRevenue'
@@ -183,7 +213,7 @@ const PartnerPerformanceReport = ({
                                     Số lượt hủy tour
                                 </th>
                                 <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Doanh số đặt tour
+                                    Doanh thu hủy tour
                                 </th>
                                 <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Tổng doanh thu

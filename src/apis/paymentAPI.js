@@ -79,6 +79,13 @@ const paymentAPI = {
             }
         )
         return response
+    },
+
+    getRefundPreview: async (bookingId) => {
+        const response = await authorizedAxios.get(
+            `/api/payment/preview/${bookingId}`
+        )
+        return response
     }
 }
 

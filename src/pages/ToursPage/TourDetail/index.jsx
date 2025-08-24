@@ -7,6 +7,7 @@ import Bookings from './Bookings/index.jsx'
 import { useAuth } from '@/AuthContext'
 import Header from '@/components/header/Header.jsx'
 import Footer from '@/components/footer/Footer.jsx'
+import ReviewSection from './ReviewSection'
 
 const Index = () => {
     const { tourId } = useParams()
@@ -103,6 +104,7 @@ const Index = () => {
             [sectionKey]: !prev[sectionKey]
         }))
     }
+
     const formatDate = (dateString) => {
         if (!dateString) return 'Không xác định'
         try {
@@ -126,6 +128,7 @@ const Index = () => {
             return dateString
         }
     }
+
     const formatTime = (time) => {
         if (!time) return 'Không xác định'
         try {
@@ -171,6 +174,7 @@ const Index = () => {
             return () => clearInterval(interval)
         }
     }, [tour, currentImageIndex])
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 to-indigo-100">
@@ -543,10 +547,7 @@ const Index = () => {
                                                                                     src={
                                                                                         activity.imageUrls
                                                                                     }
-                                                                                    alt={`Activity ${
-                                                                                        index +
-                                                                                        1
-                                                                                    } image`}
+                                                                                    alt={`Activity ${index + 1} image`}
                                                                                     className="w-full h-full object-cover rounded-lg shadow-md scale-90 hover:scale-100 transition-transform duration-300"
                                                                                     onError={() =>
                                                                                         console.error(
@@ -571,7 +572,7 @@ const Index = () => {
                                 <h3 className="text-3xl font-extrabold text-center mb-8 uppercase text-indigo-700 tracking-wide">
                                     Những Thông Tin Cần Lưu Ý
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
                                     <div className="space-y-4">
                                         <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
                                             <button
@@ -607,18 +608,18 @@ const Index = () => {
                                                 'gia-tour-bao-gom'
                                             ] && (
                                                 <div className="p-6 bg-gray-50">
-                                                    <p className="text-gray-800 mb-2 ">
+                                                    <p className="text-gray-800 mb-2">
                                                         - Vé máy bay khứ hồi
                                                     </p>
-                                                    <p className="text-gray-800 mb-2 ">
+                                                    <p className="text-gray-800 mb-2">
                                                         - Phòng khách sạn 4 sao
                                                         chuẩn địa phương, tiêu
                                                         chuẩn 2 khách/phòng
                                                     </p>
-                                                    <p className="text-gray-800 mb-2 ">
+                                                    <p className="text-gray-800 mb-2">
                                                         - Bảo hiểm du lịch
                                                     </p>
-                                                    <p className="text-gray-800 mb-2 ">
+                                                    <p className="text-gray-800 mb-2">
                                                         - Hướng dẫn viên nói đi
                                                         theo suốt tuyến
                                                     </p>
@@ -659,24 +660,21 @@ const Index = () => {
                                                 'gia-tour-khong-bao-gom'
                                             ] && (
                                                 <div className="p-6 bg-gray-50">
-                                                    <p className="text-gray-800">
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - Hành lý ký gửi quá
-                                                            quy định.
-                                                        </p>
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - Chi phí cá nhân,
-                                                            hành lý quá cước và
-                                                            các chi phí phát
-                                                            sinh ngoài chương
-                                                            trình.
-                                                        </p>
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - Chi phí dời ngày
-                                                            về, đổi hành trình
-                                                            về (đổi chặng), nâng
-                                                            hạng vé máy bay.
-                                                        </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Hành lý ký gửi quá quy
+                                                        định.
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Chi phí cá nhân, hành
+                                                        lý quá cước và các chi
+                                                        phí phát sinh ngoài
+                                                        chương trình.
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Chi phí dời ngày về,
+                                                        đổi hành trình về (đổi
+                                                        chặng), nâng hạng vé máy
+                                                        bay.
                                                     </p>
                                                 </div>
                                             )}
@@ -715,25 +713,21 @@ const Index = () => {
                                                 'luu-y-gia-tre-em'
                                             ] && (
                                                 <div className="p-6 bg-gray-50">
-                                                    <p className="text-gray-800">
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            Giá Trẻ Em:
-                                                        </p>
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - Trẻ dưới 5 tuổi:
-                                                            Giá như trên
-                                                            website.
-                                                        </p>
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - Trẻ từ 5 - dưới 10
-                                                            tuổi: Giá như trên
-                                                            website.
-                                                        </p>
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - Trẻ từ 10 tuổi trở
-                                                            lên: 100% giá người
-                                                            lớn.
-                                                        </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        Giá Trẻ Em:
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Trẻ dưới 5 tuổi: Giá
+                                                        như trên website.
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Trẻ từ 5 - dưới 10
+                                                        tuổi: Giá như trên
+                                                        website.
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Trẻ từ 10 tuổi trở
+                                                        lên: 100% giá người lớn.
                                                     </p>
                                                 </div>
                                             )}
@@ -748,10 +742,10 @@ const Index = () => {
                                                 className="flex justify-between items-center w-full p-6 text-left bg-gradient-to-r from-white to-gray-50 hover:from-gray-50 hover:to-gray-100 transition-colors duration-300"
                                             >
                                                 <span className="text-lg text-gray-900 font-medium">
-                                                    Hủy đổi
+                                                    Lưu ý hủy tour
                                                 </span>
                                                 <span
-                                                    className={`transition-transform duration-300 ${openSections['cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'] ? 'rotate-180' : ''}`}
+                                                    className={`transition-transform duration-300 ${openSections['huy-doi'] ? 'rotate-180' : ''}`}
                                                 >
                                                     <svg
                                                         className="w-6 h-6 text-gray-600"
@@ -787,7 +781,76 @@ const Index = () => {
                                                 </div>
                                             )}
                                         </div>
-
+                                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+                                            <button
+                                                onClick={() =>
+                                                    toggleSection(
+                                                        'cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'
+                                                    )
+                                                }
+                                                className="flex justify-between items-center w-full p-6 text-left bg-gradient-to-r from-white to-gray-50 hover:from-gray-50 hover:to-gray-100 transition-colors duration-300"
+                                            >
+                                                <span className="text-lg text-gray-900 font-medium">
+                                                    Điều kiện hủy tour
+                                                </span>
+                                                <span
+                                                    className={`transition-transform duration-300 ${openSections['cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'] ? 'rotate-180' : ''}`}
+                                                >
+                                                    <svg
+                                                        className="w-6 h-6 text-gray-600"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M19 9l-7 7-7-7"
+                                                        />
+                                                    </svg>
+                                                </span>
+                                            </button>
+                                            {openSections[
+                                                'cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'
+                                            ] && (
+                                                <div className="p-6 bg-gray-50">
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Nếu hủy chuyến du lịch
+                                                        trong vòng lớn hơn 19
+                                                        ngày trước ngày khởi
+                                                        hành: Chi phí huỷ tour
+                                                        là 10% trên giá tour du
+                                                        lịch.
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Nếu hủy chuyến du lịch
+                                                        trong vòng từ 15–19 ngày
+                                                        trước ngày khởi hành:
+                                                        Chi phí huỷ tour là 50%
+                                                        trên giá tour du lịch.
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Nếu hủy chuyến du lịch
+                                                        trong vòng từ 07–14 ngày
+                                                        trước ngày khởi hành:
+                                                        Chi phí huỷ tour là 70%
+                                                        trên giá vé du lịch.
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Nếu hủy chuyến du lịch
+                                                        trong vòng dưới 7 ngày
+                                                        trước ngày khởi hành :
+                                                        Chi phí huỷ tour là 100%
+                                                        trên giá vé du lịch.
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Lưu ý: không hỗ trợ
+                                                        hủy tour đối với ngày lễ
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
                                             <button
                                                 onClick={() =>
@@ -818,23 +881,21 @@ const Index = () => {
                                             </button>
                                             {openSections['lien-he'] && (
                                                 <div className="p-6 bg-gray-50">
-                                                    <p className="text-gray-800">
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - Mọi chi tiết vui
-                                                            lòng liên hệ:
-                                                        </p>
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - Hòa Lạc, Việt Nam
-                                                        </p>
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - Điện thoại:
-                                                            0339.805.402 .
-                                                        </p>
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - TRIPWISE KÍNH CHÚC
-                                                            QUÝ KHÁCH MỘT CHUYẾN
-                                                            DU LỊCH VUI VẺ!
-                                                        </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Mọi chi tiết vui lòng
+                                                        liên hệ:
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Hòa Lạc, Việt Nam
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Điện thoại:
+                                                        0339.805.402
+                                                    </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - TRIPWISE KÍNH CHÚC QUÝ
+                                                        KHÁCH MỘT CHUYẾN DU LỊCH
+                                                        VUI VẺ!
                                                     </p>
                                                 </div>
                                             )}
@@ -852,7 +913,7 @@ const Index = () => {
                                                     Hướng dẫn viên
                                                 </span>
                                                 <span
-                                                    className={`transition-transform duration-300 ${openSections['huong-dan-vien'] ? 'rotate-180' : ''}`}
+                                                    className={`transition-transform duration-300 ${openSections['thong-tin-visa'] ? 'rotate-180' : ''}`}
                                                 >
                                                     <svg
                                                         className="w-6 h-6 text-gray-600"
@@ -871,17 +932,14 @@ const Index = () => {
                                             </button>
                                             {openSections['thong-tin-visa'] && (
                                                 <div className="p-6 bg-gray-50">
-                                                    <p className="text-gray-800">
-                                                        <p className="text-gray-800 mb-2 ">
-                                                            - Hướng Dẫn Viên
-                                                            (HDV) sẽ liên lạc
-                                                            với Quý Khách khoảng
-                                                            2-3 ngày trước khi
-                                                            khởi hành để sắp xếp
-                                                            giờ đón và cung cấp
-                                                            các thông tin cần
-                                                            thiết cho chuyển đi.
-                                                        </p>
+                                                    <p className="text-gray-800 mb-2">
+                                                        - Hướng Dẫn Viên (HDV)
+                                                        sẽ liên lạc với Quý
+                                                        Khách khoảng 2-3 ngày
+                                                        trước khi khởi hành để
+                                                        sắp xếp giờ đón và cung
+                                                        cấp các thông tin cần
+                                                        thiết cho chuyển đi.
                                                     </p>
                                                 </div>
                                             )}
@@ -889,6 +947,7 @@ const Index = () => {
                                     </div>
                                 </div>
                             </div>
+                            <ReviewSection tourId={tourId} />
                         </div>
                     </div>
                 </div>
@@ -897,7 +956,6 @@ const Index = () => {
                     <Bookings tour={tour} />
                 </div>
             </div>
-
             <Footer />
         </div>
     )

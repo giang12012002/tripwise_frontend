@@ -174,6 +174,13 @@ const getBookings = async ({ partnerId, fromDate, toDate, status }) => {
     return response
 }
 
+const getBookingDetail = async ({ bookingId }) => {
+    const response = await authorizedAxios.get(
+        'api/admin/tours/booking-detail/' + bookingId
+    )
+    return response
+}
+
 export default {
     getAllTours,
     getPendingTours,
@@ -185,5 +192,6 @@ export default {
     confirmRefund,
     completeRefund,
     rejectRefund,
-    getBookings
+    getBookings,
+    getBookingDetail
 }

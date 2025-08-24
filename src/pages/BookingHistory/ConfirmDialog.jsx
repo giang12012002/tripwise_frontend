@@ -10,7 +10,7 @@ const paymentMethods = [
 function ConfirmDialog({ booking, isOpen, onClose, onConfirm }) {
     const [isVisible, setIsVisible] = useState(false)
     const [animationClass, setAnimationClass] = useState('fade-in')
-    const [selectedMethod, setSelectedMethod] = useState('vnpay')
+    const [selectedMethod, setSelectedMethod] = useState('chuyển khoản')
     const [refundReason, setRefundReason] = useState('')
 
     useEffect(() => {
@@ -24,6 +24,7 @@ function ConfirmDialog({ booking, isOpen, onClose, onConfirm }) {
     }, [isOpen])
 
     if (!isVisible || !booking) return null
+    console.log('Booking:', booking)
 
     return (
         <div
@@ -31,13 +32,6 @@ function ConfirmDialog({ booking, isOpen, onClose, onConfirm }) {
         >
             <div className="bg-white rounded-xl shadow-lg max-w-3xl w-full p-6 md:p-8 transition-transform duration-300">
                 <h2 className="text-lg font-semibold mb-4">Hoàn tiền:</h2>
-
-                {/* <p className="text-gray-700 mb-4 text-base">
-                    Tổng giá:{' '}
-                    <span className="font-bold text-green-600">
-                        {plan.price.toLocaleString()} VND
-                    </span>
-                </p> */}
 
                 <div className="flex flex-col md:flex-row justify-between gap-4">
                     {/* Chọn phương thức thanh toán */}
@@ -94,6 +88,32 @@ function ConfirmDialog({ booking, isOpen, onClose, onConfirm }) {
                             onChange={(e) => setRefundReason(e.target.value)}
                         />
                     </div>
+                </div>
+
+                {/* Chính sách hoàn tiền */}
+                <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
+                    <p className="font-semibold mb-2">Chính sách hoàn tiền:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                        <li>
+                            Hủy từ 20 ngày trở lên trước ngày khởi hành: khấu
+                            trừ 10% giá tour
+                        </li>
+                        <li>
+                            Hủy trong vòng 15–19 ngày trước ngày khởi hành: khấu
+                            trừ 50% giá tour
+                        </li>
+                        <li>
+                            Hủy trong vòng 7–14 ngày trước ngày khởi hành: khấu
+                            trừ 70% giá tour
+                        </li>
+                        <li>
+                            Hủy dưới 7 ngày trước ngày khởi hành: không hoàn
+                            tiền (100% giá tour)
+                        </li>
+                    </ul>
+                    <span className="font-semibold text-red-500 mt-2 block">
+                        {booking.refundMessage || 'Chưa có'}
+                    </span>
                 </div>
 
                 {/* Footer */}

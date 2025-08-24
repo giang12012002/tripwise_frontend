@@ -7,7 +7,6 @@ const Footer = () => {
     const { isLoggedIn } = useAuth()
 
     const handleSubscribe = () => {
-        console.log('Guest user navigating to /register') // Log để debug
         navigate('/register', { replace: false })
     }
 
@@ -53,7 +52,7 @@ const Footer = () => {
                                     href="/connect"
                                     className="hover:text-blue-200 transition-colors"
                                 >
-                                    Liên Hệ
+                                    Hợp Tác
                                 </a>
                             </li>
                         </ul>
@@ -66,7 +65,7 @@ const Footer = () => {
                             <li>
                                 Email:{' '}
                                 <a
-                                    href="mailto:giangldhe160270@fpt.edu.vn"
+                                    // href="mailto:giangldhe160270@fpt.edu.vn"
                                     className="hover:text-blue-200 transition-colors"
                                 >
                                     hotro@tripwise.com
@@ -75,7 +74,7 @@ const Footer = () => {
                             <li>
                                 Điện thoại:{' '}
                                 <a
-                                    href="tel:+1234567890"
+                                    // href="tel:+1234567890"
                                     className="hover:text-blue-200 transition-colors"
                                 >
                                     +84 339 805 402
@@ -91,7 +90,7 @@ const Footer = () => {
                             Kết Nối Với Chúng Tôi
                         </h3>
                         <p className="text-sm mb-4">
-                            Đăng ký mgay để trải nghiệm mọi tiện tích của
+                            Đăng ký ngay để trải nghiệm mọi tiện tích của
                             TripWise!
                         </p>
                         <div className="flex">

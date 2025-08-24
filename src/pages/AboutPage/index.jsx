@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import hanoiImage from '@/assets/images/Home1.jpeg'
@@ -21,7 +21,7 @@ import AboutImage from '@/assets/images/AboutImage.jpg'
 // Mock data for the page content
 const mockData = {
     Header: {
-        Text: 'TripWise là nền tảng trực tuyến tiên phong trong việc sử dụng trí tuệ nhân tạo (AI) để tạo lịch trình du lịch cá nhân hóa...',
+        Text: 'TripWise - Website du lịch thông minh tiên phong trong việc sử dụng trí tuệ nhân tạo (AI) để tạo lịch trình du lịch cá nhân hóa...',
         ImageUrl1: hanoiImage,
         ImageUrl2: hoianImage,
         ImageUrl3: phuyenImage
@@ -97,15 +97,24 @@ const mockData = {
     }
 }
 
-const AboutUs = () => {
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-    }, []) // Chạy khi component mount
+// Cuộn lên đầu trang khi component được mount
 
+const AboutUs = () => {
+    const headerRef = useRef(null)
+
+    useEffect(() => {
+        if (headerRef.current) {
+            headerRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            })
+        }
+    }, [])
     return (
         <div className="flex flex-col min-h-screen scroll-smooth">
-            <Header />
-
+            <div ref={headerRef}>
+                <Header />
+            </div>
             <div className="container px-6 mx-auto grow">
                 <section
                     className="relative mx-4 md:mx-12 flex flex-col justify-center py-28 text-white bg-center bg-cover min-h-[60vh] overflow-hidden transition-all duration-500"
@@ -235,42 +244,42 @@ const AboutUs = () => {
 
                 <hr className="w-3/4 mx-auto my-8 border-t-2 border-teal-100" />
 
-                <section className="mx-4 md:mx-12 py-16 px-6 text-center bg-gradient-to-b from-white to-gray-50 rounded-2xl">
-                    <h2 className="inline-block px-6 py-3 mb-12 text-3xl font-bold text-center text-teal-600 rounded-full bg-teal-50 mx-auto">
-                        CÂU CHUYỆN THƯƠNG HIỆU
-                    </h2>
-                    <div className="relative max-w-6xl mx-auto">
-                        {mockData.BrandStories.map((item, index) => (
-                            <div
-                                key={index}
-                                className={`flex flex-col md:flex-row items-center gap-8 mb-12 ${index % 2 === 1 ? 'md:flex-row-reverse' : ''}`}
-                            >
-                                <div className="w-full md:w-1/6 text-center">
-                                    <div className="w-12 h-12 mx-auto bg-teal-500 rounded-full flex items-center justify-center text-white font-bold">
-                                        {index + 1}
-                                    </div>
-                                    <p className="mt-2 text-lg font-semibold text-gray-700">
-                                        {item.Milestone}
-                                    </p>
-                                </div>
-                                <div className="w-full md:w-1/3">
-                                    <img
-                                        src={item.ImageUrl}
-                                        alt=""
-                                        className="w-full h-64 object-cover rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300"
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300">
-                                    <p className="text-base text-gray-700 text-left">
-                                        {item.Describe}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
+                {/*<section className="mx-4 md:mx-12 py-16 px-6 text-center bg-gradient-to-b from-white to-gray-50 rounded-2xl">*/}
+                {/*    <h2 className="inline-block px-6 py-3 mb-12 text-3xl font-bold text-center text-teal-600 rounded-full bg-teal-50 mx-auto">*/}
+                {/*        CÂU CHUYỆN THƯƠNG HIỆU*/}
+                {/*    </h2>*/}
+                {/*    <div className="relative max-w-6xl mx-auto">*/}
+                {/*        {mockData.BrandStories.map((item, index) => (*/}
+                {/*            <div*/}
+                {/*                key={index}*/}
+                {/*                className={`flex flex-col md:flex-row items-center gap-8 mb-12 ${index % 2 === 1 ? 'md:flex-row-reverse' : ''}`}*/}
+                {/*            >*/}
+                {/*                <div className="w-full md:w-1/6 text-center">*/}
+                {/*                    <div className="w-12 h-12 mx-auto bg-teal-500 rounded-full flex items-center justify-center text-white font-bold">*/}
+                {/*                        {index + 1}*/}
+                {/*                    </div>*/}
+                {/*                    <p className="mt-2 text-lg font-semibold text-gray-700">*/}
+                {/*                        {item.Milestone}*/}
+                {/*                    </p>*/}
+                {/*                </div>*/}
+                {/*                <div className="w-full md:w-1/3">*/}
+                {/*                    <img*/}
+                {/*                        src={item.ImageUrl}*/}
+                {/*                        alt=""*/}
+                {/*                        className="w-full h-64 object-cover rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300"*/}
+                {/*                    />*/}
+                {/*                </div>*/}
+                {/*                <div className="w-full md:w-1/2 p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300">*/}
+                {/*                    <p className="text-base text-gray-700 text-left">*/}
+                {/*                        {item.Describe}*/}
+                {/*                    </p>*/}
+                {/*                </div>*/}
+                {/*            </div>*/}
+                {/*        ))}*/}
+                {/*    </div>*/}
+                {/*</section>*/}
 
-                <hr className="w-3/4 mx-auto my-8 border-t-2 border-teal-100" />
+                {/*<hr className="w-3/4 mx-auto my-8 border-t-2 border-teal-100" />*/}
 
                 <section className="mx-4 md:mx-12 py-16 px-6 text-center bg-white rounded-2xl">
                     <h2 className="inline-block px-6 py-3 mb-12 text-3xl font-bold text-teal-600 rounded-full bg-teal-50">

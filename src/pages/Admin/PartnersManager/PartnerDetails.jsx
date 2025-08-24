@@ -140,13 +140,13 @@ const PartnerDetails = ({
                         <div className="mb-6 space-y-4">
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
-                                    Ngày xóa:
+                                    Ngày vô hiệu hóa:
                                 </strong>{' '}
                                 {formatDate(partner.removedDate)}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
-                                    Xóa bởi:
+                                    Vô hiệu hóa bởi:
                                 </strong>{' '}
                                 {partner.removedByName ||
                                     partner.removedBy ||
@@ -154,7 +154,7 @@ const PartnerDetails = ({
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
-                                    Lý do xóa:
+                                    Lý do vô hiệu hóa:
                                 </strong>{' '}
                                 {partner.removedReason || 'Không có'}
                             </p>

@@ -26,6 +26,17 @@ function CreateItinerary() {
     const [errors, setErrors] = useState({})
     const [shouldScroll, setShouldScroll] = useState(false)
     const fieldRefs = useRef({})
+    const headerRef = useRef(null)
+
+    // Cuộn lên đầu trang khi component được mount
+    useEffect(() => {
+        if (headerRef.current) {
+            headerRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            })
+        }
+    }, [])
 
     const handleRadioChange = (name, value) => {
         if (loading) return
@@ -195,7 +206,7 @@ function CreateItinerary() {
 
         try {
             const response = await travelFormAPI.createItinerary(submissionData)
-            console.log('Phản hồi API:', response.data)
+
             const itineraryData = response.data.data
             const generatePlanId = response.data.id
 
@@ -205,7 +216,7 @@ function CreateItinerary() {
                     title: 'Thành công',
                     text: 'Tạo lịch trình thành công!',
                     showConfirmButton: false,
-                    timer: 1500
+                    timer: 1800
                 })
                 navigate('/user/itinerary', {
                     state: {
@@ -548,7 +559,9 @@ function CreateItinerary() {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Header />
+            <div ref={headerRef}>
+                <Header />
+            </div>
             <div className="flex-grow p-8 max-w-5xl mx-auto bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl my-10">
                 <div className="mb-8">
                     <h2 className="text-5xl font-extrabold text-gray-900 tracking-tight">
