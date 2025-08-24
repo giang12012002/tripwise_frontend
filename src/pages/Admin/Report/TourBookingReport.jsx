@@ -22,6 +22,20 @@ const TourBookingReport = ({ data, onExport, loading }) => {
         }).format(validAmount)
     }
 
+    const formatYAxis = (value) => {
+        if (value >= 1_000_000_000) {
+            const billion = value / 1_000_000_000
+            return Number.isInteger(billion)
+                ? `${billion} tỷ`
+                : `${billion.toFixed(1)} tỷ`
+        } else if (value >= 1_000_000) {
+            const million = value / 1_000_000
+            return Number.isInteger(million)
+                ? `${million} triệu`
+                : `${million.toFixed(1)} triệu`
+        }
+        return value
+    }
     // Chuẩn bị dữ liệu cho biểu đồ (BarChart) - nhóm theo tour
     const chartData = data.map((item) => ({
         name: item.tourName || 'N/A',
@@ -61,11 +75,15 @@ const TourBookingReport = ({ data, onExport, loading }) => {
                     So Sánh Đặt Tour Theo Tour
                 </h4>
                 {chartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={400}>
                         <BarChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
-                            <YAxis />
+                            <YAxis
+                                width={100}
+                                tickFormatter={formatYAxis}
+                                tick={{ fontSize: 12 }}
+                            />
                             <Tooltip
                                 formatter={(value, name) =>
                                     name === 'totalRevenue'
@@ -145,7 +163,7 @@ const TourBookingReport = ({ data, onExport, loading }) => {
                                     Số lượt đặt
                                 </th>
                                 <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    số lượng hủy
+                                    Số lượng hủy
                                 </th>
                                 <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Doanh thu hủy tour

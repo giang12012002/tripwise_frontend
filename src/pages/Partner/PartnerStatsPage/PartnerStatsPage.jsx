@@ -186,13 +186,13 @@ const PartnerStatsPage = () => {
                             maxDate={new Date()}
                         />
                     </div>
-                    <button
-                        type="submit"
-                        onClick={handleFilterSubmit}
-                        className="mt-8 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
-                        Lọc
-                    </button>
+                    {/*<button*/}
+                    {/*    type="submit"*/}
+                    {/*    onClick={handleFilterSubmit}*/}
+                    {/*    className="mt-8 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"*/}
+                    {/*>*/}
+                    {/*    Lọc*/}
+                    {/*</button>*/}
                 </form>
             </div>
 
@@ -253,11 +253,11 @@ const PartnerStatsPage = () => {
                                         {stat.totalCancelled || 0}
                                     </p>
                                     <p className="text-green-500">
-                                        Doanh số hủy tour :{' '}
+                                        Doanh thu hủy tour :{' '}
                                         {stat.cancelledRevenue || 0}
                                     </p>
                                     <p className="text-yellow-500">
-                                        Số Tour Đã Đặt:{' '}
+                                        Booking Thành Công:{' '}
                                         {stat.totalBookedTours || 0}
                                     </p>
                                     <p className="text-yellow-500">
@@ -282,3 +282,4 @@ const PartnerStatsPage = () => {
 }
 
 export default PartnerStatsPage
+1

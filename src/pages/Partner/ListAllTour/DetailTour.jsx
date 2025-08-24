@@ -833,7 +833,71 @@ const DetailTour = () => {
                                     </div>
                                 )}
                             </div>
-
+                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+                                <button
+                                    onClick={() =>
+                                        toggleSection(
+                                            'cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'
+                                        )
+                                    }
+                                    className="flex justify-between items-center w-full p-6 text-left bg-gradient-to-r from-white to-gray-50 hover:from-gray-50 hover:to-gray-100 transition-colors duration-300"
+                                >
+                                    <span className="text-lg text-gray-900 font-medium">
+                                        Điều kiện hủy tour
+                                    </span>
+                                    <span
+                                        className={`transition-transform duration-300 ${openSections['cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'] ? 'rotate-180' : ''}`}
+                                    >
+                                        <svg
+                                            className="w-6 h-6 text-gray-600"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M19 9l-7 7-7-7"
+                                            />
+                                        </svg>
+                                    </span>
+                                </button>
+                                {openSections[
+                                    'cac-dieu-kien-huy-tour-doi-voi-ngay-thuong'
+                                ] && (
+                                    <div className="p-6 bg-gray-50">
+                                        <p className="text-gray-800 mb-2 ">
+                                            - Nếu hủy chuyến du lịch trong vòng
+                                            lớn hơn 19 ngày trước ngày khởi
+                                            hành: Chi phí huỷ tour là 10% trên
+                                            giá tour du lịch.
+                                        </p>
+                                        <p className="text-gray-800 mb-2 ">
+                                            - Nếu hủy chuyến du lịch trong vòng
+                                            từ 15–19 ngày trước ngày khởi hành:
+                                            Chi phí huỷ tour là 50% trên giá
+                                            tour du lịch.
+                                        </p>
+                                        <p className="text-gray-800 mb-2 ">
+                                            - Nếu hủy chuyến du lịch trong vòng
+                                            từ 07–14 ngày trước ngày khởi hành:
+                                            Chi phí huỷ tour là 70% trên giá vé
+                                            du lịch.
+                                        </p>
+                                        <p className="text-gray-800 mb-2 ">
+                                            - Nếu hủy chuyến du lịch trong vòng
+                                            dưới 7 ngày trước ngày khởi hành :
+                                            Chi phí huỷ tour là 100% trên giá vé
+                                            du lịch.
+                                        </p>
+                                        <p className="text-gray-800 mb-2 ">
+                                            - Lưu ý: không hỗ trợ hủy tour đối
+                                            với ngày lễ
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                             <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <button
                                     onClick={() => toggleSection('lien-he')}

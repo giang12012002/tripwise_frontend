@@ -170,13 +170,13 @@ const UserDetails = ({
                         <div className="mb-6 space-y-4">
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
-                                    Ngày xóa:
+                                    Ngày vô hiệu hóa:
                                 </strong>{' '}
                                 {formatDate(user.removedDate)}
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
-                                    Xóa bởi:
+                                    Vô hiệu hóa bởi:
                                 </strong>{' '}
                                 {user.removedByName ||
                                     user.removedBy ||
@@ -184,7 +184,7 @@ const UserDetails = ({
                             </p>
                             <p className="text-sm">
                                 <strong className="text-gray-600 font-semibold">
-                                    Lý do xóa:
+                                    Lý do vô hiệu hóa:
                                 </strong>{' '}
                                 {user.removedReason || 'Không có'}
                             </p>

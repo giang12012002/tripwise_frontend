@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
-import { format, subDays, addDays } from 'date-fns'
+import { format } from 'date-fns'
 
 const DateRangePicker = ({ onDateChange }) => {
+    const currentYear = new Date().getFullYear()
     const [fromDate, setFromDate] = useState(
-        format(subDays(new Date(), 1), 'yyyy-MM-dd')
+        format(new Date(currentYear, 0, 1), 'yyyy-MM-dd')
     )
     const [toDate, setToDate] = useState(
-        format(addDays(new Date(), 1), 'yyyy-MM-dd')
+        format(new Date(currentYear, 11, 31), 'yyyy-MM-dd')
     )
 
     useEffect(() => {
@@ -45,12 +46,6 @@ const DateRangePicker = ({ onDateChange }) => {
                     className="mt-1 p-2 border rounded-md"
                 />
             </div>
-            <button
-                onClick={handleSubmit}
-                className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-                Lọc
-            </button>
         </div>
     )
 }
