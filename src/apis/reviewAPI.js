@@ -35,6 +35,39 @@ const reviewAPI = {
     getAverageReview: async () => {
         const response = await authorizedAxios.get('/api/Review/GetAVGReview')
         return response
+    },
+
+    getReviewsByTour: async (tourId) => {
+        const response = await authorizedAxios.get(
+            `/api/Review/tour-partner/${tourId}`
+        )
+        return response
+    },
+
+    addTourReview: async ({ tourId, rating, comment }) => {
+        const response = await authorizedAxios.post(
+            '/api/Review/tour-partner',
+            {
+                tourId,
+                rating,
+                comment
+            }
+        )
+        return response
+    },
+
+    getAvgReviewByTour: async (tourId) => {
+        const response = await authorizedAxios.get(
+            `/api/Review/GetAVGReview-partner/${tourId}`
+        )
+        return response
+    },
+
+    getAllReviewsByPartner: async () => {
+        const response = await authorizedAxios.get(
+            '/api/Review/GetAllreviewtour-partner'
+        )
+        return response
     }
 }
 

@@ -10,7 +10,7 @@ const paymentMethods = [
 function ConfirmDialog({ booking, isOpen, onClose, onConfirm }) {
     const [isVisible, setIsVisible] = useState(false)
     const [animationClass, setAnimationClass] = useState('fade-in')
-    const [selectedMethod, setSelectedMethod] = useState('vnpay')
+    const [selectedMethod, setSelectedMethod] = useState('chuyển khoản')
     const [refundReason, setRefundReason] = useState('')
 
     useEffect(() => {
@@ -24,6 +24,7 @@ function ConfirmDialog({ booking, isOpen, onClose, onConfirm }) {
     }, [isOpen])
 
     if (!isVisible || !booking) return null
+    console.log('Booking:', booking)
 
     return (
         <div
@@ -93,11 +94,26 @@ function ConfirmDialog({ booking, isOpen, onClose, onConfirm }) {
                 <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
                     <p className="font-semibold mb-2">Chính sách hoàn tiền:</p>
                     <ul className="list-disc pl-5 space-y-1">
-                        <li>≥ 20 ngày trước khởi hành: mất 10% giá tour</li>
-                        <li>15–19 ngày: mất 50%</li>
-                        <li>7–14 ngày: mất 70%</li>
-                        <li>{'<'} 7 ngày: mất 100%</li>
+                        <li>
+                            Hủy từ 20 ngày trở lên trước ngày khởi hành: khấu
+                            trừ 10% giá tour
+                        </li>
+                        <li>
+                            Hủy trong vòng 15–19 ngày trước ngày khởi hành: khấu
+                            trừ 50% giá tour
+                        </li>
+                        <li>
+                            Hủy trong vòng 7–14 ngày trước ngày khởi hành: khấu
+                            trừ 70% giá tour
+                        </li>
+                        <li>
+                            Hủy dưới 7 ngày trước ngày khởi hành: không hoàn
+                            tiền (100% giá tour)
+                        </li>
                     </ul>
+                    <span className="font-semibold text-red-500 mt-2 block">
+                        {booking.refundMessage || 'Chưa có'}
+                    </span>
                 </div>
 
                 {/* Footer */}

@@ -1,8 +1,8 @@
 // PartnerBookingDetail.jsx
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
-import { bookingTourAPI } from '@/apis'
-import { status } from '../bookingStatus'
+import { adminManagerTourAPI } from '@/apis'
+import { status, refundStatus } from '../bookingStatus'
 
 function Index() {
     const location = useLocation()
@@ -22,11 +22,23 @@ function Index() {
         )
     }
 
+    const getRefundStatusConfig = (value) => {
+        return (
+            refundStatus.find((s) => s.value === value) || {
+                background: 'bg-gray-100',
+                text: 'text-gray-800',
+                vietnamese: value
+            }
+        )
+    }
+
     const stt = getStatusConfig(booking?.paymentStatus)
+
+    const refundStatusConfig = getRefundStatusConfig(booking?.refundStatus)
 
     const fetchBookingDetail = async () => {
         try {
-            const response = await bookingTourAPI.getBookingDetail({
+            const response = await adminManagerTourAPI.getBookingDetail({
                 bookingId
             })
             if (response.status === 200) {
@@ -290,6 +302,64 @@ function Index() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Thông tin hoàn tiền */}
+                    {booking?.refundStatus && (
+                        <div className="mb-8">
+                            <h2 className="text-xl font-bold text-gray-700 mb-4">
+                                Thông tin hoàn tiền
+                            </h2>
+                            {/* Thêm div cha này để tạo lưới 2 cột */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex flex-col">
+                                    <span className="text-gray-500 text-sm">
+                                        Số tiền hoàn
+                                    </span>
+                                    <span className="text-gray-800 font-medium">
+                                        {formatCurrency(booking?.refundAmount)}
+                                    </span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-gray-500 text-sm">
+                                        Trạng thái hoàn tiền
+                                    </span>
+                                    <span
+                                        className={`inline-block w-fit px-4 py-1 text-sm font-semibold rounded-full ${refundStatusConfig.background} ${refundStatusConfig.text}`}
+                                    >
+                                        {refundStatusConfig.vietnamese}
+                                    </span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-gray-500 text-sm">
+                                        Phương thức hoàn tiền
+                                    </span>
+                                    <span className="text-gray-800 font-medium">
+                                        {booking?.refundMethod || 'Chưa có'}
+                                    </span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-gray-500 text-sm">
+                                        Lý do hủy
+                                    </span>
+                                    <span className="text-gray-800 font-medium">
+                                        {booking?.cancelReason || 'Chưa có'}
+                                    </span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-gray-500 text-sm">
+                                        Ngày hoàn tiền
+                                    </span>
+                                    <span className="text-gray-800 font-medium">
+                                        {booking?.refundDate
+                                            ? new Date(
+                                                  booking?.refundDate
+                                              ).toLocaleString('vi-VN')
+                                            : 'Chưa có'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </main>
         </div>
