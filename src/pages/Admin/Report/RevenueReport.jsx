@@ -32,6 +32,21 @@ const RevenueReport = ({ data, onExport, loading }) => {
             currency: 'VND'
         }).format(amount)
 
+    const formatYAxis = (value) => {
+        if (value >= 1_000_000_000) {
+            const billion = value / 1_000_000_000
+            return Number.isInteger(billion)
+                ? `${billion} tỷ`
+                : `${billion.toFixed(1)} tỷ`
+        } else if (value >= 1_000_000) {
+            const million = value / 1_000_000
+            return Number.isInteger(million)
+                ? `${million} triệu`
+                : `${million.toFixed(1)} triệu`
+        }
+        return value
+    }
+
     const isValidDate = (date) => {
         return date && !isNaN(new Date(date).getTime())
     }
@@ -42,12 +57,12 @@ const RevenueReport = ({ data, onExport, loading }) => {
         totalCombined: item.totalCombinedRevenue || 0
     }))
 
-    // Prepare data for pie chart of tour vs plan revenue for the selected month
+    // Prepare data for pie chart of tour vs plan vs cancelled revenue for the selected month
     const getPieData = (month) => {
         const selectedTotal = totals.find((item) => item.month === month)
         if (!selectedTotal) {
             return [
-                { name: 'Tổng Tour', value: 0, percentage: 0 },
+                { name: 'Tổng Đăt Tour Thành Công', value: 0, percentage: 0 },
                 { name: 'Tổng Gói', value: 0, percentage: 0 },
                 { name: 'Tổng Hủy Tour', value: 0, percentage: 0 }
             ]
@@ -55,12 +70,22 @@ const RevenueReport = ({ data, onExport, loading }) => {
         const totalTour = selectedTotal.totalBookingRevenue || 0
         const totalPlan = selectedTotal.totalPlanRevenue || 0
         const totalCancelTour = selectedTotal.cancelledRevenue || 0
-        const total = totalTour + totalPlan
+        const total = totalTour + totalPlan + totalCancelTour
         const tourPercentage = total ? (totalTour / total) * 100 : 0
         const planPercentage = total ? (totalPlan / total) * 100 : 0
+        const cancelPercentage = total ? (totalCancelTour / total) * 100 : 0
         return [
-            { name: 'Tổng Tour', value: totalTour, percentage: tourPercentage },
-            { name: 'Tổng Gói', value: totalPlan, percentage: planPercentage }
+            {
+                name: 'Đăt Tour Thành Công',
+                value: totalTour,
+                percentage: tourPercentage
+            },
+            { name: 'Gói', value: totalPlan, percentage: planPercentage },
+            {
+                name: 'Hủy Tour',
+                value: totalCancelTour,
+                percentage: cancelPercentage
+            }
         ]
     }
 
@@ -71,7 +96,7 @@ const RevenueReport = ({ data, onExport, loading }) => {
         return userID.toLowerCase() === searchUserID.toLowerCase()
     })
 
-    const COLORS = ['#8884d8', '#82ca9d']
+    const COLORS = ['#8884d8', '#82ca9d', '#ff7300']
 
     return (
         <div className="space-y-6">
@@ -90,18 +115,22 @@ const RevenueReport = ({ data, onExport, loading }) => {
             {loading && (
                 <p className="text-blue-600 font-medium">Đang tải dữ liệu...</p>
             )}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap634">
                 {/* Bar Chart for Total Combined Revenue by Month */}
                 <div className="bg-white p-4 rounded-lg shadow-md">
                     <h4 className="text-lg font-medium mb-4 text-gray-700">
                         Tổng Doanh Thu Theo Tháng
                     </h4>
                     {totals.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={300}>
+                        <ResponsiveContainer width="100%" height={400}>
                             <BarChart data={totalCombinedBarData}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="month" />
-                                <YAxis />
+                                <YAxis
+                                    width={100}
+                                    tickFormatter={formatYAxis}
+                                    tick={{ fontSize: 12 }}
+                                />
                                 <Tooltip
                                     formatter={(value) => formatCurrency(value)}
                                 />
@@ -110,7 +139,7 @@ const RevenueReport = ({ data, onExport, loading }) => {
                                     barSize={40}
                                     dataKey="totalCombined"
                                     fill="#ff7300"
-                                    name="Tổng Cộng"
+                                    name="Tổng Doanh Thu"
                                 />
                             </BarChart>
                         </ResponsiveContainer>
@@ -120,10 +149,10 @@ const RevenueReport = ({ data, onExport, loading }) => {
                         </p>
                     )}
                 </div>
-                {/* Pie Chart for Tour vs Plan Revenue by Selected Month */}
+                {/* Pie Chart for Tour vs Plan vs Cancelled Revenue by Selected Month */}
                 <div className="bg-white p-4 rounded-lg shadow-md">
                     <h4 className="text-lg font-medium mb-4 text-gray-700">
-                        Tỷ Lệ Doanh Thu Tour vs Gói Theo Từng Tháng
+                        Tỷ Lệ Doanh Thu Tour vs Gói vs Hủy Tour Theo Từng Tháng
                     </h4>
                     <div className="mb-4">
                         <label className="mr-2 text-gray-700">
@@ -142,7 +171,7 @@ const RevenueReport = ({ data, onExport, loading }) => {
                         </select>
                     </div>
                     {totals.length > 0 && selectedMonth ? (
-                        <ResponsiveContainer width="100%" height={300}>
+                        <ResponsiveContainer width="100%" height={400}>
                             <PieChart>
                                 <Pie
                                     data={getPieData(selectedMonth)}
@@ -247,7 +276,7 @@ const RevenueReport = ({ data, onExport, loading }) => {
                             <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Họ tên
                             </th>
-                            <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="py-3 px-6 content-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Ngày giao dịch
                             </th>
                         </tr>
@@ -311,16 +340,16 @@ const RevenueReport = ({ data, onExport, loading }) => {
                                 Tháng
                             </th>
                             <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tổng tour
+                                Doanh Thu Đặt Tour
                             </th>
                             <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tổng gói
+                                Doanh Thu gói
                             </th>
                             <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tổng hủy tour
+                                Doanh Thu hủy tour
                             </th>
                             <th className="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tổng cộng
+                                Tổng Doanh Thu
                             </th>
                         </tr>
                     </thead>
@@ -336,7 +365,6 @@ const RevenueReport = ({ data, onExport, loading }) => {
                                         item.totalBookingRevenue || 0
                                     )}
                                 </td>
-
                                 <td className="py-4 px-6">
                                     {formatCurrency(item.totalPlanRevenue || 0)}
                                 </td>

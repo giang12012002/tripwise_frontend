@@ -172,7 +172,7 @@ const SystemStatsPage = () => {
                 pointHoverRadius: 6
             },
             {
-                label: 'Doanh Thu Bị Hủy (VND)',
+                label: 'Doanh Thu Hủy Tour (VND)',
                 data: stats.map((stat) => Number(stat.cancelledRevenue) || 0),
                 borderColor: '#ef4444',
                 backgroundColor: 'rgba(239, 68, 68, 0.2)',

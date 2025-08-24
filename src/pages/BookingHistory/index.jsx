@@ -97,9 +97,22 @@ function Index() {
         currentPage * itemsPerPage
     )
 
-    const handleOpenConfirmDialog = (booking) => {
-        setSelectedBooking(booking)
-        setShowConfirmDialog(true)
+    const handleOpenConfirmDialog = async (booking) => {
+        try {
+            const response = await paymentAPI.getRefundPreview(
+                booking.bookingId
+            )
+            let message
+            if (response.status === 200) {
+                message = response.data.message
+            } else {
+                message = 'Chưa có'
+            }
+            setSelectedBooking({ ...booking, refundMessage: message })
+            setShowConfirmDialog(true)
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     const handleRefund = async ({ bookingId, refundMethod, cancelReason }) => {
@@ -250,19 +263,21 @@ function Index() {
                                                         )}
                                                     </td>
                                                     <td className="p-3 border">
-                                                        <div className="group relative">
-                                                            <button
-                                                                onClick={() =>
-                                                                    // handleRefund(
-                                                                    //     item
-                                                                    // )
-                                                                    handleOpenConfirmDialog(
-                                                                        item
-                                                                    )
-                                                                }
-                                                                className="p-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 hover:text-yellow-800 transition-all duration-200 shadow-sm"
-                                                            >
-                                                                {/* <svg
+                                                        {item.bookingStatus ===
+                                                            'Success' && (
+                                                            <div className="group relative">
+                                                                <button
+                                                                    onClick={() =>
+                                                                        // handleRefund(
+                                                                        //     item
+                                                                        // )
+                                                                        handleOpenConfirmDialog(
+                                                                            item
+                                                                        )
+                                                                    }
+                                                                    className="p-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 hover:text-yellow-800 transition-all duration-200 shadow-sm"
+                                                                >
+                                                                    {/* <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     fill="none"
                                                                     viewBox="0 0 24 24"
@@ -277,13 +292,14 @@ function Index() {
                                                                         d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
                                                                     />
                                                                 </svg> */}
-                                                                Hủy
-                                                            </button>
-                                                            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 p-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition">
-                                                                Yêu cầu hoàn
-                                                                tiền
-                                                            </span>
-                                                        </div>
+                                                                    Hủy
+                                                                </button>
+                                                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 p-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition">
+                                                                    Yêu cầu hoàn
+                                                                    tiền
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             )

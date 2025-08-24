@@ -364,7 +364,7 @@ function TourDetail() {
                         </div>
 
                         <h3 className="text-2xl font-semibold text-blue-900 mb-6">
-                            trình chi tiết
+                            Chi tiết hành trình
                         </h3>
                         <div className="space-y-6">
                             {tourDetail.Itineraries?.length > 0 ? (

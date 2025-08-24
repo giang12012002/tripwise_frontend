@@ -38,7 +38,7 @@ const DeletedUserList = ({ users, onViewUserDetail, onActivateUser }) => {
                                 Trạng thái
                             </th>
                             <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                                Ngày xóa
+                                Ngày vô hiệu hóa
                             </th>
                             <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                                 Hành động

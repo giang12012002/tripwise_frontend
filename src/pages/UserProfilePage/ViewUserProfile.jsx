@@ -126,7 +126,7 @@ function ViewUserProfile() {
 
     // Combine address fields into fullAddress for display
     const fullAddress =
-        `${profile.streetAddress || ''}, ${profile.district || ''}, ${profile.city || ''}`
+        `${profile.streetAddress || ''}`
             .replace(/, ,/g, '')
             .replace(/,$/, '') || 'Chưa cập nhật'
 

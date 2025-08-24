@@ -323,7 +323,7 @@ function HistoryDetail() {
             <div className="flex-grow max-w-6xl w-full mx-auto p-8 bg-gradient-to-b from-blue-50 to-white rounded-2xl shadow-xl mt-8">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-3xl font-extrabold text-blue-900 tracking-tight">
-                        trình du lịch tại{' '}
+                        Hành trình du lịch tại{' '}
                         {historyDetail?.Destination || 'Không xác định'}
                     </h2>
                     <div className="flex space-x-4">
@@ -582,7 +582,7 @@ function HistoryDetail() {
                         </div>
 
                         <h3 className="text-2xl font-semibold text-blue-900 mb-6">
-                            Chi tiết hành
+                            Chi tiết hành trình
                         </h3>
                         <div className="space-y-6">
                             {historyDetail.Itinerary?.length > 0 ? (

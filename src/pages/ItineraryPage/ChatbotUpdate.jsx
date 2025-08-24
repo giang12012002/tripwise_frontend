@@ -12,6 +12,9 @@ function ChatbotUpdate() {
     const { isLoggedIn, isAuthLoading } = useAuth()
     const itineraryData = location.state?.itineraryData || null
 
+    const handleBack = () => {
+        navigate(-1) // Navigate to the previous page
+    }
     // Hàm chuẩn hóa dữ liệu (giữ nguyên)
     const normalizeItineraryData = (data) => {
         if (!data) return null
@@ -135,8 +138,13 @@ function ChatbotUpdate() {
     ) // Mảng lưu các hoạt động đã thay đổi
     const messagesEndRef = useRef(null)
 
+    const messagesContainerRef = useRef(null)
+
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop =
+                messagesContainerRef.current.scrollHeight
+        }
     }
 
     useEffect(() => {
@@ -152,7 +160,9 @@ function ChatbotUpdate() {
     }, [isLoggedIn, isAuthLoading, navigate])
 
     useEffect(() => {
-        scrollToBottom()
+        if (messages.length > 1) {
+            scrollToBottom()
+        }
     }, [messages])
 
     const formatCurrency = (value) => {
@@ -531,12 +541,6 @@ function ChatbotUpdate() {
                 showConfirmButton: false,
                 timer: 1500
             })
-            console.error('API Error:', {
-                message: err.message,
-                response: err.response?.data,
-                status: err.response?.status,
-                errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
-            })
         } finally {
             setIsLoading(false)
         }
@@ -566,144 +570,298 @@ function ChatbotUpdate() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-blue-50">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 via-white to-blue-50">
             <Header />
-            <div className="flex-grow max-w-7xl w-full mx-auto p-6 md:p-10 mt-10">
+            <div className="flex-grow max-w-7xl w-full border-blue-500 mx-auto p-6 md:p-10 mt-10">
+                <div className="mb-6">
+                    <button
+                        className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-500 hover:to-blue-700 transition-all duration-300 shadow-md flex items-center"
+                        onClick={handleBack}
+                    >
+                        <svg
+                            className="w-5 h-5 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+                        Quay Lại hành trình
+                    </button>
+                </div>
                 <h2 className="text-4xl font-extrabold text-blue-900 tracking-tight mb-8 text-center animate-slide-in">
                     Cập nhật hành trình du lịch tại{' '}
                     <span className="text-blue-900">
-                        {normalizedItineraryData.destination ||
-                            'Không xác định'}
+                        {normalizedItineraryData.destination !==
+                            'Không xác định' &&
+                        normalizedItineraryData.destination !== 'Chưa xác định'
+                            ? normalizedItineraryData.destination
+                            : 'Đích đến'}
                     </span>
                 </h2>
                 <div className="flex flex-col lg:flex-row gap-6">
                     <div className="w-full lg:w-1/2 bg-white rounded-3xl shadow-xl p-8 h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-gray-100">
-                        <h3 className="text-2xl font-bold text-blue-800 mb-6 animate-fade-in">
+                        <h3 className="text-3xl font-extrabold text-gray-900 mb-8 animate-slide-in">
                             Hành trình hiện tại
                         </h3>
-                        <hr className="border-t border-gray-200 mb-6" />
-                        <div className="space-y-8">
-                            <div>
-                                <h4 className="text-xl font-semibold text-blue-800 mb-4">
+                        <hr className="border-t-2 border-gray-200 mb-8" />
+                        <div className="space-y-10">
+                            <div className="p-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl shadow-sm transition-all hover:shadow-md">
+                                <h4 className="text-2xl font-bold text-gray-800 mb-5">
                                     Thông tin chuyến đi
                                 </h4>
-                                <div className="space-y-3">
-                                    <p className="flex items-center text-gray-700 text-base">
-                                        <span className="mr-3 text-blue-500">
-                                            📅
-                                        </span>
-                                        <strong>Ngày đi: </strong>
-                                        <span className="ml-2">
-                                            {normalizedItineraryData.travelDate
-                                                ? new Date(
-                                                      normalizedItineraryData.travelDate
-                                                  ).toLocaleDateString('vi-VN')
-                                                : 'Không xác định'}
-                                        </span>
-                                    </p>
-                                    <p className="flex items-center text-gray-700 text-base">
-                                        <span className="mr-3 text-blue-500">
-                                            ⏳
-                                        </span>
-                                        <strong>Số ngày: </strong>
-                                        <span className="ml-2">
-                                            {normalizedItineraryData.days ||
-                                                'Không xác định'}
-                                        </span>
-                                    </p>
-                                    <p className="flex items-center text-gray-700 text-base">
-                                        <span className="mr-3 text-blue-500">
-                                            💸
-                                        </span>
-                                        <strong>Tổng chi phí ước tính: </strong>
-                                        <span className="ml-2 text-blue-600 font-medium">
-                                            {formatCurrency(
-                                                normalizedItineraryData.totalEstimatedCost
-                                            )}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                            <div>
-                                <hr className="border-t border-gray-200 mb-6" />
-                                <h4 className="text-xl font-semibold text-blue-800 mb-4">
-                                    Sở thích & Chi tiết
-                                </h4>
-                                <div className="space-y-3">
-                                    {normalizedItineraryData.preferences &&
-                                        normalizedItineraryData.preferences !==
+                                <div className="space-y-4">
+                                    {normalizedItineraryData.travelDate &&
+                                        normalizedItineraryData.travelDate !==
                                             'Không xác định' &&
-                                        normalizedItineraryData.preferences !==
-                                            'Chưa xác định' &&
-                                        normalizedItineraryData.preferences !==
-                                            null && (
-                                            <p className="flex items-center text-gray-700 text-base">
-                                                <span className="mr-3 text-blue-500">
-                                                    🌟
+                                        normalizedItineraryData.travelDate !==
+                                            'Chưa xác định' && (
+                                            <p className="flex items-center text-gray-800 text-lg">
+                                                <span className="mr-3 text-gray-600 text-xl">
+                                                    📅
                                                 </span>
-                                                <strong>Sở thích: </strong>
-                                                <span className="ml-2 flex flex-wrap gap-2">
-                                                    {normalizedItineraryData.preferences
-                                                        .split(', ')
-                                                        .map((pref, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full transition-all hover:bg-blue-200"
-                                                            >
-                                                                {pref}
-                                                            </span>
-                                                        ))}
-                                                </span>
-                                            </p>
-                                        )}
-                                    {normalizedItineraryData.diningStyle &&
-                                        normalizedItineraryData.diningStyle !==
-                                            'Không xác định' &&
-                                        normalizedItineraryData.diningStyle !==
-                                            'Chưa xác định' &&
-                                        normalizedItineraryData.diningStyle !==
-                                            null && (
-                                            <p className="flex items-center text-gray-700 text-base">
-                                                <span className="mr-3 text-blue-500">
-                                                    🍽️
-                                                </span>
-                                                <strong>
-                                                    Phong cách ăn uống:{' '}
+                                                <strong className="font-semibold">
+                                                    Ngày đi:{' '}
                                                 </strong>
-                                                <span className="ml-2 flex flex-wrap gap-2">
-                                                    {normalizedItineraryData.diningStyle
-                                                        .split(', ')
-                                                        .map((style, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full transition-all hover:bg-blue-200"
-                                                            >
-                                                                {style}
-                                                            </span>
-                                                        ))}
+                                                <span className="ml-2 text-gray-700">
+                                                    {new Date(
+                                                        normalizedItineraryData.travelDate
+                                                    ).toLocaleDateString(
+                                                        'vi-VN'
+                                                    )}
                                                 </span>
                                             </p>
                                         )}
-                                    {normalizedItineraryData.transportation &&
-                                        normalizedItineraryData.transportation !==
+                                    {normalizedItineraryData.days &&
+                                        normalizedItineraryData.days !==
                                             'Không xác định' &&
-                                        normalizedItineraryData.transportation !==
-                                            'Chưa xác định' &&
-                                        normalizedItineraryData.transportation !==
-                                            null && (
-                                            <p className="flex items-center text-gray-700 text-base">
-                                                <span className="mr-3 text-blue-500">
-                                                    🚗
+                                        normalizedItineraryData.days !==
+                                            'Chưa xác định' && (
+                                            <p className="flex items-center text-gray-800 text-lg">
+                                                <span className="mr-3 text-gray-600 text-xl">
+                                                    ⏳
                                                 </span>
-                                                <strong>Phương tiện: </strong>
-                                                <span className="ml-2">
+                                                <strong className="font-semibold">
+                                                    Số ngày:{' '}
+                                                </strong>
+                                                <span className="ml-2 text-gray-700">
                                                     {
-                                                        normalizedItineraryData.transportation
+                                                        normalizedItineraryData.days
                                                     }
                                                 </span>
                                             </p>
                                         )}
+                                    {normalizedItineraryData.totalEstimatedCost &&
+                                        normalizedItineraryData.totalEstimatedCost !==
+                                            'Không xác định' &&
+                                        normalizedItineraryData.totalEstimatedCost !==
+                                            'Chưa xác định' && (
+                                            <p className="flex items-center text-gray-800 text-lg">
+                                                <span className="mr-3 text-gray-600 text-xl">
+                                                    💸
+                                                </span>
+                                                <strong className="font-semibold">
+                                                    Tổng chi phí ước tính:{' '}
+                                                </strong>
+                                                <span className="ml-2 text-gray-700 font-medium">
+                                                    {formatCurrency(
+                                                        normalizedItineraryData.totalEstimatedCost
+                                                    )}
+                                                </span>
+                                            </p>
+                                        )}
                                 </div>
+                            </div>
+                            <div>
+                                <hr className="border-t-2 border-gray-200 mb-8" />
+                                <div className="p-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl shadow-sm transition-all hover:shadow-md">
+                                    <h4 className="text-2xl font-bold text-gray-800 mb-5">
+                                        Sở thích & Chi tiết
+                                    </h4>
+                                    <div className="space-y-4">
+                                        {normalizedItineraryData.preferences &&
+                                            normalizedItineraryData.preferences !==
+                                                'Không xác định' &&
+                                            normalizedItineraryData.preferences !==
+                                                'Chưa xác định' &&
+                                            normalizedItineraryData.preferences !==
+                                                null && (
+                                                <p className="flex items-center text-gray-800 text-lg">
+                                                    <span className="mr-3 text-gray-600 text-xl">
+                                                        🌟
+                                                    </span>
+                                                    <strong className="font-semibold">
+                                                        Sở thích:{' '}
+                                                    </strong>
+                                                    <span className="ml-2 flex flex-wrap gap-2">
+                                                        {normalizedItineraryData.preferences
+                                                            .split(', ')
+                                                            .map(
+                                                                (
+                                                                    pref,
+                                                                    index
+                                                                ) => (
+                                                                    <span
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="inline-block bg-gray-300 text-gray-800 text-sm font-medium px-4 py-1.5 rounded-full transition-all hover:bg-gray-400 hover:scale-105"
+                                                                    >
+                                                                        {pref}
+                                                                    </span>
+                                                                )
+                                                            )}
+                                                    </span>
+                                                </p>
+                                            )}
+                                        {normalizedItineraryData.diningStyle &&
+                                            normalizedItineraryData.diningStyle !==
+                                                'Không xác định' &&
+                                            normalizedItineraryData.diningStyle !==
+                                                'Chưa xác định' &&
+                                            normalizedItineraryData.diningStyle !==
+                                                null && (
+                                                <p className="flex items-center text-gray-800 text-lg">
+                                                    <span className="mr-3 text-gray-600 text-xl">
+                                                        🍽️
+                                                    </span>
+                                                    <strong className="font-semibold">
+                                                        Phong cách ăn uống:{' '}
+                                                    </strong>
+                                                    <span className="ml-2 flex flex-wrap gap-2">
+                                                        {normalizedItineraryData.diningStyle
+                                                            .split(', ')
+                                                            .map(
+                                                                (
+                                                                    style,
+                                                                    index
+                                                                ) => (
+                                                                    <span
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="inline-block bg-gray-300 text-gray-800 text-sm font-medium px-4 py-1.5 rounded-full transition-all hover:bg-gray-400 hover:scale-105"
+                                                                    >
+                                                                        {style}
+                                                                    </span>
+                                                                )
+                                                            )}
+                                                    </span>
+                                                </p>
+                                            )}
+                                        {normalizedItineraryData.transportation &&
+                                            normalizedItineraryData.transportation !==
+                                                'Không xác định' &&
+                                            normalizedItineraryData.transportation !==
+                                                'Chưa xác định' &&
+                                            normalizedItineraryData.transportation !==
+                                                null && (
+                                                <p className="flex items-center text-gray-800 text-lg">
+                                                    <span className="mr-3 text-gray-600 text-xl">
+                                                        🚗
+                                                    </span>
+                                                    <strong className="font-semibold">
+                                                        Phương tiện:{' '}
+                                                    </strong>
+                                                    <span className="ml-2 text-gray-700">
+                                                        {
+                                                            normalizedItineraryData.transportation
+                                                        }
+                                                    </span>
+                                                </p>
+                                            )}
+                                        {normalizedItineraryData.groupType &&
+                                            normalizedItineraryData.groupType !==
+                                                'Không xác định' &&
+                                            normalizedItineraryData.groupType !==
+                                                'Chưa xác định' &&
+                                            normalizedItineraryData.groupType !==
+                                                null && (
+                                                <p className="flex items-center text-gray-800 text-lg">
+                                                    <span className="mr-3 text-gray-600 text-xl">
+                                                        👥
+                                                    </span>
+                                                    <strong className="font-semibold">
+                                                        Nhóm:{' '}
+                                                    </strong>
+                                                    <span className="ml-2 text-gray-700">
+                                                        {
+                                                            normalizedItineraryData.groupType
+                                                        }
+                                                    </span>
+                                                </p>
+                                            )}
+                                        {normalizedItineraryData.accommodation &&
+                                            normalizedItineraryData.accommodation !==
+                                                'Không xác định' &&
+                                            normalizedItineraryData.accommodation !==
+                                                'Chưa xác định' &&
+                                            normalizedItineraryData.accommodation !==
+                                                null && (
+                                                <p className="flex items-center text-gray-800 text-lg">
+                                                    <span className="mr-3 text-gray-600 text-xl">
+                                                        🏨
+                                                    </span>
+                                                    <strong className="font-semibold">
+                                                        Chỗ ở:{' '}
+                                                    </strong>
+                                                    <span className="ml-2 text-gray-700">
+                                                        {
+                                                            normalizedItineraryData.accommodation
+                                                        }
+                                                    </span>
+                                                </p>
+                                            )}
+                                        {normalizedItineraryData.suggestedAccommodation &&
+                                            normalizedItineraryData.suggestedAccommodation !==
+                                                'Không xác định' &&
+                                            normalizedItineraryData.suggestedAccommodation !==
+                                                'Chưa xác định' &&
+                                            normalizedItineraryData.suggestedAccommodation !==
+                                                null && (
+                                                <p className="flex items-center text-gray-800 text-lg">
+                                                    <span className="mr-3 text-gray-600 text-xl">
+                                                        🗺️
+                                                    </span>
+                                                    <strong className="font-semibold">
+                                                        Đề xuất chỗ ở:&nbsp;
+                                                    </strong>
+                                                    <a
+                                                        href={
+                                                            normalizedItineraryData.suggestedAccommodation
+                                                        }
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="font-medium text-gray-700 hover:underline hover:text-gray-800 transition-colors"
+                                                    >
+                                                        Tìm trên Google Maps
+                                                    </a>
+                                                </p>
+                                            )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr className="border-t-2 border-gray-200 my-8" />
+                        <div className="p-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl shadow-sm transition-all hover:shadow-md">
+                            <h4 className="text-2xl font-bold text-gray-800 mb-5">
+                                Lưu ý
+                            </h4>
+                            <div className="space-y-4">
+                                <p className="flex items-center text-gray-800 text-lg">
+                                    <span className="mr-3 text-gray-600 text-xl">
+                                        📝
+                                    </span>
+                                    <strong className="font-semibold">
+                                        Phần màu xám là phần không thể chỉnh sửa
+                                    </strong>
+                                </p>
                             </div>
                         </div>
                         <hr className="border-t border-gray-200 my-6" />
@@ -968,7 +1126,10 @@ function ChatbotUpdate() {
                                 </p>
                             </div>
                         )}
-                        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-gray-200 p-6 space-y-6 bg-gradient-to-b from-gray-50 to-gray-100">
+                        <div
+                            ref={messagesContainerRef}
+                            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-gray-200 p-6 space-y-6 bg-gradient-to-b from-white-50 to-white-100"
+                        >
                             {messages.map((msg, index) => (
                                 <div
                                     key={index}
@@ -999,25 +1160,6 @@ function ChatbotUpdate() {
                                                     'Không có thay đổi trong hành trình.'}
                                             </p>
                                         )}
-                                        {/*{msg.hasChanges === true &&*/}
-                                        {/*    msg.changeDetails && (*/}
-                                        {/*        <p className="text-sm text-green-600 mt-2">*/}
-                                        {/*            <strong>*/}
-                                        {/*                Chi tiết thay đổi:*/}
-                                        {/*            </strong>*/}
-                                        {/*            <br />*/}
-                                        {/*            {msg.changeDetails*/}
-                                        {/*                .split('\n')*/}
-                                        {/*                .map((line, i) => (*/}
-                                        {/*                    <span*/}
-                                        {/*                        key={i}*/}
-                                        {/*                        className="block"*/}
-                                        {/*                    >*/}
-                                        {/*                        {line}*/}
-                                        {/*                    </span>*/}
-                                        {/*                ))}*/}
-                                        {/*        </p>*/}
-                                        {/*    )}*/}
                                         <p className="text-xs mt-2 opacity-60 font-light">
                                             {msg.timestamp.toLocaleTimeString(
                                                 'vi-VN',
