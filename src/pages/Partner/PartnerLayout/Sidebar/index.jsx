@@ -31,6 +31,11 @@ const navItems = [
         icon: <FaClipboardCheck />,
         name: 'Thống Kê',
         path: '/partner/stats'
+    },
+    {
+        icon: <FaStarHalfAlt />,
+        name: 'Đánh giá người dùng',
+        path: '/partner/reviews'
     }
 ]
 

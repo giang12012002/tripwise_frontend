@@ -977,7 +977,8 @@ const Index = () => {
                             latestImage.type === 'existing'
                         ) {
                             activityFormData.append(
-                                'ImageUrls',
+                                // 'ImageUrls',
+                                'Image',
                                 latestImage.preview
                             )
                         }
@@ -989,6 +990,7 @@ const Index = () => {
                     console.log(
                         `Dữ liệu gửi lên cho hoạt động (Ngày ${day.dayNumber}, Hoạt động ${activityIndex + 1}):`,
                         {
+                            attractionId: activity.attractionId,
                             imageFiles: activity.imageFiles.map((f) => ({
                                 name: f.name,
                                 size: f.size

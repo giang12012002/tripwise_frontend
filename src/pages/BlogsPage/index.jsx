@@ -72,7 +72,7 @@ function Index() {
                                         <div className="w-3/10 max-w-[30%] aspect-[4/3] bg-gray-200 overflow-hidden rounded-md flex items-center justify-center">
                                             <img
                                                 src={
-                                                    blog.blogImages > 0
+                                                    blog.blogImages.length > 0
                                                         ? blog.blogImages[0]
                                                               .imageURL
                                                         : '/image.png'

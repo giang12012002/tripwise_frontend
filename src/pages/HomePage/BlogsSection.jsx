@@ -42,7 +42,7 @@ function BlogsSection() {
                         >
                             <img
                                 src={
-                                    blog.blogImages > 0
+                                    blog.blogImages.length > 0
                                         ? blog.blogImages[0].imageURL
                                         : '/image.png'
                                 }
