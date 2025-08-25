@@ -64,7 +64,12 @@ const tourSchema = Yup.object()
                 }
             ),
         imageFiles: Yup.array(),
-        imageUrls: Yup.array(),
+        imageUrls: Yup.array().of(
+            Yup.string().matches(
+                /\.(jpg|jpeg|png|gif)$/i,
+                'URL ảnh phải có định dạng .jpg, .jpeg, .png hoặc .gif.'
+            )
+        ),
         itinerary: Yup.array()
             .min(1, 'Phải có ít nhất một ngày trong lịch trình.')
             .test(
@@ -137,7 +142,12 @@ const tourSchema = Yup.object()
                                     // ),
                                     category: Yup.string(),
                                     imageFiles: Yup.array(),
-                                    imageUrls: Yup.array()
+                                    imageUrls: Yup.array().of(
+                                        Yup.string().matches(
+                                            /\.(jpg|jpeg|png|gif)$/i,
+                                            'URL ảnh phải có định dạng .jpg, .jpeg, .png hoặc .gif.'
+                                        )
+                                    )
                                 })
                                 .test(
                                     'activity-images',
