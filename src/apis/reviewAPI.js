@@ -67,6 +67,7 @@ const reviewAPI = {
         const response = await authorizedAxios.get(
             '/api/Review/GetAllreviewtour-partner'
         )
+        console.log('Gọi API của getAllReviewsByPartner', response)
         return response
     }
 }

@@ -120,17 +120,14 @@ function Id() {
                                         <div className="p-4">
                                             <div className="flex justify-between items-center mb-2">
                                                 <h3
-                                                    className="text-xl font-bold line-clamp-1 mb-2 max-w-[40%] text-gray-800"
+                                                    className="text-xl font-bold line-clamp-1 mb-2 max-w-[100%] text-gray-800"
                                                     title={blog.blogName}
                                                 >
                                                     {blog.blogName}
                                                 </h3>
-                                                <p className="text-gray-400 text-sm font-light mb-2 max-w-[40%]">
-                                                    {formatDate(blog.createdAt)}
-                                                </p>
                                             </div>
                                             <p className="text-gray-600 text-sm line-clamp-4 mb-4">
-                                                {blog.blogContent}
+                                                {formatDate(blog.createdAt)}
                                             </p>
                                         </div>
                                     </div>

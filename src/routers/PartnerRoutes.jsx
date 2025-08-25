@@ -11,6 +11,9 @@ import PartnerBookingDetail from '@/pages/Partner/Bookings/BookingDetail'
 import PartnerLayout from '@/pages/Partner/PartnerLayout'
 import PartnerStatsPage from '@/pages/Partner/PartnerStatsPage/PartnerStatsPage.jsx'
 
+import ReviewPage from '@/pages/Partner/Reviews'
+import ReviewDetail from '@/pages/Partner/Reviews/ReviewDetail'
+
 function PartnerRoutes() {
     return (
         <Routes>
@@ -26,6 +29,8 @@ function PartnerRoutes() {
                     element={<PartnerBookingDetail />}
                 />
                 <Route path="stats" element={<PartnerStatsPage />} />
+                <Route path="reviews" element={<ReviewPage />} />
+                <Route path="review-detail" element={<ReviewDetail />} />
             </Route>
             <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
