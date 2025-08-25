@@ -10,7 +10,7 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import { permissions } from '@/utils/authConfig'
 import logoImage from '@/assets/images/logo2.png'
-//
+
 function SignIn() {
     const navigate = useNavigate()
     const [email, setEmail] = useState('')
@@ -49,7 +49,7 @@ function SignIn() {
                 title: 'Lỗi',
                 text: 'Vui lòng điền email và mật khẩu!',
                 showConfirmButton: false,
-                timer: 500
+                timer: 1500
             })
             return
         }
@@ -100,15 +100,31 @@ function SignIn() {
                 })
             }
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text:
-                    error.response?.data?.message ||
-                    'Đăng nhập thất bại. Email hoặc mật khẩu không đúng.',
-                showConfirmButton: false,
-                timer: 1500
-            })
+            console.error('Login error:', error.response) // Debug log
+            const errorMessage =
+                error.response?.data?.message ||
+                error.response?.data ||
+                'Đăng nhập thất bại. Email hoặc mật khẩu không đúng.'
+            if (
+                errorMessage.includes('Tài khoản của bạn đã bị khóa') ||
+                errorMessage ===
+                    'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.'
+            ) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Tài khoản bị khóa',
+                    text: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ với chúng tôi qua email: hello.tripwise.vn@gmail.com.',
+                    showConfirmButton: true
+                })
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Đăng nhập thất bại. Email hoặc mật khẩu không đúng',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+            }
         }
     }
 
@@ -159,15 +175,31 @@ function SignIn() {
                 })
             }
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text:
-                    error.response?.data?.message ||
-                    'Đăng nhập bằng Google thất bại.',
-                showConfirmButton: false,
-                timer: 1500
-            })
+            console.error('Google login error:', error.response) // Debug log
+            const errorMessage =
+                error.response?.data?.message ||
+                error.response?.data ||
+                'Đăng nhập bằng Google thất bại.'
+            if (
+                errorMessage.includes('Tài khoản của bạn đã bị khóa') ||
+                errorMessage ===
+                    'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.'
+            ) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Tài khoản bị khóa',
+                    text: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.',
+                    showConfirmButton: true
+                })
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: errorMessage,
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+            }
         }
     }
 
@@ -205,13 +237,13 @@ function SignIn() {
             <Header />
             <div className="flex-grow min-h-[calc(100vh-4rem)] flex flex-col md:flex-row bg-white-50">
                 <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-6 md:p-8 bg-white">
-                    <div className="w-full  max-w-md space-y-6">
+                    <div className="w-full max-w-md space-y-6">
                         <div className="text-center">
-                            <div className="flex items-center ">
+                            <div className="flex items-center">
                                 <img
                                     src={logoImage}
                                     alt="Tripwise Logo"
-                                    className="h-10 w-auto mr-3" // Adjusted height, auto width to maintain aspect ratio
+                                    className="h-10 w-auto mr-3"
                                 />
                                 <h1 className="text-4xl font-bold text-blue-600">
                                     TRIPWISE
