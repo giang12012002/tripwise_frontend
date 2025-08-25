@@ -54,17 +54,25 @@ const tourSchema = Yup.object()
             .required('Thời gian bắt đầu là bắt buộc.')
             .min(1, 'Thời gian bắt đầu không được để trống.')
             .test(
-                'is-future',
-                'Thời gian bắt đầu phải lớn hơn ngày hiện tại.',
+                'is-future-by-one-day',
+                'Thời gian bắt đầu phải lớn hơn ngày hiện tại ít nhất 1 ngày.',
                 (value) => {
                     if (!value) return false
                     const now = new Date()
+                    const minStartTime = new Date(
+                        now.getTime() + 24 * 60 * 60 * 1000
+                    ) // Current time + 1 day
                     const startTime = new Date(value)
-                    return startTime > now
+                    return startTime >= minStartTime
                 }
             ),
         imageFiles: Yup.array(),
-        imageUrls: Yup.array(),
+        imageUrls: Yup.array().of(
+            Yup.string().matches(
+                /\.(jpg|jpeg|png|gif)$/i,
+                'URL ảnh phải có định dạng .jpg, .jpeg, .png hoặc .gif.'
+            )
+        ),
         itinerary: Yup.array()
             .min(1, 'Phải có ít nhất một ngày trong lịch trình.')
             .test(
@@ -132,12 +140,14 @@ const tourSchema = Yup.object()
                                         }
                                     ),
                                     endTime: Yup.string(),
-                                    // mapUrl: Yup.string().url(
-                                    //     'URL bản đồ không hợp lệ.'
-                                    // ),
                                     category: Yup.string(),
                                     imageFiles: Yup.array(),
-                                    imageUrls: Yup.array()
+                                    imageUrls: Yup.array().of(
+                                        Yup.string().matches(
+                                            /\.(jpg|jpeg|png|gif)$/i,
+                                            'URL ảnh phải có định dạng .jpg, .jpeg, .png hoặc .gif.'
+                                        )
+                                    )
                                 })
                                 .test(
                                     'activity-images',
@@ -151,6 +161,30 @@ const tourSchema = Yup.object()
                                         )
                                     }
                                 )
+                        )
+                        .test(
+                            'ascending-activity-times',
+                            'Thời gian bắt đầu của hoạt động phải lớn hơn hoặc bằng thời gian kết thúc của hoạt động trước đó.',
+                            function (activities) {
+                                if (!activities || activities.length <= 1)
+                                    return true
+                                return activities.every((activity, index) => {
+                                    if (index === 0) return true
+                                    const prevActivity = activities[index - 1]
+                                    if (
+                                        !activity.startTime ||
+                                        !prevActivity.endTime
+                                    )
+                                        return true
+                                    const currentStart = new Date(
+                                        `1970-01-01T${activity.startTime}:00`
+                                    )
+                                    const prevEnd = new Date(
+                                        `1970-01-01T${prevActivity.endTime}:00`
+                                    )
+                                    return currentStart >= prevEnd
+                                })
+                            }
                         )
                 })
             )
@@ -324,7 +358,11 @@ const CreateTour = () => {
                 imageFiles: [...prev.imageFiles, ...validFiles],
                 imageIds: []
             }))
-            const previews = validFiles.map((file) => URL.createObjectURL(file))
+            const previews = validFiles.map((file) => ({
+                type: 'file',
+                file,
+                preview: URL.createObjectURL(file)
+            }))
             setImagePreviews((prev) => [...prev, ...previews])
         } else if (name === 'duration') {
             if (value === '') {
@@ -463,7 +501,14 @@ const CreateTour = () => {
             imageUrls: [...prev.imageUrls, ...urls],
             imageIds: []
         }))
-        setImagePreviews((prev) => [...prev, ...urls])
+        const previews = urls.map((url) => ({
+            type: 'url',
+            url,
+            preview: url
+        }))
+        setImagePreviews((prev) => [...prev, ...previews])
+
+        // setImagePreviews((prev) => [...prev, ...urls])
         setTempUrlInput((prev) => ({ ...prev, tour: '' }))
         setErrors((prev) => ({ ...prev, imageUrls: '' }))
     }
@@ -594,20 +639,32 @@ const CreateTour = () => {
     }
 
     const removeTourImage = (index) => {
-        setImagePreviews((prev) => prev.filter((_, i) => i !== index))
-        setTour((prev) => ({
-            ...prev,
-            imageFiles: prev.imageFiles.filter((_, i) =>
-                i < prev.imageUrls.length
-                    ? true
-                    : i !== index - prev.imageUrls.length
-            ),
-            imageUrls: prev.imageUrls.filter((_, i) =>
-                i >= prev.imageUrls.length ? true : i !== index
-            ),
-            imageIds: []
-        }))
-        setErrors((prev) => ({ ...prev, imageFiles: '', imageUrls: '' }))
+        setImagePreviews((prev) => {
+            const target = prev[index]
+
+            setTour((tourPrev) => {
+                let newImageUrls = [...tourPrev.imageUrls]
+                let newImageFiles = [...tourPrev.imageFiles]
+
+                if (target.type === 'url') {
+                    newImageUrls = newImageUrls.filter((u) => u !== target.url)
+                } else if (target.type === 'file') {
+                    newImageFiles = newImageFiles.filter(
+                        (f) => f !== target.file
+                    )
+                    URL.revokeObjectURL(target.preview) // dọn rác
+                }
+
+                return {
+                    ...tourPrev,
+                    imageUrls: newImageUrls,
+                    imageFiles: newImageFiles,
+                    imageIds: []
+                }
+            })
+
+            return prev.filter((_, i) => i !== index)
+        })
     }
 
     const clearTourImages = () => {
@@ -1369,10 +1426,10 @@ const CreateTour = () => {
                                     </button>
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
-                                    {imagePreviews.map((preview, index) => (
+                                    {imagePreviews.map((item, index) => (
                                         <div key={index} className="relative">
                                             <img
-                                                src={preview}
+                                                src={item.preview}
                                                 alt={`Tour preview ${index + 1}`}
                                                 className="w-full h-24 object-cover rounded-lg"
                                             />
@@ -1818,7 +1875,8 @@ const CreateTour = () => {
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
-                                                        Hình Ảnh Hoạt Động
+                                                        Hình Ảnh Hoạt Động (chỉ
+                                                        hiển thị 1 ảnh)
                                                     </label>
                                                     <button
                                                         className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
