@@ -19,9 +19,9 @@ function AboutUsSection() {
                 </h1>
 
                 <p className="max-w-xl mb-8 text-base md:text-lg">
-                    TripWise - Website du lịch thông minh tiên phong trong việc
-                    sử dụng trí tuệ nhân tạo (AI) để tạo lịch trình du lịch cá
-                    nhân hóa...
+                    TripWise – Website du lịch thông minh ứng dụng AI để giúp
+                    bạn có những hành trình du lịch cá nhân hóa, tiện lợi và phù
+                    hợp nhất...
                 </p>
                 <div className="flex flex-col md:flex-row items-center justify-between">
                     <Link

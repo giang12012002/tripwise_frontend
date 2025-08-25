@@ -402,19 +402,26 @@ const AdminTourDetail = () => {
                                         'N/A'}
                                 </span>
                             </p>
-                            <hr className="border-t border-gray-300 my-4" />
-                            <p className="text-gray-800 mb-3 flex items-center">
-                                <strong className="text-gray-900 font-semibold mr-2">
-                                    ▶ Chủ đề:
-                                </strong>{' '}
-                                {tour.preferences || 'N/A'}
-                            </p>
+                            {/*<hr className="border-t border-gray-300 my-4" />*/}
+                            {/*<p className="text-gray-800 mb-3 flex items-center">*/}
+                            {/*    <strong className="text-gray-900 font-semibold mr-2">*/}
+                            {/*        ▶ Chủ đề:*/}
+                            {/*    </strong>{' '}*/}
+                            {/*    {tour.preferences || 'N/A'}*/}
+                            {/*</p>*/}
                             <hr className="border-t border-gray-300 my-4" />
                             <p className="text-gray-800 mb-3 flex items-center">
                                 <strong className="text-gray-900 font-semibold mr-2">
                                     ▶ Thời gian:
                                 </strong>{' '}
                                 {tour.days} ngày
+                            </p>
+                            <hr className="border-t border-gray-300 my-4" />
+                            <p className="text-gray-800 mb-3 flex items-center">
+                                <strong className="text-gray-900 font-semibold mr-2">
+                                    ▶ Chỗ còn trống:
+                                </strong>{' '}
+                                {tour.availableSlots}
                             </p>
                             <hr className="border-t border-gray-300 my-4" />
                             <p className="text-gray-800 mb-3 flex items-center">

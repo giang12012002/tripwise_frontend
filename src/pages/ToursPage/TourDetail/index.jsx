@@ -7,7 +7,7 @@ import Bookings from './Bookings/index.jsx'
 import { useAuth } from '@/AuthContext'
 import Header from '@/components/header/Header.jsx'
 import Footer from '@/components/footer/Footer.jsx'
-
+import { FaBullhorn } from 'react-icons/fa'
 const Index = () => {
     const { tourId } = useParams()
     const [tour, setTour] = useState(null)
@@ -378,12 +378,17 @@ const Index = () => {
                                         {tour.note && (
                                             <>
                                                 <hr className="border-t border-gray-300 my-4" />
-                                                <p className="text-gray-800 mb-3 flex items-center">
-                                                    <strong className="text-gray-900 font-semibold mr-2">
-                                                        ▶ Thông báo:
-                                                    </strong>{' '}
-                                                    {tour.note}
-                                                </p>
+                                                <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-lg shadow-md mb-4">
+                                                    <p className="text-gray-800 flex items-center">
+                                                        <FaBullhorn className="text-yellow-700 mr-2" />
+                                                        <strong className="text-yellow-700 font-semibold mr-2">
+                                                            Thông báo:
+                                                        </strong>
+                                                        <span className="text-gray-900">
+                                                            {tour.note}
+                                                        </span>
+                                                    </p>
+                                                </div>
                                             </>
                                         )}
                                     </div>

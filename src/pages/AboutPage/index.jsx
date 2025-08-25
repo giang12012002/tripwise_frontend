@@ -21,14 +21,14 @@ import AboutImage from '@/assets/images/AboutImage.jpg'
 // Mock data for the page content
 const mockData = {
     Header: {
-        Text: 'TripWise - Website du lịch thông minh tiên phong trong việc sử dụng trí tuệ nhân tạo (AI) để tạo lịch trình du lịch cá nhân hóa...',
+        Text: 'TripWise – Website du lịch thông minh ứng dụng AI để giúp bạn có những hành trình du lịch cá nhân hóa, tiện lợi và phù hợp nhất.',
         ImageUrl1: hanoiImage,
         ImageUrl2: hoianImage,
         ImageUrl3: phuyenImage
     },
     Vision: 'Hướng tới trở thành nền tảng du lịch hàng đầu Việt Nam, mang lại trải nghiệm cá nhân hóa cho hàng triệu du khách, giúp họ khám phá đất nước theo cách riêng biệt và ý nghĩa. TripWise tập trung xây dựng cộng đồng du lịch thông minh, nơi mọi người tìm thấy nguồn cảm hứng, kết nối với những khoảnh khắc tuyệt vời và lan tỏa niềm đam mê văn hóa, con người cùng thiên nhiên Việt Nam.',
     Mission:
-        'Nhiệm vụ của TripWise là khai thác trí tuệ nhân tạo để thiết kế lịch trình du lịch cá nhân hóa, hỗ trợ mọi người khám phá Việt Nam theo phong cách riêng. Chúng tôi cam kết cung cấp giải pháp du lịch tiện ích, chính xác và phù hợp, đồng thời thúc đẩy sự gắn kết và phát hiện giá trị văn hóa, thiên nhiên nổi bật của đất nước.',
+        'Nhiệm vụ của TripWise là khai thác trí tuệ nhân tạo để thiết kế  trình du lịch cá nhân hóa, hỗ trợ mọi người khám phá Việt Nam theo phong cách riêng. Chúng tôi cam kết cung cấp giải pháp du lịch tiện ích, chính xác và phù hợp, đồng thời thúc đẩy sự gắn kết và phát hiện giá trị văn hóa, thiên nhiên nổi bật của đất nước.',
     CoreValues: {
         Individual:
             'Mỗi cá nhân có sở thích du lịch riêng, và chúng tôi tôn vinh sự đa dạng đó. TripWise cam kết tạo ra trải nghiệm du lịch tùy chỉnh dành riêng cho từng người dùng.',
@@ -86,7 +86,7 @@ const mockData = {
     ],
     OurCommitment: {
         Describe: [
-            'Cá Nhân Hóa Tối Ưu: Lịch trình du lịch được tùy chỉnh theo sở thích, mang đến chuyến đi hoàn hảo và cá tính riêng.',
+            'Cá Nhân Hóa Tối Ưu: hành trình du lịch được tùy chỉnh theo sở thích, mang đến chuyến đi hoàn hảo và cá tính riêng.',
             'An Toàn Đáng Tin: Chọn đối tác uy tín, kiểm chứng thông tin điểm đến, di chuyển và lưu trú để khách hàng đảm bảo và an tâm.',
             'Giá Minh Bạch: Không phí ẩn, TripWise cung cấp giải pháp giá hợp lý, rõ ràng và công khai.',
             'Hỗ Trợ Liên Tục: Đội ngũ sẵn sàng hỗ trợ 24/7, giải đáp mọi vấn đề trong quá trình sử dụng.',
