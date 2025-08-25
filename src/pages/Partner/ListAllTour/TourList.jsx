@@ -636,10 +636,18 @@ const TourList = () => {
                                     <span>Sửa</span>
                                 </button>
                                 <button
-                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-all duration-200 flex items-center justify-center space-x-2"
-                                    onClick={() =>
-                                        handleDeleteOrDraftTour(tour.tourId)
-                                    }
+                                    disabled={tour.status === 'Approved'}
+                                    onClick={() => {
+                                        if (tour.status !== 'Approved') {
+                                            handleDeleteOrDraftTour(tour.tourId)
+                                        }
+                                    }}
+                                    className={`flex-1 px-4 py-2 text-white rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2
+                                                ${
+                                                    tour.status === 'Approved'
+                                                        ? 'bg-gray-400 cursor-not-allowed opacity-70'
+                                                        : 'bg-red-600 hover:bg-red-700'
+                                                }`}
                                 >
                                     <svg
                                         className="w-4 h-4"

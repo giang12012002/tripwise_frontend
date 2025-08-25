@@ -69,6 +69,22 @@ const resetPassword = async ({ email, newPassword }) => {
     })
 }
 
+const resendSignupOtp = async ({ signupRequestId, email }) => {
+    return await authorizedAxios.post('/authentication/resend-signup-otp', {
+        signupRequestId,
+        email
+    })
+}
+
+const resendForgotPasswordOtp = async (email) => {
+    return await authorizedAxios.post(
+        '/authentication/resend-forgot-password-otp',
+        {
+            email
+        }
+    )
+}
+
 export default {
     login,
     googleLogin,
@@ -78,5 +94,7 @@ export default {
     logout,
     forgotPassword,
     verifyForgotOtp,
-    resetPassword
+    resetPassword,
+    resendSignupOtp,
+    resendForgotPasswordOtp
 }

@@ -44,7 +44,7 @@ function Register() {
                 title: 'Lỗi',
                 text: 'Vui lòng điền đầy đủ tất cả các trường!',
                 showConfirmButton: false,
-                timer: 500
+                timer: 3000
             })
             return false
         }
@@ -54,7 +54,7 @@ function Register() {
                 title: 'Lỗi',
                 text: 'Mật khẩu không khớp!',
                 showConfirmButton: false,
-                timer: 500
+                timer: 3000
             })
             return false
         }
@@ -81,7 +81,7 @@ function Register() {
                         title: 'Lỗi',
                         text: `Lỗi: ${fields} đã tồn tại!`,
                         showConfirmButton: false,
-                        timer: 500
+                        timer: 3000
                     })
                 } else {
                     Swal.fire({
@@ -89,7 +89,7 @@ function Register() {
                         title: 'Thành công',
                         text: 'Vui lòng kiểm tra email để lấy mã OTP!',
                         showConfirmButton: false,
-                        timer: 500
+                        timer: 3000
                     })
                     navigate('/otp-verification', {
                         state: {
@@ -107,7 +107,7 @@ function Register() {
                     title: 'Lỗi',
                     text: response.data.message || 'Đăng ký thất bại.',
                     showConfirmButton: false,
-                    timer: 500
+                    timer: 3000
                 })
             }
         } catch (error) {
@@ -121,7 +121,7 @@ function Register() {
                         title: 'Lỗi',
                         text: data.message || 'Dữ liệu không hợp lệ.',
                         showConfirmButton: false,
-                        timer: 500
+                        timer: 3000
                     })
                 } else if (status === 500) {
                     Swal.fire({
@@ -129,7 +129,7 @@ function Register() {
                         title: 'Lỗi',
                         text: 'Lỗi server. Vui lòng thử lại sau.',
                         showConfirmButton: false,
-                        timer: 500
+                        timer: 3000
                     })
                 } else {
                     Swal.fire({
@@ -137,7 +137,7 @@ function Register() {
                         title: 'Lỗi',
                         text: data.message || 'Đăng ký thất bại.',
                         showConfirmButton: false,
-                        timer: 500
+                        timer: 3000
                     })
                 }
             } else if (error.request) {
@@ -147,7 +147,7 @@ function Register() {
                     title: 'Lỗi',
                     text: 'Không thể kết nối đến server.',
                     showConfirmButton: false,
-                    timer: 500
+                    timer: 3000
                 })
             } else {
                 // Lỗi khác
@@ -156,7 +156,7 @@ function Register() {
                     title: 'Lỗi',
                     text: 'Đã xảy ra lỗi. Vui lòng thử lại.',
                     showConfirmButton: false,
-                    timer: 500
+                    timer: 3000
                 })
             }
         } finally {

@@ -981,6 +981,17 @@ const Index = () => {
                                 'Image',
                                 latestImage.preview
                             )
+                            // if(activity.attractionId) {
+                            //     activityFormData.append(
+                            //         'imageUrls',
+                            //         latestImage.preview
+                            //     )
+                            // } else {
+                            //     activityFormData.append(
+                            //         'Image',
+                            //         latestImage.preview
+                            //     )
+                            // }
                         }
                         if (latestImage.type === 'existing' && latestImage.id) {
                             activityFormData.append('ImageIds', latestImage.id)

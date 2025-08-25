@@ -23,8 +23,9 @@ function Index() {
     }
 
     const handleSend = () => {
-        console.log('Đã gui mail')
-        window.open(sendMail(), '_blank', 'noopener,noreferrer')
+        // console.log('Đã gui mail')
+        // window.open(sendMail(), '_blank', 'noopener,noreferrer')
+        navigate('/partner/reviews')
     }
 
     return review ? <ReviewDetail review={review} onSend={handleSend} /> : null

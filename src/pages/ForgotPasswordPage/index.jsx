@@ -8,8 +8,9 @@ import logoImage from '@/assets/images/logo2.png'
 import EmailVerification from './EmailVerification'
 import OtpVerification from './OtpVerification'
 import ResetPassword from './ResetPassword'
+import Swal from 'sweetalert2'
 
-import { toast } from 'react-toastify'
+// import { toast } from 'react-toastify'
 
 function ForgotPassword() {
     const navigate = useNavigate()
@@ -19,12 +20,30 @@ function ForgotPassword() {
     const handleVerifyEmail = async (email) => {
         try {
             const res = await authAPI.forgotPassword({ email })
-            if (res.status === 200) {
+            if (res.status === 200 && res.data.statusCode === 200) {
                 setPage('otp')
                 setEmail(email)
-                toast.success(res.data.message || 'Gửi OTP thành công')
+                // toast.success(res.data.message || 'Gửi OTP thành công')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text:
+                        res.data.message ||
+                        'Vui lòng kiểm tra email để lấy mã OTP!',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
             } else {
-                toast.error(res.data.message || 'Không thể gửi OTP')
+                // toast.error(res.data.message || 'Không thể gửi OTP')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text:
+                        res.data.message ||
+                        'Không thể gửi OTP. Vui lòng thử đăng ký lại.',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
             }
         } catch (err) {
             console.log(err)
@@ -39,9 +58,49 @@ function ForgotPassword() {
             })
             if (res.data.statusCode === 200) {
                 setPage('reset')
-                toast.success(res.data.message || 'Otp hợp lệ')
+                // toast.success(res.data.message || 'Otp hợp lệ')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: res.data.message || 'Otp hợp lệ',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
             } else {
-                toast.error(res.data.message || 'Otp không hợp lệ')
+                // toast.error(res.data.message || 'Otp không hợp lệ')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: res.data.message || 'Otp không hợp lệ',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const handleResendOtp = async () => {
+        try {
+            const res = await authAPI.resendForgotPasswordOtp(email)
+            if (res.data.statusCode === 200) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: res.data.message || 'Đã gửi OTP mới',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
+            } else {
+                // toast.error(res.data.message || 'Otp não hợp lệ')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: res.data.message || 'Có lỗi xảy ra',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
             }
         } catch (error) {
             console.log(error)
@@ -54,13 +113,27 @@ function ForgotPassword() {
                 email,
                 newPassword
             })
-            if (res.status === 200) {
+            if (res.status === 200 && res.data.statusCode === 200) {
                 setPage('email')
                 setEmail('')
                 navigate('/signin')
-                toast.success(res.data.message || 'Otp hợp lệ')
+                // toast.success(res.data.message || 'Otp hợp lệ')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: res.data.message || 'Otp hợp lệ',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
             } else {
-                toast.error(res.data.message || 'Otp không hợp lệ')
+                // toast.error(res.data.message || 'Otp không hợp lệ')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: res.data.message || 'Otp không hợp lệ',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
             }
         } catch (error) {
             console.log(error)
@@ -90,7 +163,10 @@ function ForgotPassword() {
                             <EmailVerification onConfirm={handleVerifyEmail} />
                         )}
                         {page === 'otp' && (
-                            <OtpVerification onConfirm={handleVerifyOtp} />
+                            <OtpVerification
+                                onConfirm={handleVerifyOtp}
+                                onResendOtp={handleResendOtp}
+                            />
                         )}
                         {page === 'reset' && (
                             <ResetPassword onConfirm={handleResetPassword} />
