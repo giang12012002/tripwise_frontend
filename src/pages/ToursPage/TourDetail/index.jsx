@@ -281,13 +281,13 @@ const Index = () => {
                                                 key={currentImageIndex}
                                                 width="672"
                                                 height="378"
-                                                onError={(e) => {
-                                                    e.target.src =
-                                                        '/fallback-image.jpg'
-                                                    console.error(
-                                                        `Failed to load main image: ${tour.imageUrls[currentImageIndex]}`
-                                                    )
-                                                }}
+                                                // onError={(e) => {
+                                                //     e.target.src =
+                                                //         '/fallback-image.jpg'
+                                                //     console.error(
+                                                //         `Failed to load main image: ${tour.imageUrls[currentImageIndex]}`
+                                                //     )
+                                                // }}
                                             />
                                         </div>
                                         <button
@@ -328,13 +328,13 @@ const Index = () => {
                                                                 index
                                                             )
                                                         }
-                                                        onError={(e) => {
-                                                            e.target.src =
-                                                                '/fallback-image.jpg'
-                                                            console.error(
-                                                                `Failed to load thumbnail image: ${url}`
-                                                            )
-                                                        }}
+                                                        // onError={(e) => {
+                                                        //     e.target.src =
+                                                        //         '/fallback-image.jpg'
+                                                        //     console.error(
+                                                        //         `Failed to load thumbnail image: ${url}`
+                                                        //     )
+                                                        // }}
                                                     />
                                                 )
                                             )}
