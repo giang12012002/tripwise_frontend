@@ -20,7 +20,7 @@ const Footer = () => {
                         <p className="text-sm">
                             Khám phá Việt Nam cùng TripWise, đối tác đáng tin
                             cậy của bạn cho những trải nghiệm du lịch khó quên.
-                            hành trình được TripWise AI thiết kế riêng và các
+                            Hành trình được TripWise AI thiết kế riêng và các
                             tour du lịch trọn gói trực tuyến.
                         </p>
                     </div>
