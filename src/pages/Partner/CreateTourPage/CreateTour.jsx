@@ -3,7 +3,235 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/AuthContext'
 import partnerTourAPI from '@/apis/partnerTourAPI'
 import Swal from 'sweetalert2'
+import * as Yup from 'yup'
 import TimePicker from '@/components/ui/TimePicker'
+
+// Định nghĩa schema xác thực bằng Yup
+const tourSchema = Yup.object()
+    .shape({
+        tourName: Yup.string()
+            .required('Tên tour là bắt buộc.')
+            .min(1, 'Tên tour không được để trống.'),
+        description: Yup.string()
+            .required('Mô tả là bắt buộc.')
+            .min(1, 'Mô tả không được để trống.'),
+        duration: Yup.number()
+            .required('Thời gian tour là bắt buộc.')
+            .min(1, 'Số ngày phải lớn hơn hoặc bằng 1.'),
+        priceAdult: Yup.number()
+            .required('Giá người lớn là bắt buộc.')
+            .min(0, 'Giá người lớn không được âm.'),
+        priceChild5To10: Yup.number()
+            .required('Giá trẻ em 5-10 tuổi là bắt buộc.')
+            .min(0, 'Giá trẻ em 5-10 tuổi không được âm.')
+            .max(
+                Yup.ref('priceAdult'),
+                'Giá trẻ em 5-10 tuổi không được vượt quá giá người lớn.'
+            ),
+        priceChildUnder5: Yup.number()
+            .required('Giá trẻ em dưới 5 tuổi là bắt buộc.')
+            .min(0, 'Giá trẻ em dưới 5 tuổi không được âm.')
+            .max(
+                Yup.ref('priceAdult'),
+                'Giá trẻ em dưới 5 tuổi không được vượt quá giá người lớn.'
+            ),
+        location: Yup.string()
+            .required('Địa điểm là bắt buộc.')
+            .min(1, 'Địa điểm không được để trống.'),
+        maxGroupSize: Yup.number()
+            .required('Số người tối đa là bắt buộc.')
+            .min(1, 'Số người tối đa phải lớn hơn 0.'),
+        category: Yup.string()
+            .required('Danh mục là bắt buộc.')
+            .min(1, 'Danh mục không được để trống.'),
+        tourNote: Yup.string()
+            .required('Ghi chú tour là bắt buộc.')
+            .min(1, 'Ghi chú tour không được để trống.'),
+        tourInfo: Yup.string()
+            .required('Thông tin tour là bắt buộc.')
+            .min(1, 'Thông tin tour không được để trống.'),
+        startTime: Yup.string()
+            .required('Thời gian bắt đầu là bắt buộc.')
+            .min(1, 'Thời gian bắt đầu không được để trống.')
+            .test(
+                'is-future-by-one-day',
+                'Thời gian bắt đầu phải lớn hơn ngày hiện tại ít nhất 1 ngày.',
+                (value) => {
+                    if (!value) return false
+                    const now = new Date()
+                    const minStartTime = new Date(
+                        now.getTime() + 24 * 60 * 60 * 1000
+                    ) // Current time + 1 day
+                    const startTime = new Date(value)
+                    return startTime >= minStartTime
+                }
+            ),
+        imageFiles: Yup.array(),
+        imageUrls: Yup.array().of(
+            Yup.string().matches(
+                /\.(jpg|jpeg|png|gif)$/i,
+                'URL ảnh phải có định dạng .jpg, .jpeg, .png hoặc .gif.'
+            )
+        ),
+        itinerary: Yup.array()
+            .min(1, 'Phải có ít nhất một ngày trong lịch trình.')
+            .test(
+                'matches-duration',
+                'Số ngày trong lịch trình phải bằng thời gian tour.',
+                function (value) {
+                    return value.length === parseInt(this.parent.duration)
+                }
+            )
+            .of(
+                Yup.object().shape({
+                    title: Yup.string()
+                        .required('Tiêu đề ngày là bắt buộc.')
+                        .min(1, 'Tiêu đề ngày không được để trống.'),
+                    activities: Yup.array()
+                        .min(1, 'Mỗi ngày phải có ít nhất một hoạt động.')
+                        .of(
+                            Yup.object()
+                                .shape({
+                                    placeDetail: Yup.string()
+                                        .required(
+                                            'Chi tiết địa điểm là bắt buộc.'
+                                        )
+                                        .min(
+                                            1,
+                                            'Chi tiết địa điểm không được để trống.'
+                                        ),
+                                    description: Yup.string()
+                                        .required(
+                                            'Mô tả hoạt động là bắt buộc.'
+                                        )
+                                        .min(
+                                            1,
+                                            'Mô tả hoạt động không được để trống.'
+                                        ),
+                                    address: Yup.string()
+                                        .required(
+                                            'Địa chỉ hoạt động là bắt buộc.'
+                                        )
+                                        .min(
+                                            1,
+                                            'Địa chỉ hoạt động không được để trống.'
+                                        ),
+                                    estimatedCost: Yup.number()
+                                        .required(
+                                            'Chi phí dự kiến là bắt buộc.'
+                                        )
+                                        .min(
+                                            0,
+                                            'Chi phí dự kiến không được âm.'
+                                        ),
+                                    startTime: Yup.string().test(
+                                        'start-before-end',
+                                        'Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc.',
+                                        function (value) {
+                                            const endTime = this.parent.endTime
+                                            if (!value || !endTime) return true
+                                            const start = new Date(
+                                                `1970-01-01T${value}:00`
+                                            )
+                                            const end = new Date(
+                                                `1970-01-01T${endTime}:00`
+                                            )
+                                            return start < end
+                                        }
+                                    ),
+                                    endTime: Yup.string(),
+                                    category: Yup.string(),
+                                    imageFiles: Yup.array(),
+                                    imageUrls: Yup.array().of(
+                                        Yup.string().matches(
+                                            /\.(jpg|jpeg|png|gif)$/i,
+                                            'URL ảnh phải có định dạng .jpg, .jpeg, .png hoặc .gif.'
+                                        )
+                                    )
+                                })
+                                .test(
+                                    'activity-images',
+                                    'Phải cung cấp ít nhất một hình ảnh cho hoạt động.',
+                                    function (value) {
+                                        const { imageFiles, imageUrls } = value
+                                        return (
+                                            (imageFiles &&
+                                                imageFiles.length > 0) ||
+                                            (imageUrls && imageUrls.length > 0)
+                                        )
+                                    }
+                                )
+                        )
+                        .test(
+                            'ascending-activity-times',
+                            'Thời gian bắt đầu của hoạt động phải lớn hơn hoặc bằng thời gian kết thúc của hoạt động trước đó.',
+                            function (activities) {
+                                if (!activities || activities.length <= 1)
+                                    return true
+                                return activities.every((activity, index) => {
+                                    if (index === 0) return true
+                                    const prevActivity = activities[index - 1]
+                                    if (
+                                        !activity.startTime ||
+                                        !prevActivity.endTime
+                                    )
+                                        return true
+                                    const currentStart = new Date(
+                                        `1970-01-01T${activity.startTime}:00`
+                                    )
+                                    const prevEnd = new Date(
+                                        `1970-01-01T${prevActivity.endTime}:00`
+                                    )
+                                    return currentStart >= prevEnd
+                                })
+                            }
+                        )
+                })
+            )
+            .test(
+                'first-activity-start-time',
+                'Thời gian bắt đầu của hoạt động đầu tiên trong ngày 1 phải lớn hơn hoặc bằng thời gian bắt đầu của tour.',
+                function (value) {
+                    const tourStartTime = this.parent.startTime
+                    if (!tourStartTime || !value[0]?.activities[0]?.startTime)
+                        return true
+                    const tourStart = new Date(tourStartTime)
+                    const activityStart = new Date(
+                        `${tourStartTime.split('T')[0]}T${value[0].activities[0].startTime}:00`
+                    )
+                    return activityStart >= tourStart
+                }
+            )
+            .test(
+                'total-estimated-cost',
+                'Tổng chi phí dự kiến của các hoạt động không được vượt quá giá tour cho người lớn.',
+                function (value) {
+                    const priceAdult = this.parent.priceAdult
+                    const totalEstimatedCost = value.reduce((total, day) => {
+                        return (
+                            total +
+                            day.activities.reduce(
+                                (sum, activity) =>
+                                    sum + (activity.estimatedCost || 0),
+                                0
+                            )
+                        )
+                    }, 0)
+                    return totalEstimatedCost <= priceAdult
+                }
+            )
+    })
+    .test(
+        'tour-images',
+        'Phải cung cấp ít nhất một hình ảnh cho tour.',
+        function (value) {
+            const { imageFiles, imageUrls } = value
+            return (
+                (imageFiles && imageFiles.length > 0) ||
+                (imageUrls && imageUrls.length > 0)
+            )
+        }
+    )
 
 const CreateTour = () => {
     const [tour, setTour] = useState({
@@ -52,13 +280,13 @@ const CreateTour = () => {
     const [activityPreviews, setActivityPreviews] = useState({})
     const [tempUrlInput, setTempUrlInput] = useState({ tour: '' })
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const [errors, setErrors] = useState({})
     const tourFileInputRef = useRef(null)
     const activityFileInputRefs = useRef({})
     const navigate = useNavigate()
     const { isLoggedIn, isAuthLoading } = useAuth()
-    const [isLoading, setIsLoading] = useState(false)
     const MAX_IMAGES = 20
-
     const categories = ['Tham quan', 'Du lịch', 'Ẩm thực', 'Văn hóa']
 
     useEffect(() => {
@@ -94,7 +322,7 @@ const CreateTour = () => {
         }
     }, [imagePreviews, activityPreviews])
 
-    const handleTourChange = (e) => {
+    const handleTourChange = async (e) => {
         const { name, value, files } = e.target
         if (name === 'imageFiles') {
             const validFiles = Array.from(files).filter((file) =>
@@ -130,14 +358,13 @@ const CreateTour = () => {
                 imageFiles: [...prev.imageFiles, ...validFiles],
                 imageIds: []
             }))
-            const previews = validFiles.map((file) => URL.createObjectURL(file))
+            const previews = validFiles.map((file) => ({
+                type: 'file',
+                file,
+                preview: URL.createObjectURL(file)
+            }))
             setImagePreviews((prev) => [...prev, ...previews])
-            console.log(
-                'Tour imageFiles added:',
-                validFiles.map((f) => ({ name: f.name, size: f.size }))
-            )
         } else if (name === 'duration') {
-            // Cho phép giá trị rỗng tạm thời khi người dùng xóa
             if (value === '') {
                 setTour((prev) => ({ ...prev, duration: '' }))
                 return
@@ -158,7 +385,6 @@ const CreateTour = () => {
                 const currentDays = newItinerary.length
 
                 if (newDuration > currentDays) {
-                    // Thêm ngày mới
                     const daysToAdd = newDuration - currentDays
                     const newDays = Array.from(
                         { length: daysToAdd },
@@ -193,7 +419,6 @@ const CreateTour = () => {
                         return newOpenDays
                     })
                 } else if (newDuration < currentDays) {
-                    // Xóa các ngày thừa
                     newItinerary = newItinerary.slice(0, newDuration)
                     setOpenDays((prevOpenDays) => {
                         const newOpenDays = {}
@@ -228,7 +453,6 @@ const CreateTour = () => {
                     })
                 }
 
-                // Cập nhật dayNumber cho tất cả các ngày
                 newItinerary.forEach((day, index) => {
                     day.dayNumber = index + 1
                 })
@@ -249,6 +473,8 @@ const CreateTour = () => {
                     : value
             setTour({ ...tour, [name]: newValue })
         }
+        // Xóa lỗi khi người dùng chỉnh sửa
+        setErrors((prev) => ({ ...prev, [name]: '' }))
     }
 
     const handleAddTourUrl = () => {
@@ -275,9 +501,16 @@ const CreateTour = () => {
             imageUrls: [...prev.imageUrls, ...urls],
             imageIds: []
         }))
-        setImagePreviews((prev) => [...prev, ...urls])
+        const previews = urls.map((url) => ({
+            type: 'url',
+            url,
+            preview: url
+        }))
+        setImagePreviews((prev) => [...prev, ...previews])
+
+        // setImagePreviews((prev) => [...prev, ...urls])
         setTempUrlInput((prev) => ({ ...prev, tour: '' }))
-        console.log('Tour imageUrls added:', urls)
+        setErrors((prev) => ({ ...prev, imageUrls: '' }))
     }
 
     const handleActivityChange = (dayIndex, activityIndex, field, value) => {
@@ -337,6 +570,10 @@ const CreateTour = () => {
             }
             setTour({ ...tour, itinerary: newItinerary })
         }
+        setErrors((prev) => ({
+            ...prev,
+            [`${dayIndex}-${activityIndex}-${field}`]: ''
+        }))
     }
 
     const handleAddActivityUrl = (dayIndex, activityIndex) => {
@@ -388,6 +625,7 @@ const CreateTour = () => {
             ...prev,
             [key]: ''
         }))
+        setErrors((prev) => ({ ...prev, [`${key}-imageUrls`]: '' }))
     }
 
     const handleDayChange = (dayIndex, field, value) => {
@@ -397,22 +635,36 @@ const CreateTour = () => {
             [field]: value
         }
         setTour({ ...tour, itinerary: newItinerary })
+        setErrors((prev) => ({ ...prev, [`${dayIndex}-${field}`]: '' }))
     }
 
     const removeTourImage = (index) => {
-        setImagePreviews((prev) => prev.filter((_, i) => i !== index))
-        setTour((prev) => ({
-            ...prev,
-            imageFiles: prev.imageFiles.filter((_, i) =>
-                i < prev.imageUrls.length
-                    ? true
-                    : i !== index - prev.imageUrls.length
-            ),
-            imageUrls: prev.imageUrls.filter((_, i) =>
-                i >= prev.imageUrls.length ? true : i !== index
-            ),
-            imageIds: []
-        }))
+        setImagePreviews((prev) => {
+            const target = prev[index]
+
+            setTour((tourPrev) => {
+                let newImageUrls = [...tourPrev.imageUrls]
+                let newImageFiles = [...tourPrev.imageFiles]
+
+                if (target.type === 'url') {
+                    newImageUrls = newImageUrls.filter((u) => u !== target.url)
+                } else if (target.type === 'file') {
+                    newImageFiles = newImageFiles.filter(
+                        (f) => f !== target.file
+                    )
+                    URL.revokeObjectURL(target.preview) // dọn rác
+                }
+
+                return {
+                    ...tourPrev,
+                    imageUrls: newImageUrls,
+                    imageFiles: newImageFiles,
+                    imageIds: []
+                }
+            })
+
+            return prev.filter((_, i) => i !== index)
+        })
     }
 
     const clearTourImages = () => {
@@ -424,6 +676,7 @@ const CreateTour = () => {
             imageIds: []
         }))
         setTempUrlInput((prev) => ({ ...prev, tour: '' }))
+        setErrors((prev) => ({ ...prev, imageFiles: '', imageUrls: '' }))
     }
 
     const removeActivityImage = (dayIndex, activityIndex, index) => {
@@ -450,6 +703,11 @@ const CreateTour = () => {
             ...prev,
             [`${dayIndex}-${activityIndex}`]: newPreviews
         }))
+        setErrors((prev) => ({
+            ...prev,
+            [`${dayIndex}-${activityIndex}-imageFiles`]: '',
+            [`${dayIndex}-${activityIndex}-imageUrls`]: ''
+        }))
     }
 
     const clearActivityImages = (dayIndex, activityIndex) => {
@@ -465,6 +723,11 @@ const CreateTour = () => {
         setTempUrlInput((prev) => ({
             ...prev,
             [`${dayIndex}-${activityIndex}`]: ''
+        }))
+        setErrors((prev) => ({
+            ...prev,
+            [`${dayIndex}-${activityIndex}-imageFiles`]: '',
+            [`${dayIndex}-${activityIndex}-imageUrls`]: ''
         }))
     }
 
@@ -509,7 +772,6 @@ const CreateTour = () => {
             ]
         })
         setOpenDays((prev) => ({ ...prev, [newDayIndex]: true }))
-        console.log('Added new day:', newDayIndex + 1)
     }
 
     const removeDay = (dayIndex) => {
@@ -559,7 +821,19 @@ const CreateTour = () => {
             })
             return newTemp
         })
-        console.log(`Removed day ${dayIndex + 1}`)
+        setErrors((prev) => {
+            const newErrors = {}
+            Object.keys(prev).forEach((key) => {
+                const [day] = key.split('-').map(Number)
+                if (day !== dayIndex) {
+                    const newDay = day > dayIndex ? day - 1 : day
+                    newErrors[
+                        `${newDay}-${key.split('-').slice(1).join('-')}`
+                    ] = prev[key]
+                }
+            })
+            return newErrors
+        })
     }
 
     const addActivity = (dayIndex) => {
@@ -579,7 +853,6 @@ const CreateTour = () => {
             attractionId: null
         })
         setTour({ ...tour, itinerary: newItinerary })
-        console.log(`Added new activity to day ${dayIndex + 1}`)
     }
 
     const removeActivity = (dayIndex, activityIndex) => {
@@ -608,150 +881,64 @@ const CreateTour = () => {
             delete newTemp[`${dayIndex}-${activityIndex}`]
             return newTemp
         })
-        console.log(
-            `Removed activity ${activityIndex + 1} from day ${dayIndex + 1}`
-        )
-    }
-
-    const validateForm = () => {
-        if (!tour.tourName.trim()) return 'Tên tour là bắt buộc.'
-        if (!tour.location.trim()) return 'Địa điểm là bắt buộc.'
-        if (!tour.description.trim()) return 'Mô tả là bắt buộc.'
-        if (!tour.category.trim()) return 'Danh mục là bắt buộc.'
-        if (!tour.tourInfo.trim()) return 'Thông tin tour là bắt buộc.'
-        if (!tour.tourNote.trim()) return 'Ghi chú tour là bắt buộc.'
-        if (!tour.startTime.trim()) return 'Thời gian bắt đầu là bắt buộc.'
-        if (
-            !tour.duration ||
-            isNaN(parseInt(tour.duration)) ||
-            parseInt(tour.duration) <= 0
-        )
-            return 'Thời gian phải là số lớn hơn 0.'
-        if (isNaN(tour.priceAdult) || tour.priceAdult < 0)
-            return 'Giá người lớn không được âm.'
-        if (isNaN(tour.priceChild5To10) || tour.priceChild5To10 < 0)
-            return 'Giá trẻ em 5-10 tuổi không được âm.'
-        if (tour.priceChild5To10 > tour.priceAdult)
-            return 'Giá trẻ em 5-10 tuổi không được vượt quá giá người lớn.'
-        if (isNaN(tour.priceChildUnder5) || tour.priceChildUnder5 < 0)
-            return 'Giá trẻ em dưới 5 tuổi không được âm.'
-        if (tour.priceChildUnder5 > tour.priceAdult)
-            return 'Giá trẻ em dưới 5 tuổi không được vượt quá giá người lớn.'
-        if (isNaN(tour.maxGroupSize) || tour.maxGroupSize <= 0)
-            return 'Số người tối đa phải lớn hơn 0.'
-        if (tour.itinerary.length !== parseInt(tour.duration))
-            return `Số ngày trong lịch trình (${tour.itinerary.length}) phải bằng thời gian tour (${tour.duration} ngày).`
-        if (tour.imageFiles.length + tour.imageUrls.length === 0)
-            return 'Phải cung cấp ít nhất một hình ảnh cho tour.'
-        let totalEstimatedCost = 0
-        for (let day of tour.itinerary) {
-            if (!day.title.trim())
-                return `Tiêu đề ngày ${day.dayNumber} là bắt buộc.`
-            for (
-                let activityIndex = 0;
-                activityIndex < day.activities.length;
-                activityIndex++
-            ) {
-                const activity = day.activities[activityIndex]
-                if (!activity.description.trim())
-                    return `Mô tả hoạt động trong ngày ${day.dayNumber} là bắt buộc.`
-                if (!activity.address.trim())
-                    return `Địa chỉ hoạt động trong ngày ${day.dayNumber} là bắt buộc.`
-                if (!activity.placeDetail.trim())
-                    return `Chi tiết địa điểm trong ngày ${day.dayNumber} là bắt buộc.`
-                if (isNaN(activity.estimatedCost) || activity.estimatedCost < 0)
-                    return `Chi phí dự kiến trong ngày ${day.dayNumber} không được âm.`
-                if (
-                    (activity.imageFiles?.length || 0) +
-                        (activity.imageUrls?.length || 0) ===
-                    0
-                )
-                    return `Phải cung cấp ít nhất một hình ảnh cho hoạt động trong ngày ${day.dayNumber}.`
-                totalEstimatedCost += activity.estimatedCost || 0
-                if (
-                    day.dayNumber === 1 &&
-                    activityIndex === 0 &&
-                    activity.startTime &&
-                    tour.startTime
-                ) {
-                    const tourStart = new Date(tour.startTime)
-                    const activityStart = new Date(
-                        `${tour.startTime.split('T')[0]}T${activity.startTime}`
-                    )
-                    if (activityStart < tourStart) {
-                        return `Thời gian bắt đầu của hoạt động đầu tiên trong ngày 1 không được sớm hơn thời gian bắt đầu của tour.`
-                    }
+        setErrors((prev) => {
+            const newErrors = { ...prev }
+            Object.keys(prev).forEach((key) => {
+                if (key.startsWith(`${dayIndex}-${activityIndex}`)) {
+                    delete newErrors[key]
                 }
-            }
-        }
-        if (totalEstimatedCost > tour.priceAdult) {
-            return `Tổng chi phí dự kiến của các hoạt động (${totalEstimatedCost}) không được vượt quá giá tour cho người lớn (${tour.priceAdult}).`
-        }
-        return ''
+            })
+            return newErrors
+        })
     }
 
     const handleSubmit = async () => {
         if (isSubmitting) return
         setIsSubmitting(true)
-        const validationError = validateForm()
-        if (validationError) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: validationError,
-                showConfirmButton: false,
-                timer: 1800
-            })
-            console.error('Validation error:', validationError)
-            setIsSubmitting(false)
-            return
-        }
-
-        setIsLoading(true)
+        setErrors({})
 
         try {
-            const formData = new FormData()
-            formData.append('TourName', tour.tourName)
-            formData.append('Description', tour.description)
-            formData.append('Duration', parseInt(tour.duration) || 1)
-            formData.append('PriceAdult', parseFloat(tour.priceAdult) || 0)
-            formData.append(
+            // Xác thực dữ liệu bằng Yup
+            await tourSchema.validate(tour, { abortEarly: false })
+            setIsLoading(true)
+
+            // Chuẩn bị dữ liệu cho API createTour
+            const tourFormData = new FormData()
+            tourFormData.append('TourName', tour.tourName)
+            tourFormData.append('Description', tour.description)
+            tourFormData.append('Duration', parseInt(tour.duration) || 1)
+            tourFormData.append('PriceAdult', parseFloat(tour.priceAdult) || 0)
+            tourFormData.append(
                 'PriceChild5To10',
                 parseFloat(tour.priceChild5To10) || 0
             )
-            formData.append(
+            tourFormData.append(
                 'PriceChildUnder5',
                 parseFloat(tour.priceChildUnder5) || 0
             )
-            formData.append('Location', tour.location)
-            formData.append('MaxGroupSize', parseInt(tour.maxGroupSize) || 1)
-            formData.append('Category', tour.category)
-            formData.append('TourNote', tour.tourNote || '')
-            formData.append('TourInfo', tour.tourInfo || '')
-            formData.append('TourTypesId', tour.tourTypesID || 2)
-            formData.append('StartTime', tour.startTime)
-
+            tourFormData.append('Location', tour.location)
+            tourFormData.append(
+                'MaxGroupSize',
+                parseInt(tour.maxGroupSize) || 1
+            )
+            tourFormData.append('Category', tour.category)
+            tourFormData.append('TourNote', tour.tourNote || '')
+            tourFormData.append('TourInfo', tour.tourInfo || '')
+            tourFormData.append('TourTypesId', tour.tourTypesID || 2)
+            tourFormData.append('StartTime', tour.startTime)
             tour.imageFiles.forEach((file) => {
-                formData.append('ImageFile', file)
+                tourFormData.append('ImageFile', file)
             })
             tour.imageUrls.forEach((url) => {
-                formData.append('Image', url)
+                tourFormData.append('Image', url)
             })
 
-            console.log('Tour FormData:', Array.from(formData.entries()))
-
-            const tourResponse = await partnerTourAPI.createTour(formData)
-            console.log('Create tour response:', tourResponse.data)
-
+            // Gọi API createTour
+            const tourResponse = await partnerTourAPI.createTour(tourFormData)
             const tourId = tourResponse.data.data
-            console.log(
-                'Tour ID:',
-                tourId,
-                'ImageIds:',
-                tourResponse.data.imageIds || 'None'
-            )
-
             const newItinerary = [...tour.itinerary]
+
+            // Gọi API createItinerary và createActivity tuần tự
             for (
                 let dayIndex = 0;
                 dayIndex < tour.itinerary.length;
@@ -762,17 +949,9 @@ const CreateTour = () => {
                     DayNumber: day.dayNumber,
                     Title: day.title || `Ngày ${day.dayNumber}`
                 }
-                console.log(
-                    `Creating itinerary for day ${day.dayNumber}:`,
-                    itineraryPayload
-                )
                 const itineraryResponse = await partnerTourAPI.createItinerary(
                     tourId,
                     itineraryPayload
-                )
-                console.log(
-                    `Itinerary response for day ${day.dayNumber}:`,
-                    itineraryResponse.data
                 )
                 newItinerary[dayIndex].itineraryId = itineraryResponse.data.data
 
@@ -803,7 +982,6 @@ const CreateTour = () => {
                     activityFormData.append('EndTime', activity.endTime || '')
                     activityFormData.append('MapUrl', activity.mapUrl || '')
                     activityFormData.append('Category', activity.category || '')
-
                     activity.imageFiles.forEach((file) => {
                         activityFormData.append('ImageFile', file)
                     })
@@ -811,20 +989,11 @@ const CreateTour = () => {
                         activityFormData.append('Image', url)
                     })
 
-                    console.log(
-                        `Activity FormData for day ${day.dayNumber}, activity ${activityIndex + 1}:`,
-                        Array.from(activityFormData.entries())
-                    )
-
                     const activityResponse =
                         await partnerTourAPI.createActivity(
                             newItinerary[dayIndex].itineraryId,
                             activityFormData
                         )
-                    console.log(
-                        `Activity response for day ${day.dayNumber}, activity ${activityIndex + 1}:`,
-                        activityResponse.data
-                    )
                     newItinerary[dayIndex].activities[
                         activityIndex
                     ].attractionId = activityResponse.data.data
@@ -847,41 +1016,73 @@ const CreateTour = () => {
             })
             navigate('/partner')
         } catch (err) {
-            console.error('API Error (handleSubmit):', {
-                message: err.message,
-                response: err.response?.data,
-                status: err.response?.status,
-                errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
-            })
-            let errorMessage = 'Không thể tạo tour. Vui lòng thử lại.'
-            if (err.response?.data) {
-                if (Array.isArray(err.response.data.errors)) {
-                    errorMessage = err.response.data.errors.join(', ')
-                } else if (typeof err.response.data.errors === 'string') {
-                    errorMessage = err.response.data.errors
-                } else if (
-                    typeof err.response.data.errors === 'object' &&
-                    err.response.data.errors !== null
-                ) {
-                    errorMessage = Object.values(err.response.data.errors)
-                        .flat()
-                        .join(', ')
-                } else if (err.response.data.message) {
-                    errorMessage = err.response.data.message
+            if (err instanceof Yup.ValidationError) {
+                const validationErrors = {}
+                err.inner.forEach((error) => {
+                    // Tạo key lỗi chi tiết cho các trường trong itinerary
+                    if (error.path.includes('itinerary')) {
+                        const match = error.path.match(
+                            /itinerary\[(\d+)\]\.(\w+)/
+                        )
+                        const activityMatch = error.path.match(
+                            /itinerary\[(\d+)\]\.activities\[(\d+)\]\.(\w+)/
+                        )
+                        if (activityMatch) {
+                            const [, dayIndex, activityIndex, field] =
+                                activityMatch
+                            validationErrors[
+                                `${dayIndex}-${activityIndex}-${field}`
+                            ] = error.message
+                        } else if (match) {
+                            const [, dayIndex, field] = match
+                            validationErrors[`${dayIndex}-${field}`] =
+                                error.message
+                        } else {
+                            validationErrors[error.path] = error.message
+                        }
+                    } else {
+                        validationErrors[error.path] = error.message
+                    }
+                })
+                setErrors(validationErrors)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Vui lòng kiểm tra và sửa các lỗi trong biểu mẫu.',
+                    showConfirmButton: false,
+                    timer: 1800
+                })
+            } else {
+                let errorMessage = 'Không thể tạo tour. Vui lòng thử lại.'
+                if (err.response?.data) {
+                    if (Array.isArray(err.response.data.errors)) {
+                        errorMessage = err.response.data.errors.join(', ')
+                    } else if (typeof err.response.data.errors === 'string') {
+                        errorMessage = err.response.data.errors
+                    } else if (
+                        typeof err.response.data.errors === 'object' &&
+                        err.response.data.errors !== null
+                    ) {
+                        errorMessage = Object.values(err.response.data.errors)
+                            .flat()
+                            .join(', ')
+                    } else if (err.response.data.message) {
+                        errorMessage = err.response.data.message
+                    }
+                } else if (err.message) {
+                    errorMessage = err.message
                 }
-            } else if (err.message) {
-                errorMessage = err.message
-            }
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: errorMessage,
-                showConfirmButton: false,
-                timer: 1800
-            })
-            if (err.response?.status === 401) {
-                localStorage.removeItem('access_token')
-                navigate('/signin')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: errorMessage,
+                    showConfirmButton: false,
+                    timer: 1800
+                })
+                if (err.response?.status === 401) {
+                    localStorage.removeItem('access_token')
+                    navigate('/signin')
+                }
             }
         } finally {
             setIsSubmitting(false)
@@ -902,10 +1103,6 @@ const CreateTour = () => {
 
     const toggleDay = (dayIndex) => {
         setOpenDays((prev) => ({ ...prev, [dayIndex]: !prev[dayIndex] }))
-        console.log(
-            `Toggled day ${dayIndex + 1}:`,
-            openDays[dayIndex] ? 'Closed' : 'Opened'
-        )
     }
 
     if (isLoading) {
@@ -981,9 +1178,13 @@ const CreateTour = () => {
                             value={tour.tourName}
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                             placeholder="Nhập tên tour du lịch"
                         />
+                        {errors.tourName && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.tourName}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -994,11 +1195,14 @@ const CreateTour = () => {
                             name="location"
                             value={tour.location}
                             onChange={handleTourChange}
-                            className="w-full border border-gray-300 p-3 rounded-lg focusBryan
-focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
+                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Nhập địa điểm"
                         />
+                        {errors.location && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.location}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1010,29 +1214,23 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             value={tour.startTime}
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                             placeholder="Chọn thời gian bắt đầu"
                         />
+                        {errors.startTime && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.startTime}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
                             Danh Mục
                         </label>
-                        {/* <input
-                            type="text"
-                            name="category"
-                            value={tour.category}
-                            onChange={handleTourChange}
-                            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
-                            placeholder="Ví dụ: Văn hóa, Phiêu lưu, Nghỉ dưỡng"
-                        /> */}
                         <select
                             name="category"
                             value={tour.category}
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                         >
                             <option value="" disabled>
                                 Chọn một chủ đề
@@ -1043,6 +1241,11 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 </option>
                             ))}
                         </select>
+                        {errors.category && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.category}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1054,10 +1257,14 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             value={tour.duration}
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                             min="1"
                             placeholder="Số ngày"
                         />
+                        {errors.duration && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.duration}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">
@@ -1066,12 +1273,6 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         <input
                             type="number"
                             name="priceAdult"
-                            // value={
-                            //     tour.priceAdult === 0 ||
-                            //     tour.priceAdult === undefined
-                            //         ? ''
-                            //         : tour.priceAdult
-                            // }
                             value={
                                 tour.priceAdult === undefined ||
                                 tour.priceAdult === null
@@ -1080,11 +1281,15 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             }
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                             min="0"
                             step="10000"
                             placeholder="Giá người lớn"
                         />
+                        {errors.priceAdult && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.priceAdult}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">
@@ -1101,11 +1306,15 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             }
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                             min="0"
                             step="10000"
                             placeholder="Giá trẻ em 5-10 tuổi"
                         />
+                        {errors.priceChild5To10 && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.priceChild5To10}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-700 font-medium mb-2">
@@ -1122,11 +1331,15 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             }
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                             min="0"
                             step="10000"
                             placeholder="Giá trẻ em dưới 5 tuổi"
                         />
+                        {errors.priceChildUnder5 && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.priceChildUnder5}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1136,17 +1349,21 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             type="number"
                             name="maxGroupSize"
                             value={
-                                tour.maxGroupSize === 0 ||
-                                tour.maxGroupSize === undefined
+                                tour.maxGroupSize === undefined ||
+                                tour.maxGroupSize === null
                                     ? ''
                                     : tour.maxGroupSize
                             }
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                             min="1"
                             placeholder="Số người tối đa"
                         />
+                        {errors.maxGroupSize && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.maxGroupSize}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1190,6 +1407,11 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 Thêm
                             </button>
                         </div>
+                        {(errors.imageFiles || errors.imageUrls) && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.imageFiles || errors.imageUrls}
+                            </p>
+                        )}
                         {imagePreviews.length > 0 && (
                             <div className="mt-4">
                                 <div className="flex justify-between items-center mb-2">
@@ -1204,10 +1426,10 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     </button>
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
-                                    {imagePreviews.map((preview, index) => (
+                                    {imagePreviews.map((item, index) => (
                                         <div key={index} className="relative">
                                             <img
-                                                src={preview}
+                                                src={item.preview}
                                                 alt={`Tour preview ${index + 1}`}
                                                 className="w-full h-24 object-cover rounded-lg"
                                             />
@@ -1234,10 +1456,14 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             value={tour.description}
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                             rows="4"
                             placeholder="Mô tả chi tiết về tour"
                         />
+                        {errors.description && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.description}
+                            </p>
+                        )}
                     </div>
                     <div className="md:col-span-2">
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1248,10 +1474,14 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             value={tour.tourInfo}
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                             rows="4"
                             placeholder="Thông tin chi tiết về tour"
                         />
+                        {errors.tourInfo && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.tourInfo}
+                            </p>
+                        )}
                     </div>
                     <div className="md:col-span-2">
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1262,15 +1492,24 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             value={tour.tourNote}
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
                             rows="3"
                             placeholder="Thông tin bổ sung hoặc ghi chú"
                         />
+                        {errors.tourNote && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.tourNote}
+                            </p>
+                        )}
                     </div>
                 </div>
                 <h3 className="text-2xl font-semibold text-blue-900 mb-6">
                     Lịch Trình
                 </h3>
+                {errors.itinerary && (
+                    <p className="text-red-600 text-sm mt-1">
+                        {errors.itinerary}
+                    </p>
+                )}
                 {tour.itinerary.map((day, dayIndex) => (
                     <div
                         key={dayIndex}
@@ -1326,20 +1565,21 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         type="text"
                                         name={`title-${dayIndex}`}
                                         value={day.title}
-                                        onChange={(e) => {
-                                            console.log(
-                                                `Input title for day ${dayIndex + 1}: ${e.target.value}`
-                                            )
+                                        onChange={(e) =>
                                             handleDayChange(
                                                 dayIndex,
                                                 'title',
                                                 e.target.value
                                             )
-                                        }}
+                                        }
                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        required
                                         placeholder={`Tiêu đề ngày ${day.dayNumber} (ví dụ: Khám phá Hà Nội)`}
                                     />
+                                    {errors[`${dayIndex}-title`] && (
+                                        <p className="text-red-600 text-sm mt-1">
+                                            {errors[`${dayIndex}-title`]}
+                                        </p>
+                                    )}
                                 </div>
                                 {day.activities.map(
                                     (activity, activityIndex) => (
@@ -1383,9 +1623,19 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                             )
                                                         }
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        required
                                                         placeholder="Mô tả hoạt động"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-description`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-description`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1405,9 +1655,19 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                             )
                                                         }
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        required
                                                         placeholder="Chi tiết địa điểm"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-placeDetail`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-placeDetail`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1425,9 +1685,19 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                             )
                                                         }
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        required
                                                         placeholder="Địa chỉ hoạt động"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-address`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-address`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1452,53 +1722,22 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                             )
                                                         }
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        required
                                                         min="0"
                                                         step="10000"
                                                         placeholder="Chi phí"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-estimatedCost`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-estimatedCost`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
-                                                {/* <div>
-                                                    <label className="block text-gray-700 font-medium mb-2">
-                                                        Giờ Bắt Đầu
-                                                    </label>
-                                                    <input
-                                                        type="time"
-                                                        value={
-                                                            activity.startTime
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleActivityChange(
-                                                                dayIndex,
-                                                                activityIndex,
-                                                                'startTime',
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        placeholder="Giờ bắt đầu"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-gray-700 font-medium mb-2">
-                                                        Giờ Kết Thúc
-                                                    </label>
-                                                    <input
-                                                        type="time"
-                                                        value={activity.endTime}
-                                                        onChange={(e) =>
-                                                            handleActivityChange(
-                                                                dayIndex,
-                                                                activityIndex,
-                                                                'endTime',
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        placeholder="Giờ kết thúc"
-                                                    />
-                                                </div> */}
-
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
                                                         Giờ Bắt Đầu
@@ -1517,6 +1756,17 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         }
                                                         placeholder="Chọn giờ bắt đầu"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-startTime`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-startTime`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1534,27 +1784,22 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         }
                                                         placeholder="Chọn giờ kết thúc"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-endTime`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-endTime`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
                                                         Danh Mục
                                                     </label>
-                                                    {/* <input
-                                                        type="text"
-                                                        value={
-                                                            activity.category
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleActivityChange(
-                                                                dayIndex,
-                                                                activityIndex,
-                                                                'category',
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        placeholder="Ví dụ: Tham quan, Ẩm thực"
-                                                    /> */}
                                                     <select
                                                         value={
                                                             activity.category
@@ -1586,6 +1831,17 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                             )
                                                         )}
                                                     </select>
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-category`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-category`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1605,11 +1861,22 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         placeholder="Liên kết bản đồ (ví dụ: https://maps.google.com/...)"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-mapUrl`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-mapUrl`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
-                                                        Hình Ảnh Hoạt Động (1
-                                                        ảnh cho mỗi hoạt động)
+                                                        Hình Ảnh Hoạt Động (chỉ
+                                                        hiển thị 1 ảnh)
                                                     </label>
                                                     <button
                                                         className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -1691,6 +1958,21 @@ focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                             Thêm
                                                         </button>
                                                     </div>
+                                                    {(errors[
+                                                        `${dayIndex}-${activityIndex}-imageFiles`
+                                                    ] ||
+                                                        errors[
+                                                            `${dayIndex}-${activityIndex}-imageUrls`
+                                                        ]) && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {errors[
+                                                                `${dayIndex}-${activityIndex}-imageFiles`
+                                                            ] ||
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-imageUrls`
+                                                                ]}
+                                                        </p>
+                                                    )}
                                                     {activityPreviews[
                                                         `${dayIndex}-${activityIndex}`
                                                     ]?.length > 0 && (

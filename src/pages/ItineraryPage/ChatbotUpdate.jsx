@@ -122,7 +122,7 @@ function ChatbotUpdate() {
     const [messages, setMessages] = useState([
         {
             text: [
-                'Cách 1 (Tối ưu nhất): Tích chọn hoạt động cần chỉnh → nhập yêu cầu.\n     Ví dụ: "Lùi sang 9h".',
+                'Cách 1 (Tối ưu): Tích chọn hoạt động cần chỉnh → nhập yêu cầu.\n     Ví dụ: "Chuyển sang 9h".',
                 'Cách 2: Nếu không tích chọn hoạt động, hãy ghi rõ ngày, giờ và nội dung chỉnh sửa.\n   Ví dụ: "Ngày 1, 6h, đổi sang đi chơi".'
             ],
             sender: 'bot',

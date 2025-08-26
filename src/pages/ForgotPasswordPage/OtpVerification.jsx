@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-function OtpVerification({ onConfirm }) {
+function OtpVerification({ onConfirm, onResendOtp }) {
     const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', ''])
 
     const handleOtpChange = (index, value) => {
@@ -58,6 +58,16 @@ function OtpVerification({ onConfirm }) {
                     />
                 ))}
             </div>
+            <span className="text-gray-600 mb-4 text-sm md:text-base">
+                Bạn chưa nhận được OTP ?{' '}
+                <button
+                    type="button"
+                    onClick={onResendOtp}
+                    className="text-blue-600 hover:underline mb-4"
+                >
+                    Gửi lại OTP
+                </button>
+            </span>
             <button
                 type="submit"
                 className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-lg font-medium shadow-md"

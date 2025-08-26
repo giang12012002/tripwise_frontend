@@ -13,12 +13,14 @@ const AdminTourList = () => {
     const [selectedPartnerId, setSelectedPartnerId] = useState('')
     const [fromDate, setFromDate] = useState(() => {
         const date = new Date()
-        date.setDate(date.getDate() - 6)
+        date.setMonth(date.getMonth() - 2)
         return date.toISOString().split('T')[0]
     })
-    const [toDate, setToDate] = useState(
-        () => new Date().toISOString().split('T')[0]
-    )
+    const [toDate, setToDate] = useState(() => {
+        const date = new Date()
+        date.setDate(date.getDate() + 1)
+        return date.toISOString().split('T')[0]
+    })
     const [error, setError] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const toursPerPage = 6
@@ -155,7 +157,6 @@ const AdminTourList = () => {
                 showConfirmButton: false,
                 timer: 1800
             })
-            // setTours(tours.filter((tour) => tour.tourId !== tour.tourId))
             handleFilterApply()
         } catch (err) {
             console.error('Lỗi khi phê duyệt tour:', err)
@@ -209,7 +210,6 @@ const AdminTourList = () => {
                     showConfirmButton: false,
                     timer: 1800
                 })
-                // setTours(tours.filter((tour) => tour.tourId !== tourId))
                 handleFilterApply()
             } catch (err) {
                 console.error('Lỗi khi từ chối tour:', err)

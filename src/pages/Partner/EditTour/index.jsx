@@ -5,6 +5,8 @@ import { useAuth } from '@/AuthContext'
 import partnerTourAPI from '@/apis/partnerTourAPI'
 import Swal from 'sweetalert2'
 import TimePicker from '@/components/ui/TimePicker'
+import * as Yup from 'yup'
+import { tourSchema } from './tourSchema'
 
 const Index = () => {
     let { tourId } = useParams()
@@ -15,6 +17,7 @@ const Index = () => {
     const [tourImages, setTourImages] = useState([])
     const [activityImages, setActivityImages] = useState({})
     const [tempUrlInput, setTempUrlInput] = useState({ tour: '' })
+    const [errors, setErrors] = useState({})
     const [originalTourUrls, setOriginalTourUrls] = useState(null)
     const tourFileInputRef = useRef(null)
     const activityFileInputRefs = useRef({})
@@ -808,16 +811,19 @@ const Index = () => {
     }
 
     const handleUpdate = async () => {
-        const validationError = validateForm()
-        if (validationError) {
-            setError(validationError)
-            console.error('Lỗi xác thực:', validationError)
-            return
-        }
+        // const validationError = validateForm()
+        // if (validationError) {
+        //     setError(validationError)
+        //     console.error('Lỗi xác thực:', validationError)
+        //     return
+        // }
 
-        setIsLoading(true)
+        // setIsLoading(true)
 
         try {
+            await tourSchema.validate(tour, { abortEarly: false }) // ✅ dùng Yup
+            setIsLoading(true)
+
             // let tourDraft = null
             // if (tour.status === 'Approved') {
             //     const response = await partnerTourAPI.createOrGet({ tourId })
@@ -981,6 +987,17 @@ const Index = () => {
                                 'Image',
                                 latestImage.preview
                             )
+                            // if(activity.attractionId) {
+                            //     activityFormData.append(
+                            //         'imageUrls',
+                            //         latestImage.preview
+                            //     )
+                            // } else {
+                            //     activityFormData.append(
+                            //         'Image',
+                            //         latestImage.preview
+                            //     )
+                            // }
                         }
                         if (latestImage.type === 'existing' && latestImage.id) {
                             activityFormData.append('ImageIds', latestImage.id)
@@ -1052,13 +1069,31 @@ const Index = () => {
             })
             navigate('/partner')
         } catch (err) {
-            setError('Không thể cập nhật tour. Vui lòng thử lại.')
-            console.error('API Error (handleUpdate):', {
-                message: err.message,
-                response: err.response?.data,
-                status: err.response?.status,
-                errors: err.response?.data?.errors || 'Không có chi tiết lỗi'
-            })
+            if (err instanceof Yup.ValidationError) {
+                const validationErrors = {}
+                err.inner.forEach((e) => {
+                    validationErrors[e.path] = e.message
+                })
+                console.error('Validation errors:', validationErrors)
+                setError('Vui lòng kiểm tra và sửa các lỗi trong biểu mẫu.')
+                setErrors(validationErrors)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Dữ liệu chưa hợp lệ, vui lòng kiểm tra lại.',
+                    showConfirmButton: false,
+                    timer: 2000
+                })
+            } else {
+                console.error('API Error (updateTour):', err)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không thể cập nhật tour. Vui lòng thử lại.',
+                    showConfirmButton: false,
+                    timer: 2000
+                })
+            }
         } finally {
             setIsLoading(false)
         }
@@ -1139,6 +1174,11 @@ const Index = () => {
                             required
                             placeholder="Nhập tên tour du lịch"
                         />
+                        {errors.tourName && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.tourName}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1153,6 +1193,11 @@ const Index = () => {
                             required
                             placeholder="Nhập địa điểm"
                         />
+                        {errors.location && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.location}
+                            </p>
+                        )}
                     </div>
                     {/* <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1190,6 +1235,11 @@ const Index = () => {
                                 </option>
                             ))}
                         </select>
+                        {errors.category && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.category}
+                            </p>
+                        )}
                     </div>
 
                     <div>
@@ -1204,6 +1254,11 @@ const Index = () => {
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                         />
+                        {errors.startTime && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.startTime}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1219,7 +1274,13 @@ const Index = () => {
                             min="1"
                             placeholder="Số ngày"
                         />
+                        {errors.duration && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.duration}
+                            </p>
+                        )}
                     </div>
+                    {/* Ẩn  */}
                     <div className="hidden">
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
                             Giá (VND)
@@ -1249,6 +1310,11 @@ const Index = () => {
                             min="0"
                             placeholder="Giá người lớn"
                         />
+                        {errors.priceAdult && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.priceAdult}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1264,6 +1330,11 @@ const Index = () => {
                             min="0"
                             placeholder="Giá trẻ em 5-10 tuổi"
                         />
+                        {errors.priceChild5To10 && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.priceChild5To10}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1279,6 +1350,11 @@ const Index = () => {
                             min="0"
                             placeholder="Giá trẻ em dưới 5 tuổi"
                         />
+                        {errors.priceChildUnder5 && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.priceChildUnder5}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1294,6 +1370,11 @@ const Index = () => {
                             min="1"
                             placeholder="Số người tối đa"
                         />
+                        {errors.maxGroupSize && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.maxGroupSize}
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
@@ -1337,6 +1418,11 @@ const Index = () => {
                                 Thêm
                             </button>
                         </div>
+                        {(errors.imageFiles || errors.imageUrls) && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.imageFiles || errors.imageUrls}
+                            </p>
+                        )}
                         {tourImages.length > 0 && (
                             <div className="mt-4">
                                 <div className="flex justify-between items-center mb-2">
@@ -1382,13 +1468,18 @@ const Index = () => {
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
-                            placeholder="Nhập mô tả tour"
+                            placeholder="Mô tả chi tiết về tour"
                             rows="4"
                         />
+                        {errors.description && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.description}
+                            </p>
+                        )}
                     </div>
                     <div className="md:col-span-2">
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Thông Tin Tour
+                            Trải nghiệm thú vị trong tour
                         </label>
                         <textarea
                             name="tourInfo"
@@ -1396,13 +1487,18 @@ const Index = () => {
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
-                            placeholder="Nhập thông tin tour"
+                            placeholder="Thông tin chi tiết về tour"
                             rows="4"
                         />
+                        {errors.tourInfo && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.tourInfo}
+                            </p>
+                        )}
                     </div>
                     <div className="md:col-span-2">
                         <label className="block text-gray-800 font-semibold text-lg mb-2">
-                            Ghi Chú
+                            Tour Trọn Gói bao gồm
                         </label>
                         <textarea
                             name="tourNote"
@@ -1410,9 +1506,14 @@ const Index = () => {
                             onChange={handleTourChange}
                             className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
-                            placeholder="Nhập ghi chú tour"
+                            placeholder="Thông tin bổ sung hoặc ghi chú"
                             rows="4"
                         />
+                        {errors.tourNote && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {errors.tourNote}
+                            </p>
+                        )}
                     </div>
                     {tour.rejectReason && (
                         <div className="md:col-span-2">
@@ -1433,6 +1534,11 @@ const Index = () => {
                 <h3 className="text-2xl font-semibold text-blue-900 mb-6">
                     Lịch Trình
                 </h3>
+                {errors.itinerary && (
+                    <p className="text-red-600 text-sm mt-1">
+                        {errors.itinerary}
+                    </p>
+                )}
                 {tour.itinerary.map((day, dayIndex) => (
                     <div
                         key={day.itineraryId || dayIndex}
@@ -1494,6 +1600,11 @@ const Index = () => {
                                         required
                                         placeholder={`Tiêu đề ngày ${day.dayNumber}`}
                                     />
+                                    {errors[`${dayIndex}-title`] && (
+                                        <p className="text-red-600 text-sm mt-1">
+                                            {errors[`${dayIndex}-title`]}
+                                        </p>
+                                    )}
                                 </div>
                                 {day.activities.map(
                                     (activity, activityIndex) => (
@@ -1543,6 +1654,17 @@ const Index = () => {
                                                         required
                                                         placeholder="Mô tả hoạt động"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-description`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-description`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1565,6 +1687,17 @@ const Index = () => {
                                                         required
                                                         placeholder="Chi tiết địa điểm"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-placeDetail`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-placeDetail`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1585,6 +1718,17 @@ const Index = () => {
                                                         required
                                                         placeholder="Địa chỉ hoạt động"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-address`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-address`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1608,6 +1752,17 @@ const Index = () => {
                                                         min="0"
                                                         placeholder="Chi phí dự kiến"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-estimatedCost`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-estimatedCost`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1627,6 +1782,17 @@ const Index = () => {
                                                         }
                                                         placeholder="Chọn giờ bắt đầu"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-startTime`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-startTime`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1644,6 +1810,17 @@ const Index = () => {
                                                         }
                                                         placeholder="Chọn giờ kết thúc"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-endTime`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-endTime`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 {/* <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1702,6 +1879,17 @@ const Index = () => {
                                                             )
                                                         )}
                                                     </select>
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-category`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-category`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1721,6 +1909,17 @@ const Index = () => {
                                                         className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         placeholder="URL bản đồ"
                                                     />
+                                                    {errors[
+                                                        `${dayIndex}-${activityIndex}-mapUrl`
+                                                    ] && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-mapUrl`
+                                                                ]
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <label className="block text-gray-700 font-medium mb-2">
@@ -1807,6 +2006,21 @@ const Index = () => {
                                                             Thêm
                                                         </button>
                                                     </div>
+                                                    {(errors[
+                                                        `${dayIndex}-${activityIndex}-imageFiles`
+                                                    ] ||
+                                                        errors[
+                                                            `${dayIndex}-${activityIndex}-imageUrls`
+                                                        ]) && (
+                                                        <p className="text-red-600 text-sm mt-1">
+                                                            {errors[
+                                                                `${dayIndex}-${activityIndex}-imageFiles`
+                                                            ] ||
+                                                                errors[
+                                                                    `${dayIndex}-${activityIndex}-imageUrls`
+                                                                ]}
+                                                        </p>
+                                                    )}
                                                     {activityImages[
                                                         `${dayIndex}-${activityIndex}`
                                                     ]?.length > 0 && (

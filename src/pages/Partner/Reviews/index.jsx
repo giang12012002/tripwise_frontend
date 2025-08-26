@@ -158,10 +158,16 @@ function Index() {
                                 ))}
                             </div>
                         </div>
-                        <p className="text-gray-600 line-clamp-1">
+                        <p
+                            className="text-gray-600 line-clamp-1"
+                            title={review.comment}
+                        >
                             {review.comment}
                         </p>
-                        <p className="text-sm text-gray-500 italic">
+                        <p
+                            className="text-sm text-gray-500 italic line-clamp-1"
+                            title={review.tourName}
+                        >
                             📍 {review.tourName}
                         </p>
                         <div className="flex justify-end gap-2 mt-2">
@@ -175,10 +181,7 @@ function Index() {
                             >
                                 Xem
                             </button>
-                            <button
-                                onClick={() => reviewAPI.hide(review.reviewId)}
-                                className="px-4 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 hover:cursor-pointer"
-                            >
+                            <button className="px-4 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 hover:cursor-pointer hidden">
                                 Ẩn
                             </button>
                         </div>

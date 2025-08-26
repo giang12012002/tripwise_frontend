@@ -14,7 +14,11 @@ const AdminHotNewsList = () => {
     const fetchHotNews = async () => {
         try {
             const response = await appSettingAPI.fetchAllHotNews()
-            setHotNews(response.data)
+            // Sort hotNews by createdDate in descending order
+            const sortedNews = response.data.sort(
+                (a, b) => new Date(b.createdDate) - new Date(a.createdDate)
+            )
+            setHotNews(sortedNews)
         } catch (error) {
             Swal.fire({
                 icon: 'error',
@@ -162,8 +166,11 @@ const AdminHotNewsList = () => {
                         <thead className="bg-gray-100">
                             <tr>
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                                    ID
+                                    STT
                                 </th>
+                                {/*<th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">*/}
+                                {/*    ID*/}
+                                {/*</th>*/}
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
                                     Hình ảnh
                                 </th>
@@ -182,21 +189,24 @@ const AdminHotNewsList = () => {
                             {currentHotNews.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan="5"
+                                        colSpan="6"
                                         className="px-6 py-4 text-center text-gray-500 text-lg"
                                     >
                                         Không có tin tức nổi bật
                                     </td>
                                 </tr>
                             ) : (
-                                currentHotNews.map((news) => (
+                                currentHotNews.map((news, index) => (
                                     <tr
                                         key={news.id}
                                         className="hover:bg-gray-50 transition duration-200"
                                     >
                                         <td className="px-6 py-4 text-gray-700">
-                                            {news.id}
+                                            {startIndex + index + 1}
                                         </td>
+                                        {/*<td className="px-6 py-4 text-gray-700">*/}
+                                        {/*    {news.id}*/}
+                                        {/*</td>*/}
                                         <td className="px-6 py-4">
                                             {news.imageUrl ? (
                                                 <img

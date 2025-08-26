@@ -171,40 +171,28 @@ function OtpVerification() {
         }
         setIsLoading(true)
         try {
-            const response = await authAPI.signup(
-                email,
-                username,
-                password,
-                confirmPassword,
-                signupRequestId
-            )
-            if (response.status === 200 || response.status === 201) {
-                if (response.data.invalidFields?.length > 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi',
-                        text: 'Không thể gửi lại OTP do email hoặc username đã tồn tại.',
-                        showConfirmButton: false,
-                        timer: 500
-                    })
-                    navigate('/register')
-                } else {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công',
-                        text: 'Mã OTP mới đã được gửi đến email của bạn!',
-                        showConfirmButton: false,
-                        timer: 500
-                    })
-                    setOtpDigits(['', '', '', '', '', '']) // Reset OTP inputs
-                }
+            const response = await authAPI.resendSignupOtp({
+                signupRequestId: signupRequestId,
+                email: email
+            })
+            if (response.status === 200) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text:
+                        response.data.message ||
+                        'Mã OTP mới đã được gửi đến email của bạn!',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
+                setOtpDigits(['', '', '', '', '', '']) // Reset OTP inputs
             } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi',
                     text: response.data.message || 'Gửi lại OTP thất bại.',
                     showConfirmButton: false,
-                    timer: 500
+                    timer: 3000
                 })
             }
         } catch (error) {
@@ -213,7 +201,7 @@ function OtpVerification() {
                 title: 'Lỗi',
                 text: error.response?.data?.message || 'Gửi lại OTP thất bại.',
                 showConfirmButton: false,
-                timer: 500
+                timer: 3000
             })
         } finally {
             setIsLoading(false)
@@ -264,14 +252,18 @@ function OtpVerification() {
                                 />
                             ))}
                         </div>
-                        {/*<button*/}
-                        {/*    type="button"*/}
-                        {/*    onClick={handleResendOtp}*/}
-                        {/*    className="text-blue-600 hover:underline mb-4 text-sm"*/}
-                        {/*    disabled={isLoading}*/}
-                        {/*>*/}
-                        {/*    Gửi lại OTP*/}
-                        {/*</button>*/}
+                        <span className="text-gray-600 mb-4 text-sm md:text-base">
+                            Bạn chưa nhận được OTP ?{' '}
+                            <button
+                                type="button"
+                                onClick={handleResendOtp}
+                                className="text-blue-600 hover:underline mb-4"
+                                disabled={isLoading}
+                            >
+                                Gửi lại OTP
+                            </button>
+                        </span>
+
                         <button
                             type="submit"
                             onClick={handleVerifyOtp}
