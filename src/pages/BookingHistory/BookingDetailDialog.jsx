@@ -3,6 +3,7 @@ import LoadingSpinner from '@/components/states/LoadingSpinner'
 import { Link } from 'react-router-dom'
 
 import { bookingStatus, paymentStatus } from './status'
+import { set } from 'date-fns'
 
 const getBookingStatusConfig = (value) => {
     return (
@@ -13,6 +14,8 @@ const getBookingStatusConfig = (value) => {
         }
     )
 }
+
+// console.log('getBookingStatusConfig', getBookingStatusConfig('refunded'))
 
 const getPaymentStatusConfig = (value) => {
     return (
@@ -29,13 +32,20 @@ function BookingDetailDialog({ isOpen, onClose, payment }) {
     const [animationClass, setAnimationClass] = useState('fade-in')
     const [loading, setLoading] = useState(false)
 
+    const [bookingStatus, setBookingStatus] = useState(null)
+
+    console.log('booking status', bookingStatus)
+    console.log('payment', payment)
+
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true)
             setAnimationClass('fade-in')
+            setBookingStatus(getBookingStatusConfig(payment.refundStatus))
         } else {
             setAnimationClass('fade-out')
             setTimeout(() => setIsVisible(false), 300)
+            setBookingStatus(null)
         }
     }, [isOpen])
 
@@ -303,15 +313,21 @@ function BookingDetailDialog({ isOpen, onClose, payment }) {
                                                     className={`font-medium ${
                                                         payment?.refundStatus ===
                                                         'Approved'
-                                                            ? 'text-green-600'
-                                                            : 'text-yellow-600'
+                                                            ? 'text-blue-600'
+                                                            : payment?.refundStatus ===
+                                                                'Refunded'
+                                                              ? 'text-green-600'
+                                                              : 'text-yellow-600'
                                                     }`}
                                                 >
                                                     {payment?.refundStatus ===
                                                     'Approved'
                                                         ? 'Đã duyệt'
-                                                        : payment?.refundStatus ||
-                                                          'Chưa có'}
+                                                        : payment?.refundStatus ===
+                                                            'Refunded'
+                                                          ? 'Đã hoàn tiền'
+                                                          : payment?.refundStatus ||
+                                                            'Chưa có'}
                                                 </span>
                                             </div>
                                             <div className="flex flex-col">
