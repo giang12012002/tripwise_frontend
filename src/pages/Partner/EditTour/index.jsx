@@ -240,6 +240,7 @@ const Index = () => {
                   ? parseInt(value) || 1 // maxGroupSize và duration mặc định là 1
                   : value // Các trường khác giữ nguyên giá trị
         setTour({ ...tour, [name]: newValue })
+        setErrors((prev) => ({ ...prev, [name]: '' }))
         console.log(`Tour field updated: ${name} = ${newValue}`)
     }
 
@@ -327,6 +328,7 @@ const Index = () => {
                 .map((img) => img.id)
         })
         setTempUrlInput({ ...tempUrlInput, tour: '' })
+        setErrors((prev) => ({ ...prev, imageUrls: '' }))
         console.log('Tour imageUrls added:', validUrls)
     }
 
@@ -402,6 +404,7 @@ const Index = () => {
         setTourImages([])
         setTour({ ...tour, imageFiles: [], imageUrls: [], imageIds: [] })
         setTempUrlInput({ ...tempUrlInput, tour: '' })
+        setErrors((prev) => ({ ...prev, imageFiles: '', imageUrls: '' }))
         console.log('Cleared all tour images')
     }
 
@@ -409,6 +412,7 @@ const Index = () => {
         const newItinerary = [...tour.itinerary]
         newItinerary[dayIndex][field] = value
         setTour({ ...tour, itinerary: newItinerary })
+        setErrors((prev) => ({ ...prev, [`${dayIndex}-${field}`]: '' }))
         console.log(`Day ${dayIndex + 1} updated: ${field} = ${value}`)
     }
 
@@ -452,6 +456,10 @@ const Index = () => {
                 ...validFiles
             ]
             setTour({ ...tour, itinerary: newItinerary })
+            setErrors((prev) => ({
+                ...prev,
+                [`${dayIndex}-${activityIndex}-${field}`]: ''
+            }))
             console.log(
                 `Activity ${activityIndex + 1} (Day ${dayIndex + 1}) imageFiles added:`,
                 validFiles.map((f) => ({ name: f.name, size: f.size }))
@@ -528,6 +536,9 @@ const Index = () => {
         ]
         setTour({ ...tour, itinerary: newItinerary })
         setTempUrlInput({ ...tempUrlInput, [key]: '' })
+
+        setErrors((prev) => ({ ...prev, [`${key}-imageUrls`]: '' }))
+
         console.log(
             `Activity ${activityIndex + 1} (Day ${dayIndex + 1}) imageUrls added:`,
             validUrls
@@ -590,6 +601,11 @@ const Index = () => {
                 )
         }
         setTour({ ...tour, itinerary: newItinerary })
+        setErrors((prev) => ({
+            ...prev,
+            [`${dayIndex}-${activityIndex}-imageFiles`]: '',
+            [`${dayIndex}-${activityIndex}-imageUrls`]: ''
+        }))
         console.log(
             `Removed activity image at index ${index} for day ${dayIndex + 1}, activity ${activityIndex + 1}`
         )
@@ -622,6 +638,13 @@ const Index = () => {
         newItinerary[dayIndex].activities[activityIndex].imageIds = []
         setTour({ ...tour, itinerary: newItinerary })
         setTempUrlInput({ ...tempUrlInput, [key]: '' })
+
+        setErrors((prev) => ({
+            ...prev,
+            [`${dayIndex}-${activityIndex}-imageFiles`]: '',
+            [`${dayIndex}-${activityIndex}-imageUrls`]: ''
+        }))
+
         console.log(
             `Cleared all images for day ${dayIndex + 1}, activity ${activityIndex + 1}`
         )
@@ -712,6 +735,21 @@ const Index = () => {
             })
             return newTemp
         })
+
+        setErrors((prev) => {
+            const newErrors = {}
+            Object.keys(prev).forEach((key) => {
+                const [day] = key.split('-').map(Number)
+                if (day !== dayIndex) {
+                    const newDay = day > dayIndex ? day - 1 : day
+                    newErrors[
+                        `${newDay}-${key.split('-').slice(1).join('-')}`
+                    ] = prev[key]
+                }
+            })
+            return newErrors
+        })
+
         console.log(`Removed day ${dayIndex + 1}`)
     }
 
@@ -774,6 +812,16 @@ const Index = () => {
             delete newTemp[`${dayIndex}-${activityIndex}`]
             return newTemp
         })
+
+        setErrors((prev) => {
+            const newErrors = { ...prev }
+            Object.keys(prev).forEach((key) => {
+                if (key.startsWith(`${dayIndex}-${activityIndex}`)) {
+                    delete newErrors[key]
+                }
+            })
+            return newErrors
+        })
         console.log(
             `Removed activity ${activityIndex + 1} from day ${dayIndex + 1}`
         )
@@ -835,6 +883,8 @@ const Index = () => {
         // }
 
         // setIsLoading(true)
+
+        setErrors({})
 
         try {
             await tourSchema.validate(tour, { abortEarly: false }) // ✅ dùng Yup
@@ -1090,8 +1140,31 @@ const Index = () => {
         } catch (err) {
             if (err instanceof Yup.ValidationError) {
                 const validationErrors = {}
-                err.inner.forEach((e) => {
-                    validationErrors[e.path] = e.message
+                err.inner.forEach((error) => {
+                    // Tạo key lỗi chi tiết cho các trường trong itinerary
+                    if (error.path.includes('itinerary')) {
+                        const match = error.path.match(
+                            /itinerary\[(\d+)\]\.(\w+)/
+                        )
+                        const activityMatch = error.path.match(
+                            /itinerary\[(\d+)\]\.activities\[(\d+)\]\.(\w+)/
+                        )
+                        if (activityMatch) {
+                            const [, dayIndex, activityIndex, field] =
+                                activityMatch
+                            validationErrors[
+                                `${dayIndex}-${activityIndex}-${field}`
+                            ] = error.message
+                        } else if (match) {
+                            const [, dayIndex, field] = match
+                            validationErrors[`${dayIndex}-${field}`] =
+                                error.message
+                        } else {
+                            validationErrors[error.path] = error.message
+                        }
+                    } else {
+                        validationErrors[error.path] = error.message
+                    }
                 })
                 console.error('Validation errors:', validationErrors)
                 setError('Vui lòng kiểm tra và sửa các lỗi trong biểu mẫu.')
@@ -1104,14 +1177,36 @@ const Index = () => {
                     timer: 2000
                 })
             } else {
-                console.error('API Error (updateTour):', err)
+                let errorMessage = 'Không thể tạo tour. Vui lòng thử lại.'
+                if (err.response?.data) {
+                    if (Array.isArray(err.response.data.errors)) {
+                        errorMessage = err.response.data.errors.join(', ')
+                    } else if (typeof err.response.data.errors === 'string') {
+                        errorMessage = err.response.data.errors
+                    } else if (
+                        typeof err.response.data.errors === 'object' &&
+                        err.response.data.errors !== null
+                    ) {
+                        errorMessage = Object.values(err.response.data.errors)
+                            .flat()
+                            .join(', ')
+                    } else if (err.response.data.message) {
+                        errorMessage = err.response.data.message
+                    }
+                } else if (err.message) {
+                    errorMessage = err.message
+                }
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi',
-                    text: 'Không thể cập nhật tour. Vui lòng thử lại.',
+                    text: errorMessage,
                     showConfirmButton: false,
-                    timer: 2000
+                    timer: 1800
                 })
+                if (err.response?.status === 401) {
+                    localStorage.removeItem('access_token')
+                    navigate('/signin')
+                }
             }
         } finally {
             setIsLoading(false)
