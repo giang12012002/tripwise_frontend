@@ -303,15 +303,21 @@ function BookingDetailDialog({ isOpen, onClose, payment }) {
                                                     className={`font-medium ${
                                                         payment?.refundStatus ===
                                                         'Approved'
-                                                            ? 'text-green-600'
-                                                            : 'text-yellow-600'
+                                                            ? 'text-blue-600'
+                                                            : payment?.refundStatus ===
+                                                                'Refunded'
+                                                              ? 'text-green-600'
+                                                              : 'text-yellow-600'
                                                     }`}
                                                 >
                                                     {payment?.refundStatus ===
                                                     'Approved'
                                                         ? 'Đã duyệt'
-                                                        : payment?.refundStatus ||
-                                                          'Chưa có'}
+                                                        : payment?.refundStatus ===
+                                                            'Refunded'
+                                                          ? 'Đã hoàn tiền'
+                                                          : payment?.refundStatus ||
+                                                            'Chưa có'}
                                                 </span>
                                             </div>
                                             <div className="flex flex-col">

@@ -40,8 +40,8 @@ export const status = [
 export const refundStatus = [
     {
         value: 'Approved',
-        background: 'bg-green-100',
-        text: 'text-green-800',
+        background: 'bg-yellow-100',
+        text: 'text-yellow-800',
         vietnamese: 'Đã duyệt'
     },
     {
@@ -49,5 +49,11 @@ export const refundStatus = [
         background: 'bg-red-100',
         text: 'text-red-800',
         vietnamese: 'Từ chối'
+    },
+    {
+        value: 'Refunded',
+        background: 'bg-green-100',
+        text: 'text-green-800',
+        vietnamese: 'Đã hoàn tiền'
     }
 ]

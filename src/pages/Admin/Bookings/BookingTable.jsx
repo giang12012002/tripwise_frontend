@@ -186,6 +186,12 @@ function BookingTable({
                                                         booking.bookingId
                                                     )
                                                 }
+                                                disabled={
+                                                    booking.refundStatus ===
+                                                        'Refunded' ||
+                                                    booking.bookingStatus ===
+                                                        'Success'
+                                                }
                                                 title="Hoàn tất hoàn tiền"
                                             >
                                                 <svg
@@ -195,7 +201,14 @@ function BookingTable({
                                                     stroke-width="1.5"
                                                     stroke="currentColor"
                                                     class="size-6"
-                                                    className="h-6 w-6 text-purple-600 hover:text-purple-800"
+                                                    className={`h-6 w-6 ${
+                                                        booking.refundStatus ===
+                                                            'Refunded' ||
+                                                        booking.bookingStatus ===
+                                                            'Success'
+                                                            ? 'opacity-50 cursor-not-allowed'
+                                                            : 'text-purple-600 hover:text-purple-800'
+                                                    }`}
                                                 >
                                                     <path
                                                         stroke-linecap="round"

@@ -34,6 +34,12 @@ export const bookingStatus = [
         background: 'bg-red-200',
         text: 'text-red-800',
         vietnamese: 'Đã hủy'
+    },
+    {
+        value: 'Refunded',
+        background: 'bg-green-200',
+        text: 'text-green-800',
+        vietnamese: 'Đã hoàn tiền'
     }
 ]
 
