@@ -994,7 +994,7 @@ const Index = () => {
                         const latestImage = currentActivityImages[0] // Lấy ảnh đầu tiên (giới hạn 1 ảnh)
                         if (latestImage.type === 'new' && latestImage.file) {
                             activityFormData.append(
-                                'ImageFiles',
+                                'ImageFile',
                                 latestImage.file
                             )
                         } else if (
