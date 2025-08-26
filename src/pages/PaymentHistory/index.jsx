@@ -328,7 +328,10 @@ function Index() {
                                                                 {item.tourName}
                                                             </button>
                                                         ) : (
-                                                            item.planName
+                                                            <span>
+                                                                Gói{' '}
+                                                                {item.planName}
+                                                            </span>
                                                         )}
                                                     </td>
                                                     <td className="p-3 border">
