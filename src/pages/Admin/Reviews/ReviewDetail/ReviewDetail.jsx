@@ -4,7 +4,7 @@ import { Star } from 'lucide-react'
 function ReviewDetail({ review, onSend }) {
     if (!review) return <div>Không tìm thấy đánh giá.</div>
 
-    const { comment, createdBy, createdDate, rating, userName } = review
+    const { comment, createdBy, createdAt, rating, userName } = review
 
     const renderStars = (count) => {
         return (
@@ -49,11 +49,12 @@ function ReviewDetail({ review, onSend }) {
             <div className="mb-6">
                 <label className="text-sm text-gray-500">Ngày tạo:</label>
                 <p className="text-gray-600">
-                    {new Date(createdDate).toLocaleString('vi-VN')}
+                    {new Date(createdAt).toLocaleString('vi-VN')}
                 </p>
             </div>
 
-            <div className="text-right">
+            {/* Ẩn */}
+            <div className="text-right hidden">
                 <button
                     onClick={onSend}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
