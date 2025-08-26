@@ -168,22 +168,30 @@ const tourSchema = Yup.object()
                             function (activities) {
                                 if (!activities || activities.length <= 1)
                                     return true
-                                return activities.every((activity, index) => {
-                                    if (index === 0) return true
-                                    const prevActivity = activities[index - 1]
-                                    if (
-                                        !activity.startTime ||
-                                        !prevActivity.endTime
-                                    )
-                                        return true
+
+                                for (let i = 1; i < activities.length; i++) {
+                                    const prev = activities[i - 1]
+                                    const curr = activities[i]
+
+                                    if (!curr.startTime || !prev.endTime)
+                                        continue
+
                                     const currentStart = new Date(
-                                        `1970-01-01T${activity.startTime}:00`
+                                        `1970-01-01T${curr.startTime}:00`
                                     )
                                     const prevEnd = new Date(
-                                        `1970-01-01T${prevActivity.endTime}:00`
+                                        `1970-01-01T${prev.endTime}:00`
                                     )
-                                    return currentStart >= prevEnd
-                                })
+
+                                    if (currentStart < prevEnd) {
+                                        return this.createError({
+                                            path: `${this.path}[${i}].startTime`, // gắn lỗi vào activity cụ thể
+                                            message:
+                                                'Thời gian bắt đầu của hoạt động phải lớn hơn hoặc bằng thời gian kết thúc của hoạt động trước đó.'
+                                        })
+                                    }
+                                }
+                                return true
                             }
                         )
                 })
