@@ -213,16 +213,32 @@ const Index = () => {
         fetchTour()
     }, [tourId])
 
+    // const handleTourChange = (e) => {
+    //     const { name, value } = e.target
+    //     const newValue =
+    //         name === 'price' ||
+    //         name === 'maxGroupSize' ||
+    //         name === 'priceAdult' ||
+    //         name === 'priceChild5To10' ||
+    //         name === 'priceChildUnder5' ||
+    //         name === 'duration'
+    //             ? parseFloat(value) || 0
+    //             : value
+    //     setTour({ ...tour, [name]: newValue })
+    //     console.log(`Tour field updated: ${name} = ${newValue}`)
+    // }
+
     const handleTourChange = (e) => {
         const { name, value } = e.target
         const newValue =
             name === 'price' ||
-            name === 'maxGroupSize' ||
             name === 'priceAdult' ||
             name === 'priceChild5To10' ||
             name === 'priceChildUnder5'
-                ? parseFloat(value) || 0
-                : value
+                ? parseFloat(value) || 0 // Giá mặc định là 0
+                : name === 'maxGroupSize' || name === 'duration'
+                  ? parseInt(value) || 1 // maxGroupSize và duration mặc định là 1
+                  : value // Các trường khác giữ nguyên giá trị
         setTour({ ...tour, [name]: newValue })
         console.log(`Tour field updated: ${name} = ${newValue}`)
     }
@@ -822,6 +838,9 @@ const Index = () => {
 
         try {
             await tourSchema.validate(tour, { abortEarly: false }) // ✅ dùng Yup
+
+            setErrors({})
+
             setIsLoading(true)
 
             // let tourDraft = null
