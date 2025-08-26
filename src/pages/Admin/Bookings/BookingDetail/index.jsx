@@ -153,7 +153,7 @@ function Index() {
                                     {/* Nút xem chi tiết tour mới được thêm */}
                                     {tourId && (
                                         <Link
-                                            to={`/partner/detailTour/${tourId}`}
+                                            to={`/admin/TourDetail/${tourId}`}
                                             className="px-3 py-1 text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors duration-200"
                                         >
                                             Xem tour
