@@ -55,7 +55,7 @@ export const tourSchema = Yup.object()
                     const now = new Date()
                     const minStartTime = new Date(
                         now.getTime() + 24 * 60 * 60 * 1000
-                    ) // +1 ngày
+                    ) // Current time + 1 day
                     const startTime = new Date(value)
                     return startTime >= minStartTime
                 }
@@ -86,15 +86,30 @@ export const tourSchema = Yup.object()
                         .of(
                             Yup.object()
                                 .shape({
-                                    placeDetail: Yup.string().required(
-                                        'Chi tiết địa điểm là bắt buộc.'
-                                    ),
-                                    description: Yup.string().required(
-                                        'Mô tả hoạt động là bắt buộc.'
-                                    ),
-                                    address: Yup.string().required(
-                                        'Địa chỉ hoạt động là bắt buộc.'
-                                    ),
+                                    placeDetail: Yup.string()
+                                        .required(
+                                            'Chi tiết địa điểm là bắt buộc.'
+                                        )
+                                        .min(
+                                            1,
+                                            'Chi tiết địa điểm không được để trống.'
+                                        ),
+                                    description: Yup.string()
+                                        .required(
+                                            'Mô tả hoạt động là bắt buộc.'
+                                        )
+                                        .min(
+                                            1,
+                                            'Mô tả hoạt động không được để trống.'
+                                        ),
+                                    address: Yup.string()
+                                        .required(
+                                            'Địa chỉ hoạt động là bắt buộc.'
+                                        )
+                                        .min(
+                                            1,
+                                            'Địa chỉ hoạt động không được để trống.'
+                                        ),
                                     estimatedCost: Yup.number()
                                         .required(
                                             'Chi phí dự kiến là bắt buộc.'
@@ -103,14 +118,32 @@ export const tourSchema = Yup.object()
                                             0,
                                             'Chi phí dự kiến không được âm.'
                                         ),
-                                    startTime: Yup.string(),
+                                    startTime: Yup.string().test(
+                                        'start-before-end',
+                                        'Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc.',
+                                        function (value) {
+                                            const endTime = this.parent.endTime
+                                            if (!value || !endTime) return true
+                                            const start = new Date(
+                                                `1970-01-01T${value}`
+                                            )
+                                            const end = new Date(
+                                                `1970-01-01T${endTime}`
+                                            )
+
+                                            console.log(
+                                                `start: ${start}, end: ${end}`
+                                            )
+                                            return start < end
+                                        }
+                                    ),
                                     endTime: Yup.string(),
                                     category: Yup.string(),
                                     imageFiles: Yup.array(),
                                     imageUrls: Yup.array().of(
                                         Yup.string().matches(
                                             /\.(jpg|jpeg|png|gif)$/i,
-                                            'URL ảnh phải hợp lệ (.jpg, .jpeg, .png, .gif).'
+                                            'URL ảnh phải có định dạng .jpg, .jpeg, .png hoặc .gif.'
                                         )
                                     )
                                 })
@@ -127,7 +160,71 @@ export const tourSchema = Yup.object()
                                     }
                                 )
                         )
+                        .test(
+                            'ascending-activity-times',
+                            'Thời gian bắt đầu của hoạt động phải lớn hơn hoặc bằng thời gian kết thúc của hoạt động trước đó.',
+                            function (activities) {
+                                if (!activities || activities.length <= 1)
+                                    return true
+
+                                for (let i = 1; i < activities.length; i++) {
+                                    const prev = activities[i - 1]
+                                    const curr = activities[i]
+
+                                    if (!curr.startTime || !prev.endTime)
+                                        continue
+
+                                    const currentStart = new Date(
+                                        `1970-01-01T${curr.startTime}`
+                                    )
+                                    const prevEnd = new Date(
+                                        `1970-01-01T${prev.endTime}`
+                                    )
+
+                                    if (currentStart < prevEnd) {
+                                        return this.createError({
+                                            path: `${this.path}[${i}].startTime`, // gắn lỗi vào activity cụ thể
+                                            message:
+                                                'Thời gian bắt đầu của hoạt động phải lớn hơn hoặc bằng thời gian kết thúc của hoạt động trước đó.'
+                                        })
+                                    }
+                                }
+                                return true
+                            }
+                        )
                 })
+            )
+            .test(
+                'first-activity-start-time',
+                'Thời gian bắt đầu của hoạt động đầu tiên trong ngày 1 phải lớn hơn hoặc bằng thời gian bắt đầu của tour.',
+                function (value) {
+                    const tourStartTime = this.parent.startTime
+                    if (!tourStartTime || !value[0]?.activities[0]?.startTime)
+                        return true
+                    const tourStart = new Date(tourStartTime)
+                    const activityStart = new Date(
+                        `${tourStartTime.split('T')[0]}T${value[0].activities[0].startTime}`
+                    )
+                    return activityStart >= tourStart
+                }
+            )
+            .test(
+                'total-estimated-cost',
+                'Tổng chi phí dự kiến của các hoạt động không được vượt quá giá tour cho người lớn.',
+                function (value) {
+                    const priceAdult = this.parent.priceAdult
+                    const totalEstimatedCost = value.reduce((total, day) => {
+                        return (
+                            total +
+                            day.activities.reduce(
+                                (sum, activity) =>
+                                    sum + (activity.estimatedCost || 0),
+                                0
+                            )
+                        )
+                    }, 0)
+                    return totalEstimatedCost <= priceAdult
+                }
             )
     })
     .test(
